@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/IncredistSDKAndroid/IncredistSDKAndroid.iml" filepath="$PROJECT_DIR$/IncredistSDKAndroid/IncredistSDKAndroid.iml" />
+      <module fileurl="file://$PROJECT_DIR$/IncredistSDKAndroidV2.iml" filepath="$PROJECT_DIR$/IncredistSDKAndroidV2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/IncredistV2TestApp/IncredistV2TestApp.iml" filepath="$PROJECT_DIR$/IncredistV2TestApp/IncredistV2TestApp.iml" />
+    </modules>
+  </component>
+</project>
