@@ -4,21 +4,43 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.support.annotation.NonNull;
 
+import jp.co.flight.incredist.android.internal.controller.IncredistController;
+import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
+
 /**
  * Incredist API クラス.
  */
 
 public class Incredist {
-    private IncredistManager manager;
-    private String deviceName;
-    private BluetoothGatt bluetoothGatt;
-    private BluetoothDevice bluetoothDevice;
+    /**
+     * 生成元の IncredistManager インスタンス
+     */
+    private final IncredistManager mManager;
+
+    /**
+     * IncredistController インスタンス.
+     */
+    private final IncredistController mController;
+
+    /**
+     * コンストラクタ. IncredistManager によって呼び出されます.
+     *
+     * @param deviceName デバイス名
+     * @param deviceAddress Bluetoothアドレス
+     */
+    /* package */
+    Incredist(IncredistManager manager, String deviceName, String deviceAddress) {
+        mManager = manager;
+        mController = new IncredistController(deviceName, deviceAddress);
+    }
 
     /**
      * Incredistとの接続を切断します.
      */
-    void disconnect() {
+    public void disconnect() {
         //TODO
+
+        mController.destroy();
     }
 
     /**
@@ -26,8 +48,8 @@ public class Incredist {
      *
      * @return Incredistデバイス名
      */
-    String getDeviceName() {
-        return deviceName;
+    public String getDeviceName() {
+        return mController.getDeviceName();
     }
 
     /**
@@ -35,7 +57,7 @@ public class Incredist {
      *
      * @return 接続状態(BluetoothGatt クラスの定数)
      */
-    int getConnectionStatus() {
+    public int getConnectionStatus() {
         //TODO
         return BluetoothGatt.STATE_DISCONNECTED;
     }
@@ -63,7 +85,13 @@ public class Incredist {
      * シリアル番号を取得します.
      * @param listener 結果取得用リスナ
      */
-    void getSerialNumber(@NonNull OnSerialNumberListener listener) {
-        //TODO
+    public void getSerialNumber(@NonNull OnSerialNumberListener listener) {
+        mController.getSerialNumber(new IncredistController.Callback() {
+            @Override
+            public void onResult(IncredistResult result) {
+                //TODO
+
+            }
+        });
     }
 }
