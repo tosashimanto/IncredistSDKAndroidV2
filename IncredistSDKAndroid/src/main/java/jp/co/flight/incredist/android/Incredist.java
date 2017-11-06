@@ -4,6 +4,7 @@ import android.support.annotation.Nullable;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.IncredistController;
+import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 
 /**
  * Incredist API クラス.
@@ -39,10 +40,19 @@ public class Incredist {
     /**
      * Incredistとの接続を切断します.
      */
-    public void disconnect() {
-        //TODO
-
-        mController.release();
+    public void disconnect(@Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction<Incredist> failure) {
+        mController.disconnect(result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                mController.release();
+                if (success != null) {
+                    success.onSuccess(this);
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status, this);
+                }
+            }
+        });
     }
 
     /**

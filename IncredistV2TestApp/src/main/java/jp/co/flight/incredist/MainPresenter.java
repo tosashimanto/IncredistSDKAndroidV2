@@ -15,6 +15,7 @@ import jp.co.flight.incredist.model.IncredistModel;
 public interface MainPresenter {
     void onStartScan();
     void onConnect();
+    void onDisconnect();
 
     /**
      * MainActiivty 用 Presenter 実体クラス.
@@ -48,6 +49,16 @@ public interface MainPresenter {
                 addLog(String.format(Locale.JAPANESE, "connected: %s", incredist.getDeviceName()));
             }, (errorCode, failure)->{
                 addLog(String.format(Locale.JAPANESE,"onConnect failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onDisconnect() {
+            addLog("onDisconnect");
+            mIncredist.disconnect(incredist->{
+                addLog("disconnected");
+            }, (errorCode, incredist) -> {
+                addLog(String.format(Locale.JAPANESE,"onDisconnect failure %d", errorCode));
             });
         }
 

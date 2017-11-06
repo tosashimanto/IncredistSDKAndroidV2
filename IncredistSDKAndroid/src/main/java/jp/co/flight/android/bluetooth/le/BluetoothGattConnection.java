@@ -17,6 +17,8 @@ import java.util.List;
 public class BluetoothGattConnection {
     @Nullable
     private BluetoothGatt mGatt;
+
+    @NonNull
     private final BluetoothCentral mCentral;
 
     @Nullable
@@ -51,7 +53,7 @@ public class BluetoothGattConnection {
     };
 
     /* package */
-    BluetoothGattConnection(BluetoothCentral central, BluetoothPeripheral peripheral, ConnectionListener listener) {
+    BluetoothGattConnection(@NonNull BluetoothCentral central, @NonNull BluetoothPeripheral peripheral, @Nullable ConnectionListener listener) {
         mGatt = central.connectGatt(peripheral, mGattCallback);
         mCentral = central;
         mListener = listener;
@@ -100,14 +102,14 @@ public class BluetoothGattConnection {
      * @param success 読み込み成功時処理
      * @param failure 読み込み失敗時処理
      */
-    void readCharacteristic(BluetoothGattCharacteristic characteristic, OnSuccessFunction<BluetoothGattCharacteristic> success, OnFailureFunction<Void> failure) {
+    public void readCharacteristic(BluetoothGattCharacteristic characteristic, OnSuccessFunction<BluetoothGattCharacteristic> success, OnFailureFunction<Void> failure) {
         //TODO
     }
 
     /**
      * BluetoothLE デバイスとの接続を切断します.
      */
-    void disconnect() {
+    public void disconnect() {
         if (mGatt != null) {
             mGatt.disconnect();
         }

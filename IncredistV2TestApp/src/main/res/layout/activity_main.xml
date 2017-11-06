@@ -20,6 +20,7 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginBottom="8dp"
+            android:layout_marginTop="0dp"
             app:layout_constraintBottom_toTopOf="@+id/button_scan"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -34,6 +35,7 @@
             android:layout_marginStart="8dp"
             android:onClick="@{(view)->presenter.onStartScan()}"
             android:text="Scan"
+            app:layout_constraintTop_toBottomOf="@+id/text_log"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/button_connect"
             app:layout_constraintStart_toStartOf="parent" />
@@ -42,12 +44,23 @@
             android:id="@+id/button_connect"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
             android:onClick="@{(view)->presenter.onConnect()}"
             android:text="Connect"
             app:layout_constraintBottom_toBottomOf="@+id/button_scan"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/button_disconnect"
             app:layout_constraintStart_toEndOf="@+id/button_scan"
+            app:layout_constraintTop_toTopOf="@+id/button_scan" />
+
+        <Button
+            android:id="@+id/button_disconnect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:onClick="@{(view)->presenter.onDisconnect()}"
+            android:text="Disconnect"
+            app:layout_constraintBottom_toBottomOf="@+id/button_scan"
+            app:layout_constraintStart_toEndOf="@+id/button_connect"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/button_scan" />
 
     </android.support.constraint.ConstraintLayout>

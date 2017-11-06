@@ -99,6 +99,16 @@ public class IncredistController {
     }
 
     /**
+     * Incredist デバイスから切断します.
+     */
+    public void disconnect(final Callback callback) {
+        post(()->{
+            mConnection.disconnect();
+        }, callback);
+    }
+
+
+    /**
      * Incredist デバイスとの接続を破棄します.
      */
     public boolean release() {

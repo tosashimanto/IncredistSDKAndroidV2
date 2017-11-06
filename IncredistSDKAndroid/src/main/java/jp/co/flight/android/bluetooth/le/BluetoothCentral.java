@@ -209,7 +209,8 @@ public class BluetoothCentral {
      * @param listener 接続状態のリスナ
      * @return ペリフェラルとの接続オブジェクト
      */
-    public BluetoothGattConnection connect(BluetoothPeripheral peripheral, BluetoothGattConnection.ConnectionListener listener) {
+    @NonNull
+    public BluetoothGattConnection connect(@NonNull BluetoothPeripheral peripheral, @Nullable BluetoothGattConnection.ConnectionListener listener) {
         return new BluetoothGattConnection(this, peripheral, listener);
     }
 
@@ -223,7 +224,7 @@ public class BluetoothCentral {
      */
     /* package */
     @Nullable
-    BluetoothGatt connectGatt(BluetoothPeripheral peripheral, BluetoothGattCallback gattCallback) {
+    BluetoothGatt connectGatt(@NonNull BluetoothPeripheral peripheral, @NonNull BluetoothGattCallback gattCallback) {
         Context context = mContext.get();
         if (context != null) {
             BluetoothDevice device = mAdapter.getRemoteDevice(peripheral.deviceAddress);

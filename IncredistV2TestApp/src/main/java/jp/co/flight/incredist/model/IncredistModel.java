@@ -17,8 +17,10 @@ public interface IncredistModel {
     void newIncredistObject();
     void startScan(OnSuccessFunction<List<String>> success, OnFailureFunction<Void> failure);
     void connect(OnSuccessFunction<Incredist> success, OnFailureFunction<Void> failure);
+    void disconnect(OnSuccessFunction<Incredist> success, OnFailureFunction<Incredist> failure);
     void release();
     void clearIncredist();
+
 
     class Impl implements IncredistModel {
         private final Context mContext;
@@ -46,6 +48,11 @@ public interface IncredistModel {
                 mIncredist = incredist;
                 success.onSuccess(incredist);
             }, failure);
+        }
+
+        @Override
+        public void disconnect(OnSuccessFunction<Incredist> success, OnFailureFunction<Incredist> failure) {
+            mIncredist.disconnect(success, failure);
         }
 
         @Override
