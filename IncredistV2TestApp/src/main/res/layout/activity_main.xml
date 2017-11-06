@@ -32,11 +32,23 @@
             android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
+            android:onClick="@{(view)->presenter.onStartScan()}"
             android:text="Scan"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/button_connect"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/button_connect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:onClick="@{(view)->presenter.onConnect()}"
+            android:text="Connect"
+            app:layout_constraintBottom_toBottomOf="@+id/button_scan"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:onClick="@{(view)->presenter.onStartScan()}" />
+            app:layout_constraintStart_toEndOf="@+id/button_scan"
+            app:layout_constraintTop_toTopOf="@+id/button_scan" />
 
     </android.support.constraint.ConstraintLayout>
 </layout>

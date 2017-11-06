@@ -16,25 +16,52 @@ import java.util.List;
 @SuppressWarnings({ "WeakerAccess", "unused" })
 public class BluetoothGattConnection {
     @Nullable
-    private final BluetoothGatt mGatt;
+    private BluetoothGatt mGatt;
+    private final BluetoothCentral mCentral;
+
+    @Nullable
+    private ConnectionListener mListener;
+
     private long mTimeout = 1000;
 
-    interface ConnectionListener {
-        void onConnect();
-        void onDisconnect();
+    public interface ConnectionListener {
+        void onConnect(BluetoothGattConnection connection);
+        void onDisconnect(BluetoothGattConnection connection);
     }
 
     BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
+        @Override
+        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            super.onConnectionStateChange(gatt, status, newState);
+
+            ConnectionListener listener = mListener;
+            if (listener != null) {
+                switch (newState) {
+                    case BluetoothGatt.STATE_CONNECTED:
+                        listener.onConnect(BluetoothGattConnection.this);
+                        break;
+                    case BluetoothGatt.STATE_DISCONNECTED:
+                        listener.onDisconnect(BluetoothGattConnection.this);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
     };
 
     /* package */
     BluetoothGattConnection(BluetoothCentral central, BluetoothPeripheral peripheral, ConnectionListener listener) {
         mGatt = central.connectGatt(peripheral, mGattCallback);
+        mCentral = central;
+        mListener = listener;
     }
 
-    public int getConnectionStatus() {
-        //TODO
-        return BluetoothGatt.STATE_DISCONNECTED;
+    public int getConnectionState() {
+        if (mGatt == null) {
+            return BluetoothGatt.STATE_DISCONNECTED;
+        }
+        return mCentral.getConnectionState(mGatt.getDevice());
     }
 
     @NonNull
@@ -98,9 +125,12 @@ public class BluetoothGattConnection {
     /**
      * BluetoothLE デバイスを close します.
      */
-    void close() {
+    public void close() {
+        mListener = null;
+
         if (mGatt != null) {
             mGatt.close();
+            mGatt = null;
         }
     }
 

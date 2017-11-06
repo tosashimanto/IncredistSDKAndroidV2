@@ -1,8 +1,10 @@
 package jp.co.flight.incredist.android.internal.controller;
 
+import android.bluetooth.BluetoothGatt;
 import android.os.Handler;
 import android.os.HandlerThread;
 
+import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 
 import static jp.co.flight.incredist.android.internal.controller.result.IncredistResult.STATUS_FAILED_EXECUTION;
@@ -18,10 +20,11 @@ public class IncredistController {
     private static final String TAG = "IncredistController";
 
     private final String mDeviceName;
-    private final String mDeviceAddress;
 
     private HandlerThread mHandlerThread = null;
     private Handler mHandler;
+
+    private BluetoothGattConnection mConnection;
 
     /**
      * API 層へ結果を返却するコールバックインタフェース.
@@ -36,12 +39,11 @@ public class IncredistController {
 
     /**
      * コンストラクタ.
-     * @param deviceName Incredistデバイス名
-     * @param deviceAddress IncredistデバイスのBluetoothアドレス
+     * @param connection Bluetooth ペリフェラルとの接続オブジェクト
      */
-    public IncredistController(String deviceName, String deviceAddress) {
+    public IncredistController(BluetoothGattConnection connection, String deviceName) {
+        mConnection = connection;
         mDeviceName = deviceName;
-        mDeviceAddress = deviceAddress;
 
         mHandlerThread = new HandlerThread(String.format("%s:%s", TAG, deviceName)) {
             @Override
@@ -73,6 +75,15 @@ public class IncredistController {
      */
     public String getDeviceName() {
         return mDeviceName;
+    }
+
+    /**
+     * デバイスとの接続状態を取得します.
+     *
+     * @return 接続中: BluetoothGatt.STATE_CONNECTED(2), 切断中: BluetoothGatt.STATE_DISCONNECTED(0)
+     */
+    public int getConnectionState() {
+        return mConnection.getConnectionState();
     }
 
     /**

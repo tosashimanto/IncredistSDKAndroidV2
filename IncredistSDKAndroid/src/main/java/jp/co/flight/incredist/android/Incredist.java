@@ -1,8 +1,8 @@
 package jp.co.flight.incredist.android;
 
-import android.bluetooth.BluetoothGatt;
 import android.support.annotation.Nullable;
 
+import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.IncredistController;
 
 /**
@@ -21,15 +21,19 @@ public class Incredist {
     private final IncredistController mController;
 
     /**
+     * BluetoothGattConnection インスタンス.
+     */
+    private BluetoothGattConnection mConenction;
+
+    /**
      * コンストラクタ. IncredistManager によって呼び出されます.
      *
-     * @param deviceName デバイス名
-     * @param deviceAddress Bluetoothアドレス
+     * @param connection Bluetooth ペリフェラルとの接続オブジェクト
      */
     /* package */
-    Incredist(IncredistManager manager, String deviceName, String deviceAddress) {
+    Incredist(IncredistManager manager, BluetoothGattConnection connection, String deviceName) {
         mManager = manager;
-        mController = new IncredistController(deviceName, deviceAddress);
+        mController = new IncredistController(connection, deviceName);
     }
 
     /**
@@ -55,9 +59,8 @@ public class Incredist {
      *
      * @return 接続状態(BluetoothGatt クラスの定数)
      */
-    public int getConnectionStatus() {
-        //TODO
-        return BluetoothGatt.STATE_DISCONNECTED;
+    public int getConnectionState() {
+        return mController.getConnectionState();
     }
 
     /**
@@ -71,4 +74,5 @@ public class Incredist {
             //TODO
         });
     }
+
 }

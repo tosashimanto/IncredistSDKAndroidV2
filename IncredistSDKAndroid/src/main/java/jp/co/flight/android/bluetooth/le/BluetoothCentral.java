@@ -57,7 +57,7 @@ public class BluetoothCentral {
                     record != null ? record.toString() : ""));
 
             if (record != null && record.getDeviceName() != null) {
-                callScanResult(new BluetoothPeripheral(result.getDevice().getAddress(), record.getDeviceName()));
+                callScanResult(new BluetoothPeripheral(record.getDeviceName(), result.getDevice().getAddress()));
             }
         }
 
@@ -114,6 +114,7 @@ public class BluetoothCentral {
     public void startScan(long time, OnSuccessFunction<Void> success, OnFailureFunction<Void> failure, OnProgressFunction<BluetoothPeripheral> scan) {
         mScanSuccessFunction = success;
         mScanFailureFunction = failure;
+        mScanResultFunction = scan;
         if (mScanner != null) {
             // すでにスキャン中の場合
             callScanFailure(SCAN_ERROR_ALREADY_SCANNING);
@@ -203,7 +204,7 @@ public class BluetoothCentral {
     /**
      * ペリフェラルに接続します.
      *
-     * @param peripheral ペリフェラル
+     * @param peripheral 接続先ペリフェラル
      * @param listener 接続状態のリスナ
      * @return ペリフェラルとの接続オブジェクト
      */
@@ -211,6 +212,14 @@ public class BluetoothCentral {
         return new BluetoothGattConnection(this, peripheral, listener);
     }
 
+    /**
+     * ペリフェラル接続処理の実体.
+     * BluetoothAdapter に関する処理を Central にまとめるためにメソッド化している
+     *
+     * @param peripheral 接続先ペリフェラル
+     * @param gattCallback Android framework のコールバック
+     * @return BluetoothGatt オブジェクト
+     */
     /* package */
     @Nullable
     BluetoothGatt connectGatt(BluetoothPeripheral peripheral, BluetoothGattCallback gattCallback) {
@@ -227,6 +236,8 @@ public class BluetoothCentral {
 
     /**
      * BluetoothCentral クラスの使用リソースを解放します.
+     *
+     * @return 解放に成功した場合 true, 失敗した場合 false.
      */
     public boolean release() {
         HandlerThread handlerThread = mHandlerThread;
@@ -240,5 +251,26 @@ public class BluetoothCentral {
         }
 
         return true;
+    }
+
+    /**
+     * デバイスの接続状態を取得します.
+     *
+     * @param device デバイス
+     * @return 接続状態
+     */
+    /*package*/
+    int getConnectionState(BluetoothDevice device) {
+        return mManager.getConnectionState(device, BluetoothDevice.DEVICE_TYPE_LE);
+    }
+
+    /**
+     * BluetoothCentral スレッドの Handler を取得します.
+     *
+     * @return Handler オブジェクト
+     */
+    @Nullable
+    public Handler getHandler() {
+        return mHandler;
     }
 }

@@ -9,9 +9,8 @@ import jp.co.flight.incredist.android.OnFailureFunction;
 import jp.co.flight.incredist.android.OnSuccessFunction;
 
 /**
- * Created by flight on 2017/11/02.
+ * Incredist テストプログラム用モデル.
  */
-
 public interface IncredistModel {
 
     void newIncredistObject();

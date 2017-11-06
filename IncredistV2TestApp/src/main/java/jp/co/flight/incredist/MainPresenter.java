@@ -10,12 +10,14 @@ import jp.co.flight.incredist.databinding.ActivityMainBinding;
 import jp.co.flight.incredist.model.IncredistModel;
 
 /**
- * Created by flight on 2017/11/02.
+ * MainActivity 用 Presenter インタフェース.
  */
-
 public interface MainPresenter {
     void onStartScan();
 
+    /**
+     * MainActiivty 用 Presenter 実体クラス.
+     */
     class Impl implements MainPresenter {
         private final ActivityMainBinding mBinding;
         private final IncredistModel mIncredist;
@@ -29,21 +31,17 @@ public interface MainPresenter {
 
         @Override
         public void onStartScan() {
+            addLog("onStattScan");
             mIncredist.newIncredistObject();
             mIncredist.startScan((List<String> scanResult) ->{
-                addLog(String.format(Locale.JAPANESE, "%d", scanResult.size()));
+                addLog(String.format(Locale.JAPANESE, "onStartScan result %d", scanResult.size()));
             }, (errorCode, failure)->{
-                addLog("failure");
+                addLog("onStatScan failure");
             });
         }
 
         private void addLog(String message) {
-            mMainThreadHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mBinding.textLog.append(message + "\n");
-                }
-            });
+            mMainThreadHandler.post(()->mBinding.textLog.append(message + "\n"));
         }
     }
 }
