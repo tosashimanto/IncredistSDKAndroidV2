@@ -12,6 +12,7 @@ import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -266,11 +267,16 @@ public class BluetoothCentral {
 
     /**
      * BluetoothCentral スレッドの Handler を取得します.
+     * 取得できない場合、UIスレッドの Handler を返却します.
      *
      * @return Handler オブジェクト
      */
-    @Nullable
+    @NonNull
     public Handler getHandler() {
-        return mHandler;
+        if (mHandler != null) {
+            return mHandler;
+        } else {
+            return new Handler(Looper.getMainLooper());
+        }
     }
 }
