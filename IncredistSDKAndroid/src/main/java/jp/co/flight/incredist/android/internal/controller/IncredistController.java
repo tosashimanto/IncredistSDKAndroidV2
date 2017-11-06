@@ -20,7 +20,8 @@ public class IncredistController {
     private final String mDeviceName;
     private final String mDeviceAddress;
 
-    private HandlerThread mThread = null;
+    private HandlerThread mHandlerThread = null;
+    private Handler mHandler;
 
     /**
      * API 層へ結果を返却するコールバックインタフェース.
@@ -42,7 +43,13 @@ public class IncredistController {
         mDeviceName = deviceName;
         mDeviceAddress = deviceAddress;
 
-        mThread = new HandlerThread(String.format("%s:%s", TAG, deviceName));
+        mHandlerThread = new HandlerThread(String.format("%s:%s", TAG, deviceName)) {
+            @Override
+            protected void onLooperPrepared() {
+                super.onLooperPrepared();
+                mHandler = new Handler(this.getLooper());
+            }
+        };
     }
 
     /**
@@ -52,9 +59,11 @@ public class IncredistController {
      * @param r 処理内容の Runnable インスタンス
      */
     private void post(Runnable r, Callback callback) {
-        Handler handler = new Handler(mThread.getLooper());
-        if (!handler.post(r)) {
-            callback.onResult(new IncredistResult(STATUS_FAILED_EXECUTION));
+        Handler handler = mHandler;
+        if (handler != null) {
+            if (!handler.post(r)) {
+                callback.onResult(new IncredistResult(STATUS_FAILED_EXECUTION));
+            }
         }
     }
 
@@ -81,9 +90,17 @@ public class IncredistController {
     /**
      * Incredist デバイスとの接続を破棄します.
      */
-    public void destroy() {
-        if (mThread.quitSafely()) {
-            mThread = null;
+    public boolean release() {
+        HandlerThread handlerThread = mHandlerThread;
+        if (handlerThread != null) {
+            if (handlerThread.quitSafely()) {
+                mHandlerThread = null;
+                return true;
+            } else {
+                return false;
+            }
         }
+
+        return true;
     }
 }

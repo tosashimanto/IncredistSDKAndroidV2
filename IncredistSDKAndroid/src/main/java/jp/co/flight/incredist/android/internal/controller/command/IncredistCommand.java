@@ -6,13 +6,13 @@ package jp.co.flight.incredist.android.internal.controller.command;
 public abstract class IncredistCommand {
     /**
      * コマンド受信待ち時間を取得します.
-     * @return コマンド受信待ち時間(単位:msec)
+     * @return コマンド受信待ち時間(単位 msec)
      */
     abstract long getResponseTimeout();
 
     /**
      * コマンド送受信後のウェイト時間を取得します.
-     * @return ウェイト時間(単位:msec)
+     * @return ウェイト時間(単位 msec)
      */
     abstract long getGuardWait();
 }

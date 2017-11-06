@@ -14,9 +14,10 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import java.lang.ref.WeakReference;
+
+import jp.co.flight.incredist.android.internal.util.FLog;
 
 /**
  * Bluetooth Central クラス.
@@ -32,8 +33,8 @@ public class BluetoothCentral {
     private final BluetoothManager mManager;
 
     @Nullable
-    private final HandlerThread mHandlerThread;
-    private final Handler mHandler;
+    private HandlerThread mHandlerThread;
+    private Handler mHandler;
     private BluetoothAdapter mAdapter;
     private BluetoothLeScanner mScanner;
 
@@ -50,7 +51,7 @@ public class BluetoothCentral {
             super.onScanResult(callbackType, result);
 
             ScanRecord record = result.getScanRecord();
-            Log.d(TAG, String.format("onScanResult address:%s name:%s record:%s",
+            FLog.d(TAG, String.format("onScanResult address:%s name:%s record:%s",
                     result.getDevice().getAddress(),
                     record != null ? record.getDeviceName() : "(record is null)",
                     record != null ? record.toString() : ""));
@@ -77,8 +78,16 @@ public class BluetoothCentral {
         mContext = new WeakReference<>(context);
 
         if (handler == null) {
-            mHandlerThread = new HandlerThread(TAG);
-            mHandler = new Handler(mHandlerThread.getLooper());
+            mHandlerThread = new HandlerThread(TAG) {
+                @Override
+                protected void onLooperPrepared() {
+                    super.onLooperPrepared();
+                    mHandler = new Handler(this.getLooper());
+                }
+            };
+
+            mHandlerThread.start();
+            mHandler = null;
         } else {
             mHandlerThread = null;
             mHandler = handler;
@@ -117,25 +126,23 @@ public class BluetoothCentral {
             mScanner = null;
         }
 
-        if (mScanner != null) {
+        if (mScanner != null && (time <= 0 || mHandler != null)) {
             ScanSettings settings = new ScanSettings.Builder()
                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                     .build();
             mScanner.startScan(null, settings, mAndroidScanCallback);
 
             if (time > 0) {
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        stopScan();
-                    }
-                }, time);
+                mHandler.postDelayed(this::stopScan, time);
             }
         } else {
             callScanFailure(SCAN_ERROR_CANT_START);
         }
     }
 
+    /**
+     * BluetoothLE のスキャンを停止します.
+     */
     public void stopScan() {
         if (mScanner != null) {
             mScanner.stopScan(mAndroidScanCallback);
@@ -150,12 +157,7 @@ public class BluetoothCentral {
         }
 
         if (mHandler != null && successHandler != null) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    successHandler.onSuccess(null);
-                }
-            });
+            mHandler.post(()->successHandler.onSuccess(null));
         }
     }
 
@@ -167,16 +169,13 @@ public class BluetoothCentral {
      */
     private void callScanResult(@NonNull final BluetoothPeripheral peripheral) {
         if (mHandler != null && mScanResultFunction != null) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    OnProgressFunction<BluetoothPeripheral> handler;
-                    synchronized (BluetoothCentral.this) {
-                        handler = mScanResultFunction;
-                    }
-                    if (handler != null) {
-                        handler.onProgress(peripheral);
-                    }
+            mHandler.post(()-> {
+                OnProgressFunction<BluetoothPeripheral> handler;
+                synchronized (BluetoothCentral.this) {
+                    handler = mScanResultFunction;
+                }
+                if (handler != null) {
+                    handler.onProgress(peripheral);
                 }
             });
         }
@@ -189,16 +188,13 @@ public class BluetoothCentral {
      */
     private void callScanFailure(final int errorCode) {
         if (mHandler != null && mScanFailureFunction != null) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    OnFailureFunction<Void> handler;
-                    synchronized (BluetoothCentral.this) {
-                        handler = mScanFailureFunction;
-                    }
-                    if (handler != null) {
-                        handler.onFailure(errorCode, null);
-                    }
+            mHandler.post(()-> {
+                OnFailureFunction<Void> handler;
+                synchronized (BluetoothCentral.this) {
+                    handler = mScanFailureFunction;
+                }
+                if (handler != null) {
+                    handler.onFailure(errorCode, null);
                 }
             });
         }
@@ -232,7 +228,17 @@ public class BluetoothCentral {
     /**
      * BluetoothCentral クラスの使用リソースを解放します.
      */
-    public void release() {
-        mHandlerThread.quitSafely();
+    public boolean release() {
+        HandlerThread handlerThread = mHandlerThread;
+        if (handlerThread != null) {
+            if (handlerThread.quitSafely()) {
+                mHandlerThread = null;
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

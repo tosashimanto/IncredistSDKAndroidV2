@@ -1,16 +1,14 @@
 package jp.co.flight.incredist.android;
 
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import jp.co.flight.incredist.android.internal.controller.IncredistController;
-import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 
 /**
  * Incredist API クラス.
  */
-
+@SuppressWarnings({ "WeakerAccess", "unused" }) // for public API.
 public class Incredist {
     /**
      * 生成元の IncredistManager インスタンス
@@ -40,7 +38,7 @@ public class Incredist {
     public void disconnect() {
         //TODO
 
-        mController.destroy();
+        mController.release();
     }
 
     /**
@@ -63,35 +61,14 @@ public class Incredist {
     }
 
     /**
-     * シリアル番号取得結果のリスナ.
-     */
-    interface OnSerialNumberListener {
-        /**
-         * 正常取得時
-         * @param incredist APIオブジェクト
-         * @param serialNumber シリアル番号
-         */
-        void onSerialNumber(Incredist incredist, String serialNumber);
-
-        /**
-         * 取得失敗時
-         * @param incredist APIオブジェクト
-         * @param errorCode エラー番号
-         */
-        void onSerialNumberFailure(Incredist incredist, int errorCode);
-    }
-
-    /**
      * シリアル番号を取得します.
-     * @param listener 結果取得用リスナ
+     *
+     * @param success 取得成功時の処理
+     * @param failure 取得失敗時の処理
      */
-    public void getSerialNumber(@NonNull OnSerialNumberListener listener) {
-        mController.getSerialNumber(new IncredistController.Callback() {
-            @Override
-            public void onResult(IncredistResult result) {
-                //TODO
-
-            }
+    public void getSerialNumber(@Nullable OnSuccessFunction<String> success, @Nullable OnFailureFunction<Void> failure) {
+        mController.getSerialNumber(result -> {
+            //TODO
         });
     }
 }
