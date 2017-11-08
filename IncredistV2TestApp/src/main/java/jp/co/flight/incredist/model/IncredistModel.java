@@ -1,6 +1,7 @@
 package jp.co.flight.incredist.model;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import java.util.List;
 
@@ -18,9 +19,9 @@ public interface IncredistModel {
     void startScan(OnSuccessFunction<List<String>> success, OnFailureFunction<Void> failure);
     void connect(OnSuccessFunction<Incredist> success, OnFailureFunction<Void> failure);
     void disconnect(OnSuccessFunction<Incredist> success, OnFailureFunction<Incredist> failure);
+    void getSerialNumber(OnSuccessFunction<String> success, OnFailureFunction<Void> failure);
     void release();
     void clearIncredist();
-
 
     class Impl implements IncredistModel {
         private final Context mContext;
@@ -53,6 +54,11 @@ public interface IncredistModel {
         @Override
         public void disconnect(OnSuccessFunction<Incredist> success, OnFailureFunction<Incredist> failure) {
             mIncredist.disconnect(success, failure);
+        }
+
+        @Override
+        public void getSerialNumber(OnSuccessFunction<String> success, OnFailureFunction<Void> failure) {
+            mIncredist.getSerialNumber(success, failure);
         }
 
         @Override

@@ -1,11 +1,14 @@
 package jp.co.flight.incredist.android.internal.controller;
 
-import android.bluetooth.BluetoothGatt;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.support.annotation.NonNull;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
+import jp.co.flight.incredist.android.internal.controller.command.MFiDCommand;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
+import jp.co.flight.incredist.android.internal.transport.mfi.MFiResponse;
+import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
 
 import static jp.co.flight.incredist.android.internal.controller.result.IncredistResult.STATUS_FAILED_EXECUTION;
 
@@ -19,7 +22,16 @@ import static jp.co.flight.incredist.android.internal.controller.result.Incredis
 public class IncredistController {
     private static final String TAG = "IncredistController";
 
+    /**
+     * 接続先Incredistデバイス名
+     */
     private final String mDeviceName;
+
+    /**
+     * d コマンド送信用の MFiTransport オブジェクト
+     */
+    @NonNull
+    private final MFiTransport mMFiTransport;
 
     private HandlerThread mHandlerThread = null;
     private Handler mHandler;
@@ -43,6 +55,7 @@ public class IncredistController {
      */
     public IncredistController(BluetoothGattConnection connection, String deviceName) {
         mConnection = connection;
+        mMFiTransport = new MFiTransport(mConnection);
         mDeviceName = deviceName;
 
         mHandlerThread = new HandlerThread(String.format("%s:%s", TAG, deviceName)) {
@@ -52,20 +65,25 @@ public class IncredistController {
                 mHandler = new Handler(this.getLooper());
             }
         };
+        mHandlerThread.start();
     }
 
     /**
      * HandlerThread で処理を実行します. 実行できなかった場合、
      * 実行失敗(STATUS_FAILED_EXECUTION) としてコールバックを呼び出します.
+     * TODO すでに他の処理が実行中の場合 STATUS_BUSY としてコールバックを呼び出します.
      *
      * @param r 処理内容の Runnable インスタンス
      */
     private void post(Runnable r, Callback callback) {
         Handler handler = mHandler;
         if (handler != null) {
-            if (!handler.post(r)) {
-                callback.onResult(new IncredistResult(STATUS_FAILED_EXECUTION));
+            if (handler.post(r)) {
+                return;
             }
+        }
+        if (callback != null) {
+            callback.onResult(new IncredistResult(STATUS_FAILED_EXECUTION));
         }
     }
 
@@ -90,11 +108,11 @@ public class IncredistController {
      * シリアル番号を取得します.
      */
     public void getSerialNumber(final Callback callback) {
-        post(new Runnable() {
-            @Override
-            public void run() {
-                // TODO
-            }
+        post(()-> {
+            MFiDCommand dCommand = new MFiDCommand();
+            MFiResponse response = mMFiTransport.sendCommand(dCommand);
+
+            callback.onResult(dCommand.parseResponse(response));
         }, callback);
     }
 

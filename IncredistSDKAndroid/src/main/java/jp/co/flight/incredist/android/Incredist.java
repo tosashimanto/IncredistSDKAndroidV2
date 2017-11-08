@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.IncredistController;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
+import jp.co.flight.incredist.android.internal.controller.result.SerialNumberResult;
 
 /**
  * Incredist API クラス.
@@ -81,7 +82,15 @@ public class Incredist {
      */
     public void getSerialNumber(@Nullable OnSuccessFunction<String> success, @Nullable OnFailureFunction<Void> failure) {
         mController.getSerialNumber(result -> {
-            //TODO
+            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof SerialNumberResult) {
+                if (success != null) {
+                    success.onSuccess(((SerialNumberResult) result).serialNumber);
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status, null);
+                }
+            }
         });
     }
 

@@ -15,6 +15,7 @@ import jp.co.flight.incredist.model.IncredistModel;
 public interface MainPresenter {
     void onStartScan();
     void onConnect();
+    void onGetSerial();
     void onDisconnect();
 
     /**
@@ -35,6 +36,12 @@ public interface MainPresenter {
         public void onStartScan() {
             addLog("onStattScan");
             mIncredist.newIncredistObject();
+            try {
+                //TODO handler が準備できるまで待つ..
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                // ignore.
+            }
             mIncredist.startScan((List<String> scanResult) ->{
                 addLog(String.format(Locale.JAPANESE, "onStartScan result %d", scanResult.size()));
             }, (errorCode, failure)->{
@@ -49,6 +56,16 @@ public interface MainPresenter {
                 addLog(String.format(Locale.JAPANESE, "connected: %s", incredist.getDeviceName()));
             }, (errorCode, failure)->{
                 addLog(String.format(Locale.JAPANESE,"onConnect failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onGetSerial() {
+            addLog("onGetSerial");
+            mIncredist.getSerialNumber(serial->{
+                addLog(String.format(Locale.JAPANESE, "serial: %s", serial));
+            }, (errorCode, failure)->{
+                addLog(String.format(Locale.JAPANESE,"onGetSerial failure %d", errorCode));
             });
         }
 

@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
@@ -17,6 +18,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.lang.ref.WeakReference;
+import java.util.Locale;
 
 import jp.co.flight.incredist.android.internal.util.FLog;
 
@@ -65,6 +67,8 @@ public class BluetoothCentral {
         @Override
         public void onScanFailed(int errorCode) {
             super.onScanFailed(errorCode);
+
+            FLog.d(TAG, String.format(Locale.JAPANESE, "onScanFailed %d", errorCode));
             //TODO
         }
     };
@@ -118,6 +122,7 @@ public class BluetoothCentral {
         mScanResultFunction = scan;
         if (mScanner != null) {
             // すでにスキャン中の場合
+            FLog.d(TAG, "startScan already scanning");
             callScanFailure(SCAN_ERROR_ALREADY_SCANNING);
             return;
         }
@@ -125,6 +130,7 @@ public class BluetoothCentral {
         if (mAdapter != null) {
             mScanner = mAdapter.getBluetoothLeScanner();
         } else {
+            FLog.d(TAG, "adapter not found");
             mScanner = null;
         }
 
@@ -132,12 +138,17 @@ public class BluetoothCentral {
             ScanSettings settings = new ScanSettings.Builder()
                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                     .build();
-            mScanner.startScan(null, settings, mAndroidScanCallback);
-
-            if (time > 0) {
-                mHandler.postDelayed(this::stopScan, time);
+            try {
+                FLog.d(TAG, "BluetoothLeScanner.startScan");
+                mScanner.startScan(null, settings, mAndroidScanCallback);
+                if (time > 0) {
+                    mHandler.postDelayed(this::stopScan, time);
+                }
+            } catch (IllegalStateException ex) {
+                callScanFailure(SCAN_ERROR_CANT_START);
             }
         } else {
+            FLog.d(TAG, "startScan can't start");
             callScanFailure(SCAN_ERROR_CANT_START);
         }
     }
@@ -147,7 +158,11 @@ public class BluetoothCentral {
      */
     public void stopScan() {
         if (mScanner != null) {
-            mScanner.stopScan(mAndroidScanCallback);
+            try {
+                mScanner.stopScan(mAndroidScanCallback);
+            } catch (IllegalStateException ex) {
+                // ignore.
+            }
         }
 
         mScanner = null;
@@ -263,7 +278,7 @@ public class BluetoothCentral {
      */
     /*package*/
     int getConnectionState(BluetoothDevice device) {
-        return mManager.getConnectionState(device, BluetoothDevice.DEVICE_TYPE_LE);
+        return mManager.getConnectionState(device, BluetoothProfile.GATT);
     }
 
     /**
