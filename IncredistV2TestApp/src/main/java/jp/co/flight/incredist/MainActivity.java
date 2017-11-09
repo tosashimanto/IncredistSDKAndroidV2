@@ -1,24 +1,34 @@
 package jp.co.flight.incredist;
 
-import android.databinding.DataBindingUtil;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
 
-import jp.co.flight.incredist.databinding.ActivityMainBinding;
 import jp.co.flight.incredist.model.IncredistModel;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainFragment.OnFragmentInteractionListener {
 
-    private MainPresenter mPresenter;
+    private static final String FRAGMENT_TAG_MAIN = "fragment_tag_main";
+
+    private IncredistModel.Impl mModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        setContentView(R.layout.activity_main);
 
-        IncredistModel model = new IncredistModel.Impl(this);
-        mPresenter = new MainPresenter.Impl(binding, model);
+        mModel = new IncredistModel.Impl(this);
 
-        binding.setPresenter(mPresenter);
+        MainFragment fragment = MainFragment.newInstance();
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        ft.add(R.id.container, fragment, FRAGMENT_TAG_MAIN);
+        ft.commit();
+    }
+
+    @Override
+    public IncredistModel getModel() {
+        return mModel;
     }
 }

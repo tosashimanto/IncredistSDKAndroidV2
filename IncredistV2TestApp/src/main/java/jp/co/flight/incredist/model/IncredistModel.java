@@ -1,10 +1,13 @@
 package jp.co.flight.incredist.model;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
+import android.databinding.BaseObservable;
+import android.databinding.Bindable;
+import android.databinding.Observable;
 
 import java.util.List;
 
+import jp.co.flight.incredist.BR;
 import jp.co.flight.incredist.android.Incredist;
 import jp.co.flight.incredist.android.IncredistManager;
 import jp.co.flight.incredist.android.OnFailureFunction;
@@ -13,26 +16,34 @@ import jp.co.flight.incredist.android.OnSuccessFunction;
 /**
  * Incredist テストプログラム用モデル.
  */
-public interface IncredistModel {
+public interface IncredistModel extends Observable {
 
     void newIncredistObject();
     void startScan(OnSuccessFunction<List<String>> success, OnFailureFunction<Void> failure);
+    List<String> getDeviceList();
     void connect(OnSuccessFunction<Incredist> success, OnFailureFunction<Void> failure);
     void disconnect(OnSuccessFunction<Incredist> success, OnFailureFunction<Incredist> failure);
     void getSerialNumber(OnSuccessFunction<String> success, OnFailureFunction<Void> failure);
     void release();
     void clearIncredist();
 
-    class Impl implements IncredistModel {
+    @Bindable
+    String getSelectedDevice();
+    void setSelectedDevice(String deviceName);
+
+    class Impl extends BaseObservable implements IncredistModel {
         private final Context mContext;
         private IncredistManager mIncredistManager;
-        private String mSelectedDevice = "SamilF40726DF1105";
         private Incredist mIncredist;
+
+        private List<String> mDeviceList;
+        private String mSelectedDevice = "SamilF40726DF1105";
 
         public Impl(Context context) {
             mContext = context;
         }
 
+        //-- methods from IncredistModel.
         @Override
         public void newIncredistObject() {
             mIncredistManager = new IncredistManager(mContext);
@@ -40,7 +51,15 @@ public interface IncredistModel {
 
         @Override
         public void startScan(OnSuccessFunction<List<String>> success, OnFailureFunction<Void> failure) {
-            mIncredistManager.startScan(null, 5000, success, failure);
+            mIncredistManager.startScan(null, 5000, (deviceList)->{
+                mDeviceList = deviceList;
+                success.onSuccess(deviceList);
+            }, failure);
+        }
+
+        @Override
+        public List<String> getDeviceList() {
+            return mDeviceList;
         }
 
         @Override
@@ -53,12 +72,20 @@ public interface IncredistModel {
 
         @Override
         public void disconnect(OnSuccessFunction<Incredist> success, OnFailureFunction<Incredist> failure) {
-            mIncredist.disconnect(success, failure);
+            if (mIncredist != null) {
+                mIncredist.disconnect(success, failure);
+            } else {
+                failure.onFailure(-1, null);
+            }
         }
 
         @Override
         public void getSerialNumber(OnSuccessFunction<String> success, OnFailureFunction<Void> failure) {
-            mIncredist.getSerialNumber(success, failure);
+            if (mIncredist != null) {
+                mIncredist.getSerialNumber(success, failure);
+            } else {
+                failure.onFailure(-1, null);
+            }
         }
 
         @Override
@@ -70,5 +97,16 @@ public interface IncredistModel {
         public void clearIncredist() {
             mIncredistManager = null;
         }
+
+        //-- methods for DataBinding.
+        public String getSelectedDevice() {
+            return mSelectedDevice;
+        }
+
+        public void setSelectedDevice(String device) {
+            mSelectedDevice = device;
+            notifyPropertyChanged(BR.selectedDevice);
+        }
+
     }
 }

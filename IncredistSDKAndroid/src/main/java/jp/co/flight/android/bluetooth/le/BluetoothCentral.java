@@ -31,6 +31,7 @@ public class BluetoothCentral {
 
     private static final int SCAN_ERROR_ALREADY_SCANNING = 801;
     private static final int SCAN_ERROR_CANT_START = 802;
+    private static final int SCAN_ERROR_NO_PERMISSION = 803;
 
     private final WeakReference<Context> mContext;
     private final BluetoothManager mManager;
@@ -69,7 +70,7 @@ public class BluetoothCentral {
             super.onScanFailed(errorCode);
 
             FLog.d(TAG, String.format(Locale.JAPANESE, "onScanFailed %d", errorCode));
-            //TODO
+            callScanFailure(errorCode);
         }
     };
 
@@ -146,6 +147,8 @@ public class BluetoothCentral {
                 }
             } catch (IllegalStateException ex) {
                 callScanFailure(SCAN_ERROR_CANT_START);
+            } catch (SecurityException ex) {
+                callScanFailure(SCAN_ERROR_NO_PERMISSION);
             }
         } else {
             FLog.d(TAG, "startScan can't start");

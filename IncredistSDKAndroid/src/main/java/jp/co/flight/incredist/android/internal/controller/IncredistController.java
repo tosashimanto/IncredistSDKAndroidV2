@@ -122,6 +122,8 @@ public class IncredistController {
     public void disconnect(final Callback callback) {
         post(()->{
             mConnection.disconnect();
+
+            callback.onResult(new IncredistResult(IncredistResult.STATUS_SUCCESS));
         }, callback);
     }
 
