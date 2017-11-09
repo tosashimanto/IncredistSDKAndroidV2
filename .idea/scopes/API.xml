@@ -1,3 +1,3 @@
 <component name="DependencyValidationManager">
-  <scope name="API" pattern="src[IncredistSDKAndroid]:jp.co.flight.incredist.android.Incredist||src[IncredistSDKAndroid]:jp.co.flight.incredist.android.IncredistManager" />
+  <scope name="API" pattern="src[IncredistSDKAndroid]:jp.co.flight.incredist.android.Incredist||src[IncredistSDKAndroid]:jp.co.flight.incredist.android.IncredistManager||src[IncredistSDKAndroid]:jp.co.flight.incredist.android.OnSuccessFunction||src[IncredistSDKAndroid]:jp.co.flight.incredist.android.OnFailureFunction" />
 </component>
