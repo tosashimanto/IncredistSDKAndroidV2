@@ -3,23 +3,23 @@ package jp.co.flight.android.bluetooth.le;
 import java.util.UUID;
 
 /**
- * Bluetooth Characteristic の受信値
+ * Bluetooth Characteristic の受信値.
  */
 @SuppressWarnings("WeakerAccess")
 public class CharacteristicValue {
-    private UUID uuid;
-    private byte[] value;
+    private final UUID mUuid;
+    private final byte[] mValue;
 
     CharacteristicValue(UUID uuid, byte[] value) {
-        this.uuid = uuid;
-        this.value = value;
+        this.mUuid = uuid;
+        this.mValue = value;
     }
 
     public UUID getUuid() {
-        return this.uuid;
+        return this.mUuid;
     }
 
     public byte[] getValue() {
-        return this.value;
+        return this.mValue;
     }
 }

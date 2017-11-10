@@ -25,7 +25,7 @@ import jp.co.flight.incredist.android.internal.util.FLog;
 /**
  * Bluetooth Central クラス.
  */
-@SuppressWarnings({ "WeakerAccess", "unused" })
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class BluetoothCentral {
     private static final String TAG = "BluetoothCentral";
 
@@ -49,7 +49,7 @@ public class BluetoothCentral {
     /**
      * Android BluetoothLeScanner のコールバック.
      */
-    android.bluetooth.le.ScanCallback mAndroidScanCallback = new android.bluetooth.le.ScanCallback() {
+    final android.bluetooth.le.ScanCallback mAndroidScanCallback = new android.bluetooth.le.ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
@@ -112,10 +112,10 @@ public class BluetoothCentral {
     /**
      * BluetoothLE のスキャンを一定時間実行します.
      *
-     * @param time スキャン時間(<= 0 の場合自動停止しない)
+     * @param time    スキャン時間(<= 0 の場合自動停止しない)
      * @param success スキャン成功時処理
      * @param failure スキャン失敗時処理
-     * @param scan スキャン中処理
+     * @param scan    スキャン中処理
      */
     public void startScan(long time, OnSuccessFunction<Void> success, OnFailureFunction<Void> failure, OnProgressFunction<BluetoothPeripheral> scan) {
         mScanSuccessFunction = success;
@@ -177,7 +177,7 @@ public class BluetoothCentral {
         }
 
         if (mHandler != null && successHandler != null) {
-            mHandler.post(()->successHandler.onSuccess(null));
+            mHandler.post(() -> successHandler.onSuccess(null));
         }
     }
 
@@ -189,7 +189,7 @@ public class BluetoothCentral {
      */
     private void callScanResult(@NonNull final BluetoothPeripheral peripheral) {
         if (mHandler != null && mScanResultFunction != null) {
-            mHandler.post(()-> {
+            mHandler.post(() -> {
                 OnProgressFunction<BluetoothPeripheral> handler;
                 synchronized (BluetoothCentral.this) {
                     handler = mScanResultFunction;
@@ -208,7 +208,7 @@ public class BluetoothCentral {
      */
     private void callScanFailure(final int errorCode) {
         if (mHandler != null && mScanFailureFunction != null) {
-            mHandler.post(()-> {
+            mHandler.post(() -> {
                 OnFailureFunction<Void> handler;
                 synchronized (BluetoothCentral.this) {
                     handler = mScanFailureFunction;
@@ -224,7 +224,7 @@ public class BluetoothCentral {
      * ペリフェラルに接続します.
      *
      * @param peripheral 接続先ペリフェラル
-     * @param listener 接続状態のリスナ
+     * @param listener   接続状態のリスナ
      * @return ペリフェラルとの接続オブジェクト
      */
     @NonNull
@@ -236,16 +236,15 @@ public class BluetoothCentral {
      * ペリフェラル接続処理の実体.
      * BluetoothAdapter に関する処理を Central にまとめるためにメソッド化している
      *
-     * @param peripheral 接続先ペリフェラル
+     * @param peripheral   接続先ペリフェラル
      * @param gattCallback Android framework のコールバック
      * @return BluetoothGatt オブジェクト
      */
-    /* package */
     @Nullable
     BluetoothGatt connectGatt(@NonNull BluetoothPeripheral peripheral, @NonNull BluetoothGattCallback gattCallback) {
         Context context = mContext.get();
         if (context != null) {
-            BluetoothDevice device = mAdapter.getRemoteDevice(peripheral.deviceAddress);
+            BluetoothDevice device = mAdapter.getRemoteDevice(peripheral.getDeviceAddress());
             if (device != null) {
                 return device.connectGatt(context, false, gattCallback);
             }
@@ -279,7 +278,6 @@ public class BluetoothCentral {
      * @param device デバイス
      * @return 接続状態
      */
-    /*package*/
     int getConnectionState(BluetoothDevice device) {
         return mManager.getConnectionState(device, BluetoothProfile.GATT);
     }

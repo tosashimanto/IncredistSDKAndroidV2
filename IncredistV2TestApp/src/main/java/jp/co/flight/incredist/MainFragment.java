@@ -16,7 +16,7 @@ import jp.co.flight.incredist.databinding.FragmentMainBinding;
 import jp.co.flight.incredist.model.IncredistModel;
 
 /**
- * MainFragmnet.
+ * MainFragment.
  */
 public class MainFragment extends Fragment implements DeviceListDialogFragment.Listener {
 

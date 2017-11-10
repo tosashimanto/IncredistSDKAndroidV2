@@ -19,16 +19,24 @@ import jp.co.flight.incredist.android.OnSuccessFunction;
 public interface IncredistModel extends Observable {
 
     void newIncredistObject();
+
     void startScan(OnSuccessFunction<List<String>> success, OnFailureFunction<Void> failure);
+
     List<String> getDeviceList();
+
     void connect(OnSuccessFunction<Incredist> success, OnFailureFunction<Void> failure);
+
     void disconnect(OnSuccessFunction<Incredist> success, OnFailureFunction<Incredist> failure);
+
     void getSerialNumber(OnSuccessFunction<String> success, OnFailureFunction<Void> failure);
+
     void release();
+
     void clearIncredist();
 
     @Bindable
     String getSelectedDevice();
+
     void setSelectedDevice(String deviceName);
 
     class Impl extends BaseObservable implements IncredistModel {
@@ -51,7 +59,7 @@ public interface IncredistModel extends Observable {
 
         @Override
         public void startScan(OnSuccessFunction<List<String>> success, OnFailureFunction<Void> failure) {
-            mIncredistManager.startScan(null, 5000, (deviceList)->{
+            mIncredistManager.startScan(null, 5000, (deviceList) -> {
                 mDeviceList = deviceList;
                 success.onSuccess(deviceList);
             }, failure);
@@ -64,7 +72,7 @@ public interface IncredistModel extends Observable {
 
         @Override
         public void connect(OnSuccessFunction<Incredist> success, OnFailureFunction<Void> failure) {
-            mIncredistManager.connect(mSelectedDevice, 3000, (incredist)->{
+            mIncredistManager.connect(mSelectedDevice, 3000, (incredist) -> {
                 mIncredist = incredist;
                 success.onSuccess(incredist);
             }, failure);

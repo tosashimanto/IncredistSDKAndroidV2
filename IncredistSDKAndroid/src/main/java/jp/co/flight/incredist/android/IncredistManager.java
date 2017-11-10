@@ -20,7 +20,7 @@ import jp.co.flight.incredist.android.internal.util.FLog;
 /**
  * Incredist 検索と接続の管理クラス.
  */
-@SuppressWarnings({ "WeakerAccess", "unused" }) // for public API.
+@SuppressWarnings({"WeakerAccess", "unused"}) // for public API.
 public class IncredistManager {
     private static final String TAG = "IncredistManager";
 
@@ -35,12 +35,13 @@ public class IncredistManager {
     public class DeviceFilter {
         /**
          * 標準の Incredist デバイスかどうかをチェックします.
+         *
          * @param deviceName Incredist デバイス名
          * @return Incredist デバイスとして有効なデバイス名の場合: True
          */
         public boolean isValid(String deviceName) {
-            if (deviceName.startsWith(IncredistConstants.FS_INCREDIST_SERVICE_PREFIX1) ||
-                    deviceName.startsWith(IncredistConstants.FS_INCREDIST_SERVICE_PREFIX2)) {
+            if (deviceName.startsWith(IncredistConstants.FS_INCREDIST_SERVICE_PREFIX1)
+                    || deviceName.startsWith(IncredistConstants.FS_INCREDIST_SERVICE_PREFIX2)) {
                 return true;
             }
 
@@ -60,31 +61,31 @@ public class IncredistManager {
      * Bluetooth デバイスのスキャンを開始します.
      * 内部処理用に　success 時には BluetoothPeripheral を取得できます.
      *
-     * @param filter Incredistデバイス名によるフィルタ
+     * @param filter   Incredistデバイス名によるフィルタ
      * @param scanTime スキャン実行時間
-     * @param success スキャン完了時処理
-     * @param failure スキャン失敗時処理
+     * @param success  スキャン完了時処理
+     * @param failure  スキャン失敗時処理
      */
     private void startScanInternal(@Nullable DeviceFilter filter, long scanTime, OnSuccessFunction<Map<String, BluetoothPeripheral>> success, OnFailureFunction<Void> failure) {
         final DeviceFilter deviceFilter = filter != null ? filter : new DeviceFilter();
         final Map<String, BluetoothPeripheral> peripheralMap = new HashMap<>();
 
         FLog.i(TAG, String.format(Locale.JAPANESE, "startScanInternal scanTime:%d", scanTime));
-        mCentral.startScan(scanTime, (_void)->{
+        mCentral.startScan(scanTime, (successValue) -> {
             if (success != null) {
-                FLog.i(TAG, String.format(Locale.JAPANESE,"startScanInternal call onSuccess peripheralMap:%d", peripheralMap.size()));
+                FLog.i(TAG, String.format(Locale.JAPANESE, "startScanInternal call onSuccess peripheralMap:%d", peripheralMap.size()));
                 success.onSuccess(peripheralMap);
             }
-        }, (errorCode, _void)-> {
+        }, (errorCode, failureValue) -> {
             if (failure != null) {
-                FLog.i(TAG, String.format(Locale.JAPANESE,"startScanInternal call onFailure errorCode:%d", errorCode));
+                FLog.i(TAG, String.format(Locale.JAPANESE, "startScanInternal call onFailure errorCode:%d", errorCode));
                 failure.onFailure(errorCode, null);
             }
-        }, (scanResult)-> {
-            FLog.d(TAG, String.format(Locale.JAPANESE, "startScanInternalcheck valid name %s %s", scanResult.deviceName, scanResult.deviceAddress));
-            if (deviceFilter.isValid(scanResult.deviceName)) {
-                FLog.i(TAG, String.format(Locale.JAPANESE, "startScanInternal found %s %s", scanResult.deviceName, scanResult.deviceAddress));
-                peripheralMap.put(scanResult.deviceName, scanResult);
+        }, (scanResult) -> {
+            FLog.d(TAG, String.format(Locale.JAPANESE, "startScanInternalcheck valid name %s %s", scanResult.getDeviceName(), scanResult.getDeviceAddress()));
+            if (deviceFilter.isValid(scanResult.getDeviceName())) {
+                FLog.i(TAG, String.format(Locale.JAPANESE, "startScanInternal found %s %s", scanResult.getDeviceName(), scanResult.getDeviceAddress()));
+                peripheralMap.put(scanResult.getDeviceName(), scanResult);
             }
             return true;
         });
@@ -93,13 +94,13 @@ public class IncredistManager {
     /**
      * Bluetooth デバイスのスキャンを開始します.
      *
-     * @param filter Incredistデバイス名によるフィルタ
+     * @param filter   Incredistデバイス名によるフィルタ
      * @param scanTime スキャン実行時間
-     * @param success スキャン完了時処理
-     * @param failure スキャン失敗時処理
+     * @param success  スキャン完了時処理
+     * @param failure  スキャン失敗時処理
      */
     public void startScan(@Nullable DeviceFilter filter, long scanTime, OnSuccessFunction<List<String>> success, OnFailureFunction<Void> failure) {
-        startScanInternal(filter, scanTime, (peripheralMap)->{
+        startScanInternal(filter, scanTime, (peripheralMap) -> {
             success.onSuccess(new ArrayList<>(peripheralMap.keySet()));
         }, failure);
     }
@@ -114,39 +115,39 @@ public class IncredistManager {
 
     /**
      * connect メソッドで利用するリスナクラス.
-     * handler - connectionListener - connection で相互参照が発生するため connection 変数を持つ
+     * handler - connectionListener - mConnection で相互参照が発生するため mConnection 変数を持つ
      */
     private abstract class FirstConnectionListener implements BluetoothGattConnection.ConnectionListener, Runnable {
-        BluetoothGattConnection connection;
+        BluetoothGattConnection mConnection;
     }
 
     /**
      * Incredistデバイスに接続します.
      *
      * @param deviceName Incredistデバイス名
-     * @param timeout タイムアウト時間(単位 msec)
-     * @param success 接続成功時処理
-     * @param failure 接続失敗時処理
+     * @param timeout    タイムアウト時間(単位 msec)
+     * @param success    接続成功時処理
+     * @param failure    接続失敗時処理
      */
     public void connect(String deviceName, long timeout, @Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction<Void> failure) {
         FLog.i(TAG, String.format(Locale.JAPANESE, "connect device:%s timeout:%d", deviceName, timeout));
 
-        startScanInternal(null, timeout, (peripheralMap)->{
+        startScanInternal(null, timeout, (peripheralMap) -> {
             BluetoothPeripheral peripheral = peripheralMap.get(deviceName);
             if (peripheral != null) {
                 Handler handler = mCentral.getHandler();
 
                 final FirstConnectionListener connectionListener = new FirstConnectionListener() {
-                    boolean hasSucceed = false;
-                    boolean hasTimeout = false;
+                    boolean mHasSucceed = false;
+                    boolean mHasTimeout = false;
 
                     /**
                      * タイムアウト時処理.
                      */
                     @Override
                     public void run() {
-                        hasTimeout = true;
-                        connection.close();
+                        mHasTimeout = true;
+                        mConnection.close();
                         FLog.i(TAG, "connect timeouted");
                         if (failure != null) {
                             failure.onFailure(CONNECT_ERROR_TIMEOUT, null);
@@ -161,9 +162,9 @@ public class IncredistManager {
                     @Override
                     public void onConnect(BluetoothGattConnection connection) {
                         FLog.i(TAG, "connect succeed");
-                        if (!hasSucceed && !hasTimeout && success != null) {
+                        if (!mHasSucceed && !mHasTimeout && success != null) {
                             final Incredist incredist = new Incredist(IncredistManager.this, connection, deviceName);
-                            hasSucceed = true;
+                            mHasSucceed = true;
                             handler.removeCallbacks(this);
                             success.onSuccess(incredist);
                         }
@@ -187,7 +188,7 @@ public class IncredistManager {
                     });
                 } else if (timeout > 0) {
                     // タイムアウト処理を handler に登録
-                    connectionListener.connection = connection;
+                    connectionListener.mConnection = connection;
                     handler.postDelayed(connectionListener, timeout);
                 }
             } else {

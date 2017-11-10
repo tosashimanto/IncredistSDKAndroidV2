@@ -5,17 +5,28 @@ package jp.co.flight.incredist.android.internal.controller.result;
  */
 @SuppressWarnings("WeakerAccess")
 public class SerialNumberResult extends IncredistResult {
-    public final String deviceName;
-    public final String devoceModel;
-    public final String firmwareVersion;
-    public final String serialNumber;
+    private final String mDeviceName;
+    private final String mDeviceModel;
+    private final String mFirmwareVersion;
+    private final String mSerialNumber;
 
+    /**
+     * コンストラクタ.
+     * @param deviceName Incredistデバイス名
+     * @param deviceModel Incredistデバイスモデル名
+     * @param firmwareVersion Incredistファームウェアバージョン
+     * @param serialNumber Incredistシリアル番号
+     */
     public SerialNumberResult(String deviceName, String deviceModel, String firmwareVersion, String serialNumber) {
         super(IncredistResult.STATUS_SUCCESS);
 
-        this.deviceName = deviceName;
-        this.devoceModel = deviceModel;
-        this.firmwareVersion = firmwareVersion;
-        this.serialNumber = serialNumber;
+        this.mDeviceName = deviceName;
+        this.mDeviceModel = deviceModel;
+        this.mFirmwareVersion = firmwareVersion;
+        this.mSerialNumber = serialNumber;
+    }
+
+    public String getSerialNumber() {
+        return mSerialNumber;
     }
 }

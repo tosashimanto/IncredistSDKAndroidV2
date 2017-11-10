@@ -18,9 +18,8 @@ import jp.co.flight.incredist.android.internal.util.FLog;
  * MFi 版 Incredist との MFi パケット通信を行うユーティリティクラス.
  * このクラスのメソッドはバックグラウンドスレッドで実行される前提なので同期処理として実装する.
  */
-
 public class MFiTransport {
-    private static final String TAG ="MFiTransport";
+    private static final String TAG = "MFiTransport";
 
     private static final int MFI_TRANSPORT_TIMEOUT = 500;
 
@@ -29,12 +28,12 @@ public class MFiTransport {
     private BluetoothGattCharacteristic mNotifyCharacteristic = null;
 
     /**
-     * 受信用パケット
+     * 受信用パケット.
      */
     private final MFiResponse mResponse = new MFiResponse();
 
     class ErrorLatch extends CountDownLatch {
-        int errorCode;
+        int mErrorCode;
 
         ErrorLatch() {
             super(1);
@@ -50,6 +49,7 @@ public class MFiTransport {
 
     /**
      * コマンドを送信し、レスポンスを受信して返却します.
+     *
      * @param command 送信コマンド
      * @return レスポンスの MFiパケット
      */
@@ -65,27 +65,27 @@ public class MFiTransport {
             }
 
             int count = command.getPacketCount();
-            FLog.d(TAG, String.format(Locale.JAPANESE,"send %d packet(s)", count));
+            FLog.d(TAG, String.format(Locale.JAPANESE, "send %d packet(s)", count));
             for (int i = 0; i < count; i++) {
                 ErrorLatch latch = new ErrorLatch();
                 mConnection.writeCharacteristic(mWriteCharacteristic, command.getValueData(i), success -> {
-                    latch.errorCode = IncredistResult.STATUS_SUCCESS;
+                    latch.mErrorCode = IncredistResult.STATUS_SUCCESS;
                     latch.countDown();
                 }, (errorCode, failure) -> {
-                    latch.errorCode = errorCode;
+                    latch.mErrorCode = errorCode;
                     latch.countDown();
                 });
 
                 try {
                     if (!latch.await(MFI_TRANSPORT_TIMEOUT, TimeUnit.MILLISECONDS)) {
-                        latch.errorCode = IncredistResult.STATUS_TIMEOUT;
+                        latch.mErrorCode = IncredistResult.STATUS_TIMEOUT;
                     }
                 } catch (InterruptedException e) {
-                    latch.errorCode = IncredistResult.STATUS_INTERRUPTED;
+                    latch.mErrorCode = IncredistResult.STATUS_INTERRUPTED;
                 }
 
-                if (latch.errorCode != IncredistResult.STATUS_SUCCESS) {
-                    return new MFiInvalidResponse(latch.errorCode);
+                if (latch.mErrorCode != IncredistResult.STATUS_SUCCESS) {
+                    return new MFiInvalidResponse(latch.mErrorCode);
                 }
             }
         }
@@ -141,7 +141,7 @@ public class MFiTransport {
         }
 
         BluetoothGattService sendService = mConnection.findService(IncredistConstants.FS_INCREDIST_SEND_SERVICE_UUID_FULL);
-        FLog.d(TAG, String.format(Locale.JAPANESE, "sendServive : %s", sendService != null ? sendService.getUuid().toString() : "(null)"));
+        FLog.d(TAG, String.format(Locale.JAPANESE, "sendService : %s", sendService != null ? sendService.getUuid().toString() : "(null)"));
         if (sendService != null) {
             mWriteCharacteristic = sendService.getCharacteristic(UUID.fromString(IncredistConstants.FS_INCREDIST_FFB2_CHARACTERISTICS_UUID_FULL));
             FLog.d(TAG, String.format(Locale.JAPANESE, "mWriteCharacteristic : %s %d", mWriteCharacteristic != null ? mWriteCharacteristic.getUuid().toString() : "(null)",
@@ -149,14 +149,16 @@ public class MFiTransport {
         }
 
         BluetoothGattService recvService = mConnection.findService(IncredistConstants.FS_INCREDIST_RECEIVE_SERVICE_UUID_FULL);
-        FLog.d(TAG, String.format(Locale.JAPANESE, "recvServive : %s", recvService != null ? recvService.getUuid().toString() : "(null)"));
+        FLog.d(TAG, String.format(Locale.JAPANESE, "recvService : %s", recvService != null ? recvService.getUuid().toString() : "(null)"));
         if (recvService != null) {
             mNotifyCharacteristic = recvService.getCharacteristic(UUID.fromString(IncredistConstants.FS_INCREDIST_FFA3_CHARACTERISTICS_UUID_FULL));
             FLog.d(TAG, String.format(Locale.JAPANESE, "mNotifyCharacteristic : %s %d", mNotifyCharacteristic != null ? mNotifyCharacteristic.getUuid().toString() : "(null)",
                     mNotifyCharacteristic != null ? mNotifyCharacteristic.getProperties() : -1));
         }
 
-        mConnection.registerNotify(mNotifyCharacteristic, (success)->{}, (errorCode, failure)->{}, (notify)-> {
+        mConnection.registerNotify(mNotifyCharacteristic, (success) -> {
+        }, (errorCode, failure) -> {
+        }, (notify) -> {
             synchronized (mResponse) {
                 FLog.d(TAG, String.format(Locale.JAPANESE, "receive notify %d", notify.getValue().length));
                 mResponse.appendData(notify.getValue());

@@ -10,10 +10,10 @@ import jp.co.flight.incredist.android.internal.controller.result.SerialNumberRes
 /**
  * Incredist API クラス.
  */
-@SuppressWarnings({ "WeakerAccess", "unused" }) // for public API.
+@SuppressWarnings({"WeakerAccess", "unused"}) // for public API.
 public class Incredist {
     /**
-     * 生成元の IncredistManager インスタンス
+     * 生成元の IncredistManager インスタンス.
      */
     private final IncredistManager mManager;
 
@@ -25,14 +25,13 @@ public class Incredist {
     /**
      * BluetoothGattConnection インスタンス.
      */
-    private BluetoothGattConnection mConenction;
+    private BluetoothGattConnection mConnection;
 
     /**
      * コンストラクタ. IncredistManager によって呼び出されます.
      *
      * @param connection Bluetooth ペリフェラルとの接続オブジェクト
      */
-    /* package */
     Incredist(IncredistManager manager, BluetoothGattConnection connection, String deviceName) {
         mManager = manager;
         mController = new IncredistController(connection, deviceName);
@@ -43,14 +42,14 @@ public class Incredist {
      */
     public void disconnect(@Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction<Incredist> failure) {
         mController.disconnect(result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS) {
+            if (result.getStatus() == IncredistResult.STATUS_SUCCESS) {
                 mController.release();
                 if (success != null) {
                     success.onSuccess(this);
                 }
             } else {
                 if (failure != null) {
-                    failure.onFailure(result.status, this);
+                    failure.onFailure(result.getStatus(), this);
                 }
             }
         });
@@ -82,13 +81,13 @@ public class Incredist {
      */
     public void getSerialNumber(@Nullable OnSuccessFunction<String> success, @Nullable OnFailureFunction<Void> failure) {
         mController.getSerialNumber(result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof SerialNumberResult) {
+            if (result.getStatus() == IncredistResult.STATUS_SUCCESS && result instanceof SerialNumberResult) {
                 if (success != null) {
-                    success.onSuccess(((SerialNumberResult) result).serialNumber);
+                    success.onSuccess(((SerialNumberResult) result).getSerialNumber());
                 }
             } else {
                 if (failure != null) {
-                    failure.onFailure(result.status, null);
+                    failure.onFailure(result.getStatus(), null);
                 }
             }
         });

@@ -15,7 +15,7 @@ import static jp.co.flight.incredist.android.internal.controller.result.Incredis
 /**
  * Incredist 制御クラス.
  *
- * Incredist への送受信制御を行う実体クラス. HandlerThread を内部で保持していて
+ * <p>Incredist への送受信制御を行う実体クラス. HandlerThread を内部で保持していて
  * 内部処理及び API のコールバックは HandlerThread コンテキストで呼び出す.
  */
 
@@ -23,12 +23,12 @@ public class IncredistController {
     private static final String TAG = "IncredistController";
 
     /**
-     * 接続先Incredistデバイス名
+     * 接続先Incredistデバイス名.
      */
     private final String mDeviceName;
 
     /**
-     * d コマンド送信用の MFiTransport オブジェクト
+     * d コマンド送信用の MFiTransport オブジェクト.
      */
     @NonNull
     private final MFiTransport mMFiTransport;
@@ -44,6 +44,7 @@ public class IncredistController {
     public interface Callback {
         /**
          * 処理結果を返却します.
+         *
          * @param result 処理結果
          */
         void onResult(IncredistResult result);
@@ -51,6 +52,7 @@ public class IncredistController {
 
     /**
      * コンストラクタ.
+     *
      * @param connection Bluetooth ペリフェラルとの接続オブジェクト
      */
     public IncredistController(BluetoothGattConnection connection, String deviceName) {
@@ -89,6 +91,7 @@ public class IncredistController {
 
     /**
      * 接続中のデバイス名を取得します.
+     *
      * @return デバイス名
      */
     public String getDeviceName() {
@@ -108,7 +111,7 @@ public class IncredistController {
      * シリアル番号を取得します.
      */
     public void getSerialNumber(final Callback callback) {
-        post(()-> {
+        post(() -> {
             MFiDCommand dCommand = new MFiDCommand();
             MFiResponse response = mMFiTransport.sendCommand(dCommand);
 
@@ -120,7 +123,7 @@ public class IncredistController {
      * Incredist デバイスから切断します.
      */
     public void disconnect(final Callback callback) {
-        post(()->{
+        post(() -> {
             mConnection.disconnect();
 
             callback.onResult(new IncredistResult(IncredistResult.STATUS_SUCCESS));

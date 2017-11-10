@@ -23,7 +23,7 @@ import jp.co.flight.incredist.android.internal.util.FLog;
 /**
  * Bluetooth デバイスとの接続クラス.
  */
-@SuppressWarnings({ "WeakerAccess", "unused" })
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class BluetoothGattConnection {
     private static final String TAG = "BluetoothGattConnection";
 
@@ -52,7 +52,18 @@ public class BluetoothGattConnection {
      * 接続状態が変化した時のリスナ.
      */
     public interface ConnectionListener {
+        /**
+         * 接続時に呼び出されます.
+         *
+         * @param connection 接続オブジェクト
+         */
         void onConnect(BluetoothGattConnection connection);
+
+        /**
+         * 切断時に呼び出されます.
+         *
+         * @param connection 接続オブジェクト
+         */
         void onDisconnect(BluetoothGattConnection connection);
     }
 
@@ -76,12 +87,12 @@ public class BluetoothGattConnection {
         protected OnSuccessFunction<CharacteristicValue> mNotifyFunction;
 
         /**
-         * callback function for writeDescriptor
+         * callback function for writeDescriptor.
          */
         protected OnSuccessFunction<Void> mWriteDescriptorSuccessFunction;
 
         /**
-         * callback function for writeDescriptor failed
+         * callback function for writeDescriptor failed.
          */
         protected OnFailureFunction<Void> mWriteDescriptorFailureFunction;
     }
@@ -181,16 +192,15 @@ public class BluetoothGattConnection {
     /**
      * コンストラクタ.
      *
-     * @param central BluetoothCentral オブジェクト
+     * @param central    BluetoothCentral オブジェクト
      * @param peripheral 接続先ペリフェラル
-     * @param listener 接続状態リスナ
+     * @param listener   接続状態リスナ
      */
-    /* package */
     BluetoothGattConnection(@NonNull BluetoothCentral central, @NonNull BluetoothPeripheral peripheral, @Nullable ConnectionListener listener) {
         mGatt = central.connectGatt(peripheral, mGattCallback);
         mCentral = central;
         mListener = listener;
-        mHandlerThread = new HandlerThread(String.format(Locale.JAPANESE, "%s:%s:%s", TAG, peripheral.deviceName, peripheral.deviceAddress)) {
+        mHandlerThread = new HandlerThread(String.format(Locale.JAPANESE, "%s:%s:%s", TAG, peripheral.getDeviceName(), peripheral.getDeviceAddress())) {
             @Override
             protected void onLooperPrepared() {
                 super.onLooperPrepared();
@@ -253,20 +263,20 @@ public class BluetoothGattConnection {
     /**
      * 指定した Characteristic へデータを書き込みます.
      *
-     * @param characteristic 書き込み先 Characterstic
-     * @param value 書き込みデータ
-     * @param success 書き込み成功時処理
-     * @param failure 書き込み失敗時処理
+     * @param characteristic 書き込み先 Characteristic
+     * @param value          書き込みデータ
+     * @param success        書き込み成功時処理
+     * @param failure        書き込み失敗時処理
      */
     public void writeCharacteristic(BluetoothGattCharacteristic characteristic, byte[] value, OnSuccessFunction<Void> success, OnFailureFunction<Void> failure) {
         if (mGatt != null) {
             if (characteristic == null) {
-                post(()->failure.onFailure(ERROR_NO_CHARACTERISTIC, null));
+                post(() -> failure.onFailure(ERROR_NO_CHARACTERISTIC, null));
                 return;
             }
 
             synchronized (mGattCallback) {
-                FLog.d(TAG, String.format(Locale.JAPANESE, "writeCharaceristic: %s length %d", characteristic.getUuid().toString(), value.length));
+                FLog.d(TAG, String.format(Locale.JAPANESE, "writeCharacteristic: %s length %d", characteristic.getUuid().toString(), value.length));
 
                 characteristic.setValue(value);
                 if (mGatt.writeCharacteristic(characteristic)) {
@@ -275,7 +285,7 @@ public class BluetoothGattConnection {
                     mGattCallback.mWriteFailureFunction = failure;
                 } else {
                     FLog.w(TAG, "writeCharacteristic failed");
-                    post(()->failure.onFailure(ERROR_WRITE_FAILED, null));
+                    post(() -> failure.onFailure(ERROR_WRITE_FAILED, null));
                 }
             }
         }
@@ -285,17 +295,17 @@ public class BluetoothGattConnection {
      * 指定した Characteristic からの通知受信を設定します.
      *
      * @param characteristic 通知元 Characteristic
-     * @param success 通知登録成功時処理
-     * @param failure 通知登録失敗時処理
-     * @param notify 通知受信時処理
+     * @param success        通知登録成功時処理
+     * @param failure        通知登録失敗時処理
+     * @param notify         通知受信時処理
      */
     public void registerNotify(BluetoothGattCharacteristic characteristic, OnSuccessFunction<Void> success, OnFailureFunction<Void> failure, OnSuccessFunction<CharacteristicValue> notify) {
         if (mGatt != null) {
-            FLog.d(TAG, String.format(Locale.JAPANESE, "registerNotifyCharaceristic: %s", characteristic != null ? characteristic.getUuid().toString() : "(null)"));
+            FLog.d(TAG, String.format(Locale.JAPANESE, "registerNotifyCharacteristic: %s", characteristic != null ? characteristic.getUuid().toString() : "(null)"));
 
             if (characteristic == null) {
                 if (failure != null) {
-                    post(()->failure.onFailure(ERROR_NO_CHARACTERISTIC, null));
+                    post(() -> failure.onFailure(ERROR_NO_CHARACTERISTIC, null));
                 }
                 return;
             }
@@ -307,7 +317,7 @@ public class BluetoothGattConnection {
                     List<BluetoothGattDescriptor> descriptors = characteristic.getDescriptors();
                     for (BluetoothGattDescriptor descriptor : descriptors) {
                         final CountDownLatch latch = new CountDownLatch(1);
-                        final Boolean successFlag[] = new Boolean[1];
+                        final Boolean[] successFlag = new Boolean[1];
 
                         mGattCallback.mWriteDescriptorSuccessFunction = (successDescriptor) -> {
                             successFlag[0] = true;
@@ -328,17 +338,17 @@ public class BluetoothGattConnection {
                         try {
                             if (latch.await(mTimeout, TimeUnit.MILLISECONDS)) {
                                 if (!successFlag[0]) {
-                                    post(()->failure.onFailure(ERROR_REGISTER_NOTIFICATION, null));
+                                    post(() -> failure.onFailure(ERROR_REGISTER_NOTIFICATION, null));
                                     return;
                                 }
                             } else {
                                 // timeout
-                                post(()->failure.onFailure(ERROR_REGISTER_NOTIFICATION, null));
+                                post(() -> failure.onFailure(ERROR_REGISTER_NOTIFICATION, null));
                                 return;
                             }
                         } catch (InterruptedException e) {
                             // ignore.
-                            post(()->failure.onFailure(ERROR_REGISTER_NOTIFICATION, null));
+                            post(() -> failure.onFailure(ERROR_REGISTER_NOTIFICATION, null));
                             return;
                         }
                     }
@@ -346,13 +356,13 @@ public class BluetoothGattConnection {
                     FLog.v(TAG, "registerNotify success");
                     //登録成功処理
                     if (success != null) {
-                        post(()->success.onSuccess(null));
+                        post(() -> success.onSuccess(null));
                     }
                 } else {
                     //登録失敗
                     FLog.w(TAG, "registerNotify failed");
                     if (failure != null) {
-                        post(()->failure.onFailure(ERROR_REGISTER_NOTIFICATION, null));
+                        post(() -> failure.onFailure(ERROR_REGISTER_NOTIFICATION, null));
                     }
                 }
             }

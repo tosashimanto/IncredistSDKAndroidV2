@@ -5,9 +5,8 @@ import jp.co.flight.incredist.android.internal.controller.result.IncredistResult
 /**
  * 応答を待たない場合のダミーのレスポンス.
  */
-/* package */
 class MFiNoResponse extends MFiResponse {
     MFiNoResponse() {
-        errorCode = IncredistResult.STATUS_SUCCESS;
+        mErrorCode = IncredistResult.STATUS_SUCCESS;
     }
 }

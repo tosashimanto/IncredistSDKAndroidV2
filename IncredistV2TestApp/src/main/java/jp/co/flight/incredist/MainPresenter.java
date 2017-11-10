@@ -18,9 +18,13 @@ import jp.co.flight.incredist.model.IncredistModel;
  */
 public interface MainPresenter {
     void onStartScan();
+
     void onSelectDevice();
+
     void onConnect();
+
     void onGetSerial();
+
     void onDisconnect();
 
     void setSelectedDevice(String deviceName);
@@ -28,7 +32,7 @@ public interface MainPresenter {
     void addLog(String message);
 
     /**
-     * MainActiivty 用 Presenter 実体クラス.
+     * MainActivity 用 Presenter 実体クラス.
      */
     class Impl implements MainPresenter {
         private final MainFragment mFragment;
@@ -48,10 +52,10 @@ public interface MainPresenter {
         @Override
         public void onStartScan() {
             addLog("onStartScan");
-            mIncredist.startScan((List<String> scanResult) ->{
+            mIncredist.startScan((List<String> scanResult) -> {
                 addLog(String.format(Locale.JAPANESE, "onStartScan result %d", scanResult.size()));
-            }, (errorCode, failure)->{
-                addLog(String.format(Locale.JAPANESE,"onStartScan failure %d", errorCode));
+            }, (errorCode, failure) -> {
+                addLog(String.format(Locale.JAPANESE, "onStartScan failure %d", errorCode));
             });
         }
 
@@ -65,30 +69,30 @@ public interface MainPresenter {
         @Override
         public void onConnect() {
             addLog("onConnect");
-            mIncredist.connect((incredist)->{
+            mIncredist.connect((incredist) -> {
                 addLog(String.format(Locale.JAPANESE, "connected: %s", incredist.getDeviceName()));
-            }, (errorCode, failure)->{
-                addLog(String.format(Locale.JAPANESE,"onConnect failure %d", errorCode));
+            }, (errorCode, failure) -> {
+                addLog(String.format(Locale.JAPANESE, "onConnect failure %d", errorCode));
             });
         }
 
         @Override
         public void onGetSerial() {
             addLog("onGetSerial");
-            mIncredist.getSerialNumber(serial->{
+            mIncredist.getSerialNumber(serial -> {
                 addLog(String.format(Locale.JAPANESE, "serial: %s", serial));
-            }, (errorCode, failure)->{
-                addLog(String.format(Locale.JAPANESE,"onGetSerial failure %d", errorCode));
+            }, (errorCode, failure) -> {
+                addLog(String.format(Locale.JAPANESE, "onGetSerial failure %d", errorCode));
             });
         }
 
         @Override
         public void onDisconnect() {
             addLog("onDisconnect");
-            mIncredist.disconnect(incredist->{
+            mIncredist.disconnect(incredist -> {
                 addLog("disconnected");
             }, (errorCode, incredist) -> {
-                addLog(String.format(Locale.JAPANESE,"onDisconnect failure %d", errorCode));
+                addLog(String.format(Locale.JAPANESE, "onDisconnect failure %d", errorCode));
             });
         }
 
@@ -102,7 +106,7 @@ public interface MainPresenter {
             String level = "-";
             SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.JAPANESE);
             final String logMessage = String.format(Locale.JAPANESE, "%s %d %d %s %s", sdf.format(new Date()), Process.myPid(), Process.myTid(), level, message);
-            mMainThreadHandler.post(()->mBinding.textLog.append(logMessage + "\n"));
+            mMainThreadHandler.post(() -> mBinding.textLog.append(logMessage + "\n"));
         }
     }
 }

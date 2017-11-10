@@ -2,9 +2,11 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
+
         <variable
             name="adapter"
             type="jp.co.flight.incredist.DeviceRecyclerViewAdapter" />
+
         <variable
             name="deviceName"
             type="String" />

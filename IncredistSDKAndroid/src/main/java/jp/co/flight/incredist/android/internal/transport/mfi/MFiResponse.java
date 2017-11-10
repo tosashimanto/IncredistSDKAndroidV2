@@ -8,12 +8,12 @@ import java.util.Arrays;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 
 /**
- * Incredist から返却された MFi パケット
+ * Incredist から返却された MFi パケット.
  */
 public class MFiResponse extends MFiPacket {
     private static final String TAG = "MFiResponse";
 
-    private int appendPos = 0;
+    private int mAppendPos = 0;
 
     /**
      * コンストラクタ.
@@ -23,11 +23,10 @@ public class MFiResponse extends MFiPacket {
     }
 
     /**
-     * 受信データを追加
+     * 受信データを追加.
      *
      * @param data 受信データのbyte配列
      */
-    /*package*/
     synchronized void appendData(byte[] data) {
         if (mMFiData == null) {
             // 最初のパケット
@@ -37,19 +36,19 @@ public class MFiResponse extends MFiPacket {
                 mMFiData = new byte[length];
 
                 System.arraycopy(data, 0, mMFiData, 0, data.length);
-                appendPos = data.length;
-                errorCode = -1;
+                mAppendPos = data.length;
+                mErrorCode = -1;
             } else {
-                errorCode = IncredistResult.STATUS_INVALID_RESPONSE_HEADER;
+                mErrorCode = IncredistResult.STATUS_INVALID_RESPONSE_HEADER;
             }
         } else {
-            if (appendPos + data.length <= mMFiData.length) {
-                System.arraycopy(data, 0, mMFiData, appendPos, data.length);
-                appendPos += data.length;
-                errorCode = -1;
+            if (mAppendPos + data.length <= mMFiData.length) {
+                System.arraycopy(data, 0, mMFiData, mAppendPos, data.length);
+                mAppendPos += data.length;
+                mErrorCode = -1;
             } else {
                 // 受信サイズエラー(パケット長より多くのデータを受信)
-                errorCode = IncredistResult.STATUS_TOO_LARGE_RESPONSE;
+                mErrorCode = IncredistResult.STATUS_TOO_LARGE_RESPONSE;
             }
         }
     }
@@ -59,24 +58,22 @@ public class MFiResponse extends MFiPacket {
      *
      * @return 受信継続: true 受信終了: false
      */
-    /*package*/
     synchronized boolean needMoreData() {
-        if (errorCode >= 0 || mMFiData == null) {
+        if (mErrorCode >= 0 || mMFiData == null) {
             // エラー状態の場合は受信終了
             return false;
         } else {
             // パケット長に達するまで受信継続
-            return appendPos < mMFiData.length;
+            return mAppendPos < mMFiData.length;
         }
     }
 
     /**
      * 受信パケットデータをクリアします.
      */
-    /*package*/
     synchronized void clear() {
-        errorCode = -1;
-        appendPos = 0;
+        mErrorCode = -1;
+        mAppendPos = 0;
         mMFiData = null;
     }
 
@@ -100,7 +97,7 @@ public class MFiResponse extends MFiPacket {
      * @return ヘッダとチェックサムを除いたデータ部分の byte 配列
      */
     @Nullable
-    synchronized public byte[] getData() {
+    public synchronized byte[] getData() {
         if (mMFiData != null) {
             return Arrays.copyOfRange(mMFiData, 9, mMFiData.length - 1);
         } else {
@@ -113,11 +110,10 @@ public class MFiResponse extends MFiPacket {
      *
      * @return このオブジェクトの複製.
      */
-    /*package*/
     MFiResponse copyInstance() {
         MFiResponse copy = new MFiResponse();
-        copy.errorCode = this.errorCode;
-        copy.appendPos = this.appendPos;
+        copy.mErrorCode = this.mErrorCode;
+        copy.mAppendPos = this.mAppendPos;
         if (this.mMFiData != null) {
             copy.mMFiData = Arrays.copyOf(mMFiData, mMFiData.length);
         } else {

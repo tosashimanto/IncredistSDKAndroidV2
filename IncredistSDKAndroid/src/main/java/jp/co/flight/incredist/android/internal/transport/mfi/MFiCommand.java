@@ -9,21 +9,21 @@ import jp.co.flight.incredist.android.internal.controller.command.IncredistComma
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 
 /**
- * MFi 版 Incredist への送信コマンド
+ * MFi 版 Incredist への送信コマンド.
  */
 
 public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
-    /*package*/ static final int GUARD_WAIT_WITH_RESPONSE = 100;
-    /*package*/ static final int GUARD_WAIT_WITHOUT_RESPONSE = 200;
+    static final int GUARD_WAIT_WITH_RESPONSE = 100;
+    static final int GUARD_WAIT_WITHOUT_RESPONSE = 200;
 
-    private int CHARACTERISTIC_VALUE_LENGTH = 20;
+    private static final int CHARACTERISTIC_VALUE_LENGTH = 20;
 
     /**
      * コンストラクタ.
      *
      * @param payload 送信内容
      */
-    public MFiCommand(@NonNull byte[] payload) {
+    protected MFiCommand(@NonNull byte[] payload) {
         super(payload.length + 10);
         byte[] mfiHeader = {
                 (byte) 0xff, (byte) 0x55, (byte) 0x00, (byte) 0x00, (byte) 0x43,
@@ -43,7 +43,6 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
      *
      * @return パケット数
      */
-    /* package */
     int getPacketCount() {
         if (mMFiData != null) {
             return mMFiData.length / CHARACTERISTIC_VALUE_LENGTH + 1;
@@ -58,7 +57,7 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
      * @param count 何番目のパケットか
      * @return 分割されたパケットデータ
      */
-    /* package */
+
     @Nullable
     byte[] getValueData(int count) {
         if (mMFiData != null && count >= 0 && count < getPacketCount()) {
@@ -75,7 +74,8 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
 
 
     /**
-     * 処理後のウェイト時間
+     * 処理後のウェイト時間.
+     *
      * @return デフォルト値(100msec)
      */
     @Override
@@ -88,13 +88,13 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
     }
 
     /**
-     * 応答の解析
+     * 応答の解析.
      */
     public IncredistResult parseResponse(MFiResponse response) {
         if (response.isValid()) {
             return parseMFiResponse(response);
         } else {
-            int status = response.errorCode > 0 ? response.errorCode : IncredistResult.STATUS_INVALID_RESPONSE;
+            int status = response.mErrorCode > 0 ? response.mErrorCode : IncredistResult.STATUS_INVALID_RESPONSE;
             return new IncredistResult(status);
         }
     }

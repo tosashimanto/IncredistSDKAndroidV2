@@ -1,7 +1,5 @@
 package jp.co.flight.incredist.android.internal.util;
 
-import android.util.Log;
-
 /**
  * ライブラリ外部でログ表示できるようにするためのインタフェース.
  */

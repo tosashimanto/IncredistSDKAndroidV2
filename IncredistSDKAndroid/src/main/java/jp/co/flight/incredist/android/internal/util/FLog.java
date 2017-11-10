@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * SDK内部 Log クラス (for debug)
+ * SDK内部 Log クラス (for debug).
  */
-@SuppressWarnings({ "WeakerAccess", "unused" })
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class FLog {
     private static List<LogInterface> logInstances = new ArrayList<>();
 

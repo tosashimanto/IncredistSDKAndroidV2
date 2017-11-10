@@ -17,11 +17,12 @@ public class MFiDCommand extends MFiCommand {
      * コンストラクタ.
      */
     public MFiDCommand() {
-        super(new byte[] { 'd', 0x00 });
+        super(new byte[]{'d', 0x00});
     }
 
     /**
-     * 最大応答待ち時間
+     * 最大応答待ち時間.
+     *
      * @return 1000msec
      */
     @Override
