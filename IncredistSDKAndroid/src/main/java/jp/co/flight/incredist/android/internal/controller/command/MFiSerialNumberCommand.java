@@ -10,13 +10,13 @@ import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiResponse;
 
 /**
- * MFi版 dコマンド.
+ * MFi版 シリアル番号取得(d)コマンド.
  */
-public class MFiDCommand extends MFiCommand {
+public class MFiSerialNumberCommand extends MFiCommand {
     /**
      * コンストラクタ.
      */
-    public MFiDCommand() {
+    public MFiSerialNumberCommand() {
         super(new byte[]{'d', 0x00});
     }
 

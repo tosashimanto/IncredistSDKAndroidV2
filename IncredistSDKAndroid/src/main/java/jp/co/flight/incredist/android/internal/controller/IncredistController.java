@@ -5,7 +5,7 @@ import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
-import jp.co.flight.incredist.android.internal.controller.command.MFiDCommand;
+import jp.co.flight.incredist.android.internal.controller.command.MFiSerialNumberCommand;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiResponse;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
@@ -112,10 +112,10 @@ public class IncredistController {
      */
     public void getSerialNumber(final Callback callback) {
         post(() -> {
-            MFiDCommand dCommand = new MFiDCommand();
-            MFiResponse response = mMFiTransport.sendCommand(dCommand);
+            MFiSerialNumberCommand serialNumberCommand = new MFiSerialNumberCommand();
+            MFiResponse response = mMFiTransport.sendCommand(serialNumberCommand);
 
-            callback.onResult(dCommand.parseResponse(response));
+            callback.onResult(serialNumberCommand.parseResponse(response));
         }, callback);
     }
 
