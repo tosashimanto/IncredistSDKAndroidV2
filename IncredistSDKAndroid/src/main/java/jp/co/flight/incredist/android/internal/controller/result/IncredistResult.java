@@ -14,13 +14,9 @@ public class IncredistResult {
     public static final int STATUS_TOO_LARGE_RESPONSE = 702;
     public static final int STATUS_INVALID_RESPONSE_HEADER = 703;
 
-    protected final int mStatus;
+    public final int status;
 
     public IncredistResult(int status) {
-        this.mStatus = status;
-    }
-
-    public int getStatus() {
-        return mStatus;
+        this.status = status;
     }
 }

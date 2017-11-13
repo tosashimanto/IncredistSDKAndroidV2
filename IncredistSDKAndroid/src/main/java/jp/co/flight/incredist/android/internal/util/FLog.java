@@ -10,7 +10,7 @@ import java.util.List;
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class FLog {
-    private static List<LogInterface> logInstances = new ArrayList<>();
+    private static List<LogInterface> sLogInstances = new ArrayList<>();
 
     static {
         FLog.addLogInstance(new AndroidLog());
@@ -18,7 +18,7 @@ public class FLog {
 
     public static int d(String tag, String msg, Throwable tr) {
         int result = 0;
-        for (LogInterface log : logInstances) {
+        for (LogInterface log : sLogInstances) {
             result = log.d(tag, msg, tr);
         }
         return result;
@@ -26,7 +26,7 @@ public class FLog {
 
     public static int d(String tag, String msg) {
         int result = 0;
-        for (LogInterface log : logInstances) {
+        for (LogInterface log : sLogInstances) {
             result = log.d(tag, msg);
         }
         return result;
@@ -34,7 +34,7 @@ public class FLog {
 
     public static int e(String tag, String msg, Throwable tr) {
         int result = 0;
-        for (LogInterface log : logInstances) {
+        for (LogInterface log : sLogInstances) {
             result = log.e(tag, msg, tr);
         }
         return result;
@@ -42,7 +42,7 @@ public class FLog {
 
     public static int e(String tag, String msg) {
         int result = 0;
-        for (LogInterface log : logInstances) {
+        for (LogInterface log : sLogInstances) {
             result = log.e(tag, msg);
         }
         return result;
@@ -50,7 +50,7 @@ public class FLog {
 
     public static int i(String tag, String msg, Throwable tr) {
         int result = 0;
-        for (LogInterface log : logInstances) {
+        for (LogInterface log : sLogInstances) {
             result = log.i(tag, msg, tr);
         }
         return result;
@@ -58,7 +58,7 @@ public class FLog {
 
     public static int i(String tag, String msg) {
         int result = 0;
-        for (LogInterface log : logInstances) {
+        for (LogInterface log : sLogInstances) {
             result = log.i(tag, msg);
         }
         return result;
@@ -66,7 +66,7 @@ public class FLog {
 
     public static int v(String tag, String msg, Throwable tr) {
         int result = 0;
-        for (LogInterface log : logInstances) {
+        for (LogInterface log : sLogInstances) {
             result = log.v(tag, msg, tr);
         }
         return result;
@@ -74,7 +74,7 @@ public class FLog {
 
     public static int v(String tag, String msg) {
         int result = 0;
-        for (LogInterface log : logInstances) {
+        for (LogInterface log : sLogInstances) {
             result = log.v(tag, msg);
         }
         return result;
@@ -82,7 +82,7 @@ public class FLog {
 
     public static int w(String tag, String msg, Throwable tr) {
         int result = 0;
-        for (LogInterface log : logInstances) {
+        for (LogInterface log : sLogInstances) {
             result = log.w(tag, msg, tr);
         }
         return result;
@@ -90,14 +90,14 @@ public class FLog {
 
     public static int w(String tag, String msg) {
         int result = 0;
-        for (LogInterface log : logInstances) {
+        for (LogInterface log : sLogInstances) {
             result = log.w(tag, msg);
         }
         return result;
     }
 
     public static void addLogInstance(LogInterface log) {
-        logInstances.add(log);
+        sLogInstances.add(log);
     }
 
     static class AndroidLog implements LogInterface {

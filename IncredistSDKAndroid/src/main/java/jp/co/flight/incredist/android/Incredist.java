@@ -42,14 +42,14 @@ public class Incredist {
      */
     public void disconnect(@Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction<Incredist> failure) {
         mController.disconnect(result -> {
-            if (result.getStatus() == IncredistResult.STATUS_SUCCESS) {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
                 mController.release();
                 if (success != null) {
                     success.onSuccess(this);
                 }
             } else {
                 if (failure != null) {
-                    failure.onFailure(result.getStatus(), this);
+                    failure.onFailure(result.status, this);
                 }
             }
         });
@@ -81,13 +81,13 @@ public class Incredist {
      */
     public void getSerialNumber(@Nullable OnSuccessFunction<String> success, @Nullable OnFailureFunction<Void> failure) {
         mController.getSerialNumber(result -> {
-            if (result.getStatus() == IncredistResult.STATUS_SUCCESS && result instanceof SerialNumberResult) {
+            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof SerialNumberResult) {
                 if (success != null) {
-                    success.onSuccess(((SerialNumberResult) result).getSerialNumber());
+                    success.onSuccess(((SerialNumberResult) result).serialNumber);
                 }
             } else {
                 if (failure != null) {
-                    failure.onFailure(result.getStatus(), null);
+                    failure.onFailure(result.status, null);
                 }
             }
         });
