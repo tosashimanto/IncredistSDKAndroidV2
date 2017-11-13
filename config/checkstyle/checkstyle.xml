@@ -123,6 +123,8 @@
         </module>
         <module name="MemberName">
             <property name="format" value="^m[a-zA-Z0-9]*$"/>
+            <property name="applyToPublic" value="false" />
+            <property name="applyToProtected" value="false" />
             <message key="name.invalidPattern"
                 value="Member name ''{0}'' must match pattern ''{1}''."/>
         </module>
@@ -200,9 +202,10 @@
         </module>
         <module name="NonEmptyAtclauseDescription"/>
         <module name="JavadocTagContinuationIndentation"/>
-        <module name="SummaryJavadoc">
-            <property name="forbiddenSummaryFragments" value="^@return the *|^This method returns |^A [{]@code [a-zA-Z0-9]+[}]( is a )"/>
-        </module>
+        <!-- checkFirstSentence と同時にこちらも削除しないと警告が出る -->
+        <!--<module name="SummaryJavadoc">-->
+            <!--<property name="forbiddenSummaryFragments" value="^@return the *|^This method returns |^A [{]@code [a-zA-Z0-9]+[}]( is a )"/>-->
+        <!--</module>-->
         <module name="JavadocParagraph"/>
         <module name="AtclauseOrder">
             <property name="tagOrder" value="@param, @return, @throws, @deprecated"/>
@@ -235,5 +238,28 @@
             <property name="onCommentFormat" value="CHECKSTYLE\:ON"/>
         </module>
         <module name="SuppressWithNearbyCommentFilter"/>
+        <!-- ここから追加 -->
+        <!-- javadocコメントの最初の一文はピリオドで終わるルールは適用しない -->
+        <module name="JavadocStyle">
+            <property name="checkFirstSentence" value="false"/>
+        </module>
+
+        <!-- 定数フォーマットのチェック -->
+        <module name="ConstantName"/>
+
+        <!-- static変数はsから始める -->
+        <module name="StaticVariableName">
+            <property name="format" value="^s[a-zA-Z0-9]*$"/>
+            <message key="name.invalidPattern" value="Member name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+
+        <!-- 未使用インポート -->
+        <module name="UnusedImports"/>
+
+        <!-- tokenの後の空白チェック -->
+        <module name="NoWhitespaceAfter"/>
+
+        <!-- マジックナンバー検出 -->
+        <module name="MagicNumber"/>
     </module>
 </module>
