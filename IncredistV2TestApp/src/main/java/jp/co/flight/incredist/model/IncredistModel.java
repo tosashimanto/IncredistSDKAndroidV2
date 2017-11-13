@@ -59,7 +59,7 @@ public interface IncredistModel extends Observable {
 
         @Override
         public void startScan(OnSuccessFunction<List<String>> success, OnFailureFunction<Void> failure) {
-            mIncredistManager.startScan(null, 5000, (deviceList) -> {
+            mIncredistManager.bleStartScan(null, 5000, (deviceList) -> {
                 mDeviceList = deviceList;
                 success.onSuccess(deviceList);
             }, failure);

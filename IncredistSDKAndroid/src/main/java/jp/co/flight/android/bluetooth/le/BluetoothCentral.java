@@ -123,7 +123,7 @@ public class BluetoothCentral {
         mScanResultFunction = scan;
         if (mScanner != null) {
             // すでにスキャン中の場合
-            FLog.d(TAG, "startScan already scanning");
+            FLog.d(TAG, "bleStartScan already scanning");
             callScanFailure(SCAN_ERROR_ALREADY_SCANNING);
             return;
         }
@@ -140,7 +140,7 @@ public class BluetoothCentral {
                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                     .build();
             try {
-                FLog.d(TAG, "BluetoothLeScanner.startScan");
+                FLog.d(TAG, "BluetoothLeScanner.bleStartScan");
                 mScanner.startScan(null, settings, mAndroidScanCallback);
                 if (time > 0) {
                     mHandler.postDelayed(this::stopScan, time);
@@ -151,7 +151,7 @@ public class BluetoothCentral {
                 callScanFailure(SCAN_ERROR_NO_PERMISSION);
             }
         } else {
-            FLog.d(TAG, "startScan can't start");
+            FLog.d(TAG, "bleStartScan can't start");
             callScanFailure(SCAN_ERROR_CANT_START);
         }
     }
@@ -183,7 +183,7 @@ public class BluetoothCentral {
 
     /**
      * onScanResult を mHandler のスレッドで実行する.
-     * 先に stopScan が呼び出されていた場合、onSuccess より後に onProgress が呼ばれることはない.
+     * 先に bleStopScan が呼び出されていた場合、onSuccess より後に onProgress が呼ばれることはない.
      *
      * @param peripheral スキャンで見つかった peripheral
      */

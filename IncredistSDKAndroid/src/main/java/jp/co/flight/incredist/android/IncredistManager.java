@@ -66,25 +66,25 @@ public class IncredistManager {
      * @param success  スキャン完了時処理
      * @param failure  スキャン失敗時処理
      */
-    private void startScanInternal(@Nullable DeviceFilter filter, long scanTime, OnSuccessFunction<Map<String, BluetoothPeripheral>> success, OnFailureFunction<Void> failure) {
+    private void bleStartScanInternal(@Nullable DeviceFilter filter, long scanTime, OnSuccessFunction<Map<String, BluetoothPeripheral>> success, OnFailureFunction<Void> failure) {
         final DeviceFilter deviceFilter = filter != null ? filter : new DeviceFilter();
         final Map<String, BluetoothPeripheral> peripheralMap = new HashMap<>();
 
-        FLog.i(TAG, String.format(Locale.JAPANESE, "startScanInternal scanTime:%d", scanTime));
+        FLog.i(TAG, String.format(Locale.JAPANESE, "bleStartScanInternal scanTime:%d", scanTime));
         mCentral.startScan(scanTime, (successValue) -> {
             if (success != null) {
-                FLog.i(TAG, String.format(Locale.JAPANESE, "startScanInternal call onSuccess peripheralMap:%d", peripheralMap.size()));
+                FLog.i(TAG, String.format(Locale.JAPANESE, "bleStartScanInternal call onSuccess peripheralMap:%d", peripheralMap.size()));
                 success.onSuccess(peripheralMap);
             }
         }, (errorCode, failureValue) -> {
             if (failure != null) {
-                FLog.i(TAG, String.format(Locale.JAPANESE, "startScanInternal call onFailure errorCode:%d", errorCode));
+                FLog.i(TAG, String.format(Locale.JAPANESE, "bleStartScanInternal call onFailure errorCode:%d", errorCode));
                 failure.onFailure(errorCode, null);
             }
         }, (scanResult) -> {
             FLog.d(TAG, String.format(Locale.JAPANESE, "startScanInternalcheck valid name %s %s", scanResult.getDeviceName(), scanResult.getDeviceAddress()));
             if (deviceFilter.isValid(scanResult.getDeviceName())) {
-                FLog.i(TAG, String.format(Locale.JAPANESE, "startScanInternal found %s %s", scanResult.getDeviceName(), scanResult.getDeviceAddress()));
+                FLog.i(TAG, String.format(Locale.JAPANESE, "bleStartScanInternal found %s %s", scanResult.getDeviceName(), scanResult.getDeviceAddress()));
                 peripheralMap.put(scanResult.getDeviceName(), scanResult);
             }
             return true;
@@ -99,8 +99,8 @@ public class IncredistManager {
      * @param success  スキャン完了時処理
      * @param failure  スキャン失敗時処理
      */
-    public void startScan(@Nullable DeviceFilter filter, long scanTime, OnSuccessFunction<List<String>> success, OnFailureFunction<Void> failure) {
-        startScanInternal(filter, scanTime, (peripheralMap) -> {
+    public void bleStartScan(@Nullable DeviceFilter filter, long scanTime, OnSuccessFunction<List<String>> success, OnFailureFunction<Void> failure) {
+        bleStartScanInternal(filter, scanTime, (peripheralMap) -> {
             success.onSuccess(new ArrayList<>(peripheralMap.keySet()));
         }, failure);
     }
@@ -108,8 +108,8 @@ public class IncredistManager {
     /**
      * Bluetooth デバイスのスキャンを終了します.
      */
-    public void stopScan() {
-        FLog.i(TAG, "stopScan");
+    public void bleStopScan() {
+        FLog.i(TAG, "bleStopScan");
         mCentral.stopScan();
     }
 
@@ -132,7 +132,7 @@ public class IncredistManager {
     public void connect(String deviceName, long timeout, @Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction<Void> failure) {
         FLog.i(TAG, String.format(Locale.JAPANESE, "connect device:%s timeout:%d", deviceName, timeout));
 
-        startScanInternal(null, timeout, (peripheralMap) -> {
+        bleStartScanInternal(null, timeout, (peripheralMap) -> {
             BluetoothPeripheral peripheral = peripheralMap.get(deviceName);
             if (peripheral != null) {
                 Handler handler = mCentral.getHandler();
