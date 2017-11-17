@@ -25,10 +25,21 @@
             android:layout_height="0dp"
             android:layout_marginBottom="8dp"
             android:layout_marginTop="0dp"
-            app:layout_constraintBottom_toTopOf="@+id/button_scan"
+            app:layout_constraintBottom_toTopOf="@+id/label_incredist"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <android.support.v7.widget.AppCompatTextView
+            android:id="@+id/label_incredist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Incredist"
+            android:background="@color/colorHeaderBackground"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_log"
+            app:layout_constraintBottom_toTopOf="@+id/button_scan" />
 
         <Button
             android:id="@+id/button_scan"
@@ -40,7 +51,7 @@
             app:layout_constraintBottom_toTopOf="@+id/button_connect"
             app:layout_constraintEnd_toEndOf="@+id/button_connect"
             app:layout_constraintStart_toStartOf="@+id/button_connect"
-            app:layout_constraintTop_toBottomOf="@+id/text_log" />
+            app:layout_constraintTop_toBottomOf="@+id/label_incredist" />
 
         <Button
             android:id="@+id/button_select"
@@ -70,7 +81,7 @@
             android:layout_marginBottom="8dp"
             android:onClick="@{(view)->presenter.onConnect()}"
             android:text="Connect"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/label_felica"
             app:layout_constraintEnd_toStartOf="@+id/button_serial"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/button_scan" />
@@ -96,6 +107,50 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/button_serial"
             app:layout_constraintTop_toTopOf="@+id/button_connect" />
+
+        <android.support.v7.widget.AppCompatTextView
+            android:id="@+id/label_felica"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="FeliCa"
+            android:background="@color/colorHeaderBackground"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button_connect"
+            app:layout_constraintBottom_toTopOf="@+id/button_felica_open" />
+
+        <Button
+            android:id="@+id/button_felica_open"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{(view)->presenter.onFelicaOpen()}"
+            android:text="Open"
+            app:layout_constraintStart_toStartOf="@+id/button_connect"
+            app:layout_constraintEnd_toEndOf="@+id/button_connect"
+            app:layout_constraintTop_toBottomOf="@+id/label_felica"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <Button
+            android:id="@+id/button_felica_send"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{(view)->presenter.onFelicaSend()}"
+            android:text="Send"
+            app:layout_constraintStart_toStartOf="@+id/button_serial"
+            app:layout_constraintEnd_toEndOf="@+id/button_serial"
+            app:layout_constraintTop_toTopOf="@+id/button_felica_open"
+            app:layout_constraintBottom_toBottomOf="@+id/button_felica_open" />
+
+        <Button
+            android:id="@+id/button_felica_close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{(view)->presenter.onFelicaClose()}"
+            android:text="Close"
+            app:layout_constraintStart_toStartOf="@+id/button_disconnect"
+            app:layout_constraintEnd_toEndOf="@+id/button_disconnect"
+            app:layout_constraintTop_toTopOf="@+id/button_felica_open"
+            app:layout_constraintBottom_toBottomOf="@+id/button_felica_open" />
 
 
     </android.support.constraint.ConstraintLayout>

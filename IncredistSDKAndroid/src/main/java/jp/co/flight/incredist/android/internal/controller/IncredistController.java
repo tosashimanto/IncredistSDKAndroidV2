@@ -2,20 +2,16 @@ package jp.co.flight.incredist.android.internal.controller;
 
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.annotation.NonNull;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
-import jp.co.flight.incredist.android.internal.controller.command.MFiSerialNumberCommand;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
-import jp.co.flight.incredist.android.internal.transport.mfi.MFiResponse;
-import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
 
 import static jp.co.flight.incredist.android.internal.controller.result.IncredistResult.STATUS_FAILED_EXECUTION;
 
 /**
  * Incredist 制御クラス.
  *
- * <p>Incredist への送受信制御を行う実体クラス. HandlerThread を内部で保持していて
+ * Incredist への送受信制御を行う実体クラス. HandlerThread を内部で保持していて
  * 内部処理及び API のコールバックは HandlerThread コンテキストで呼び出す.
  */
 
@@ -28,10 +24,9 @@ public class IncredistController {
     private final String mDeviceName;
 
     /**
-     * d コマンド送信用の MFiTransport オブジェクト.
+     * 移譲先 IncredistController
      */
-    @NonNull
-    private final MFiTransport mMFiTransport;
+    private IncredistProtocolController mProtoController;
 
     private HandlerThread mHandlerThread = null;
     private Handler mHandler;
@@ -57,8 +52,10 @@ public class IncredistController {
      */
     public IncredistController(BluetoothGattConnection connection, String deviceName) {
         mConnection = connection;
-        mMFiTransport = new MFiTransport(mConnection);
         mDeviceName = deviceName;
+
+        // 最初は MFi のみ対応
+        mProtoController = new IncredistMFiController(this, connection);
 
         mHandlerThread = new HandlerThread(String.format("%s:%s", TAG, deviceName)) {
             @Override
@@ -77,7 +74,7 @@ public class IncredistController {
      *
      * @param r 処理内容の Runnable インスタンス
      */
-    private void post(Runnable r, Callback callback) {
+    void post(Runnable r, Callback callback) {
         Handler handler = mHandler;
         if (handler != null) {
             if (handler.post(r)) {
@@ -110,13 +107,32 @@ public class IncredistController {
     /**
      * シリアル番号を取得します.
      */
-    public void getSerialNumber(final Callback callback) {
-        post(() -> {
-            MFiSerialNumberCommand serialNumberCommand = new MFiSerialNumberCommand();
-            MFiResponse response = mMFiTransport.sendCommand(serialNumberCommand);
+    public void getSerialNumber(Callback callback) {
+        mProtoController.getSerialNumber(callback);
+    }
 
-            callback.onResult(serialNumberCommand.parseResponse(response));
-        }, callback);
+    /**
+     * FeliCa RF モードを開始します
+     */
+    public void felicaOpen(Callback callback) {
+        mProtoController.felicaOpen(callback);
+    }
+
+    /**
+     * felica コマンドを送信します.
+     * @param command コマンド
+     * @param callback コールバック
+     */
+    public void felicaSendCommand(byte[] command, IncredistController.Callback callback) {
+        mProtoController.felicaSendCommand(command, callback);
+    }
+
+    /**
+     * felica モードを終了します。
+     * @param callback コールバック
+     */
+    public void felicaClose(IncredistController.Callback callback) {
+        mProtoController.felicaClose(callback);
     }
 
     /**
@@ -129,7 +145,6 @@ public class IncredistController {
             callback.onResult(new IncredistResult(IncredistResult.STATUS_SUCCESS));
         }, callback);
     }
-
 
     /**
      * Incredist デバイスとの接続を破棄します.

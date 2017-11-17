@@ -4,15 +4,20 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 import jp.co.flight.incredist.android.internal.controller.command.IncredistCommand;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
+import jp.co.flight.incredist.android.internal.util.FLog;
+import jp.co.flight.incredist.android.internal.util.LogUtil;
 
 /**
  * MFi 版 Incredist への送信コマンド.
  */
 
 public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
+    private static final String TAG = "MFiCommand";
+
     static final int GUARD_WAIT_WITH_RESPONSE = 100;
     static final int GUARD_WAIT_WITHOUT_RESPONSE = 200;
 
@@ -35,6 +40,8 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
             System.arraycopy(payload, 0, mMFiData, 9, payload.length);
             mMFiData[2] = getPacketLengthValue();
             mMFiData[mMFiData.length - 1] = getChecksum();
+
+            FLog.d(TAG, String.format(Locale.JAPANESE, "create MFiCommand %d %s", mMFiData.length, LogUtil.hexString(mMFiData)));
         }
     }
 

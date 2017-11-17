@@ -2,16 +2,21 @@ package jp.co.flight.incredist.android;
 
 import android.support.annotation.Nullable;
 
+import java.util.Locale;
+
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.IncredistController;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.controller.result.SerialNumberResult;
+import jp.co.flight.incredist.android.internal.util.FLog;
+import jp.co.flight.incredist.android.model.FelicaCommandResult;
 
 /**
  * Incredist API クラス.
  */
 @SuppressWarnings({"WeakerAccess", "unused"}) // for public API.
 public class Incredist {
+    private static final String TAG = "Incredist";
     /**
      * 生成元の IncredistManager インスタンス.
      */
@@ -92,5 +97,60 @@ public class Incredist {
             }
         });
     }
+
+    /**
+     * FeliCa アクセスのため、デバイスを FeliCa RF モードにします.
+     */
+    public void felicaOpen(@Nullable OnSuccessFunction<Void> success, @Nullable OnFailureFunction<Void> failure) {
+        mController.felicaOpen(result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                if (success != null) {
+                    success.onSuccess(null);
+                }
+            } else {
+                if (failure != null) {
+                    FLog.d(TAG, String.format(Locale.JAPANESE, "falicaOpen: onFailure:%d %s", result.status, result.message));
+
+                    failure.onFailure(result.status, null);
+                }
+            }
+        });
+    }
+
+    /**
+     * FeliCa コマンドを送信します.
+     */
+    public void felicaSendCommand(byte[] felicaCommand, @Nullable OnSuccessFunction<FelicaCommandResult> success, @Nullable OnFailureFunction<Void> failure) {
+        mController.felicaSendCommand(felicaCommand, (IncredistResult result) -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) {
+                jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult felicaResult = (jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) result;
+                if (success != null) {
+                    success.onSuccess(new FelicaCommandResult(felicaResult.status1, felicaResult.status2, felicaResult.resultData));
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status, null);
+                }
+            }
+        });
+    }
+
+    /**
+     * FeliCa RF モードを終了します.
+     */
+    public void felicaClose(@Nullable OnSuccessFunction<Void> success, @Nullable OnFailureFunction<Void> failure) {
+        mController.felicaClose(result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                if (success != null) {
+                    success.onSuccess(null);
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status, null);
+                }
+            }
+        });
+    }
+
 
 }
