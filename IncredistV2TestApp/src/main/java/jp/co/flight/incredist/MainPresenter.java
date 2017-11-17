@@ -29,6 +29,12 @@ public interface MainPresenter {
 
     void setSelectedDevice(String deviceName);
 
+    void onFelicaOpen();
+
+    void onFelicaSend();
+
+    void onFelicaClose();
+
     void addLog(String message);
 
     /**
@@ -51,8 +57,8 @@ public interface MainPresenter {
 
         @Override
         public void onStartScan() {
-            addLog("onStartScan");
-            mIncredist.startScan((List<String> scanResult) -> {
+            addLog("bleStartScan");
+            mIncredist.bleStartScan((List<String> scanResult) -> {
                 addLog(String.format(Locale.JAPANESE, "onStartScan result %d", scanResult.size()));
             }, (errorCode, failure) -> {
                 addLog(String.format(Locale.JAPANESE, "onStartScan failure %d", errorCode));
@@ -61,38 +67,38 @@ public interface MainPresenter {
 
         @Override
         public void onSelectDevice() {
-            addLog("onSelectDevice");
+            addLog("selectDevice");
             List<String> devices = mIncredist.getDeviceList();
             mFragment.startSelectDevice((ArrayList<String>) devices);
         }
 
         @Override
         public void onConnect() {
-            addLog("onConnect");
+            addLog("connect");
             mIncredist.connect((incredist) -> {
                 addLog(String.format(Locale.JAPANESE, "connected: %s", incredist.getDeviceName()));
             }, (errorCode, failure) -> {
-                addLog(String.format(Locale.JAPANESE, "onConnect failure %d", errorCode));
+                addLog(String.format(Locale.JAPANESE, "connect failure %d", errorCode));
             });
         }
 
         @Override
         public void onGetSerial() {
-            addLog("onGetSerial");
+            addLog("getSerialNumber");
             mIncredist.getSerialNumber(serial -> {
                 addLog(String.format(Locale.JAPANESE, "serial: %s", serial));
             }, (errorCode, failure) -> {
-                addLog(String.format(Locale.JAPANESE, "onGetSerial failure %d", errorCode));
+                addLog(String.format(Locale.JAPANESE, "getSerialNumber failure %d", errorCode));
             });
         }
 
         @Override
         public void onDisconnect() {
-            addLog("onDisconnect");
+            addLog("disconnect");
             mIncredist.disconnect(incredist -> {
                 addLog("disconnected");
             }, (errorCode, incredist) -> {
-                addLog(String.format(Locale.JAPANESE, "onDisconnect failure %d", errorCode));
+                addLog(String.format(Locale.JAPANESE, "disconnect failure %d", errorCode));
             });
         }
 
@@ -102,11 +108,52 @@ public interface MainPresenter {
             mIncredist.setSelectedDevice(deviceName);
         }
 
+        @Override
+        public void onFelicaOpen() {
+            addLog("felicaOpen");
+            mIncredist.felicaOpen(success -> {
+                addLog("felicaOpen success");
+            }, (errorCode, failure) -> {
+                addLog(String.format(Locale.JAPANESE, "felicaOpen failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onFelicaSend() {
+            addLog("felicaSend");
+            mIncredist.felicaSendCommand(success -> {
+                addLog(String.format(Locale.JAPANESE, "felicaSend success status1:%d status2:%d result:%s",
+                        success.getStatus1(), success.getStatus2(), hexString(success.getResultData())));
+            }, (errorCode, failure) -> {
+                addLog(String.format(Locale.JAPANESE, "felicaSend failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onFelicaClose() {
+            addLog("felicaClose");
+            mIncredist.felicaClose(success -> {
+                addLog("felicaClose success");
+            }, (errorCode, failure) -> {
+                addLog(String.format(Locale.JAPANESE, "felicaClose failure %d", errorCode));
+            });
+        }
+
         public void addLog(String message) {
             String level = "-";
             SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.JAPANESE);
             final String logMessage = String.format(Locale.JAPANESE, "%s %d %d %s %s", sdf.format(new Date()), Process.myPid(), Process.myTid(), level, message);
             mMainThreadHandler.post(() -> mBinding.textLog.append(logMessage + "\n"));
+        }
+
+        private String hexString(byte[] bytes) {
+            StringBuilder sb = new StringBuilder();
+
+            for (byte b : bytes) {
+                sb.append(String.format("%02x:", b));
+            }
+
+            return sb.toString();
         }
     }
 }

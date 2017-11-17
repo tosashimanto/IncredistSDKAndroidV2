@@ -12,6 +12,7 @@ import jp.co.flight.incredist.android.Incredist;
 import jp.co.flight.incredist.android.IncredistManager;
 import jp.co.flight.incredist.android.OnFailureFunction;
 import jp.co.flight.incredist.android.OnSuccessFunction;
+import jp.co.flight.incredist.android.model.FelicaCommandResult;
 
 /**
  * Incredist テストプログラム用モデル.
@@ -20,7 +21,7 @@ public interface IncredistModel extends Observable {
 
     void newIncredistObject();
 
-    void startScan(OnSuccessFunction<List<String>> success, OnFailureFunction<Void> failure);
+    void bleStartScan(OnSuccessFunction<List<String>> success, OnFailureFunction<Void> failure);
 
     List<String> getDeviceList();
 
@@ -29,6 +30,12 @@ public interface IncredistModel extends Observable {
     void disconnect(OnSuccessFunction<Incredist> success, OnFailureFunction<Incredist> failure);
 
     void getSerialNumber(OnSuccessFunction<String> success, OnFailureFunction<Void> failure);
+
+    void felicaOpen(OnSuccessFunction<Void> success, OnFailureFunction<Void> failure);
+
+    void felicaSendCommand(OnSuccessFunction<FelicaCommandResult> success, OnFailureFunction<Void> failure);
+
+    void felicaClose(OnSuccessFunction<Void> success, OnFailureFunction<Void> failure);
 
     void release();
 
@@ -58,7 +65,7 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
-        public void startScan(OnSuccessFunction<List<String>> success, OnFailureFunction<Void> failure) {
+        public void bleStartScan(OnSuccessFunction<List<String>> success, OnFailureFunction<Void> failure) {
             mIncredistManager.bleStartScan(null, 5000, (deviceList) -> {
                 mDeviceList = deviceList;
                 success.onSuccess(deviceList);
@@ -97,6 +104,34 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
+        public void felicaOpen(OnSuccessFunction<Void> success, OnFailureFunction<Void> failure) {
+            if (mIncredist != null) {
+                mIncredist.felicaOpen(success, failure);
+            } else {
+                failure.onFailure(-1, null);
+            }
+        }
+
+        @Override
+        public void felicaSendCommand(OnSuccessFunction<FelicaCommandResult> success, OnFailureFunction<Void> failure) {
+            if (mIncredist != null) {
+                byte[] felicaCommand = {(byte) 0x00, (byte) 0xff, (byte) 0xff, (byte) 0x00, (byte) 0x00};
+                mIncredist.felicaSendCommand(felicaCommand, success, failure);
+            } else {
+                failure.onFailure(-1, null);
+            }
+        }
+
+        @Override
+        public void felicaClose(OnSuccessFunction<Void> success, OnFailureFunction<Void> failure) {
+            if (mIncredist != null) {
+                mIncredist.felicaClose(success, failure);
+            } else {
+                failure.onFailure(-1, null);
+            }
+        }
+
+        @Override
         public void release() {
             mIncredistManager.release();
         }
@@ -115,6 +150,8 @@ public interface IncredistModel extends Observable {
             mSelectedDevice = device;
             notifyPropertyChanged(BR.selectedDevice);
         }
+
+
 
     }
 }

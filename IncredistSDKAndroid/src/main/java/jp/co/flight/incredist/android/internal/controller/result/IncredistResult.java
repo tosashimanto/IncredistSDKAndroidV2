@@ -15,8 +15,15 @@ public class IncredistResult {
     public static final int STATUS_INVALID_RESPONSE_HEADER = 703;
 
     public final int status;
+    public final String message;
 
     public IncredistResult(int status) {
         this.status = status;
+        this.message = "";
+    }
+
+    public IncredistResult(int status, String message) {
+        this.status = status;
+        this.message = message;
     }
 }

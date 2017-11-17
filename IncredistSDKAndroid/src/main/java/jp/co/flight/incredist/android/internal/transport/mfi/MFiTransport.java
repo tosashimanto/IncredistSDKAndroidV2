@@ -13,6 +13,7 @@ import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.IncredistConstants;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.util.FLog;
+import jp.co.flight.incredist.android.internal.util.LogUtil;
 
 /**
  * MFi 版 Incredist との MFi パケット通信を行うユーティリティクラス.
@@ -100,6 +101,7 @@ public class MFiTransport {
                     } while (mResponse.needMoreData());
 
                     if (mResponse.isValid()) {
+                        FLog.d(TAG, "recv valid packet: " + LogUtil.hexString(mResponse.getData()));
                         try {
                             Thread.sleep(command.getGuardWait());
                         } catch (InterruptedException ex) {
@@ -119,7 +121,7 @@ public class MFiTransport {
                 // ignore.
             }
 
-            return new MFiInvalidResponse(IncredistResult.STATUS_INVALID_RESPONSE);
+            return new MFiInvalidResponse(IncredistResult.STATUS_TIMEOUT);
         }
 
         try {
