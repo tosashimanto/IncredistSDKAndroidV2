@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="jp.co.flight.incredist.MainFragment">
+
+    <data>
+
+        <variable
+            name="presenter"
+            type="jp.co.flight.incredist.MainPresenter" />
+
+        <variable
+            name="incredist"
+            type="jp.co.flight.incredist.model.IncredistModel" />
+    </data>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/text_log"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="0dp"
+            app:layout_constraintBottom_toTopOf="@+id/button_scan"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/button_scan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:onClick="@{(view)->presenter.onStartScan()}"
+            android:text="Scan"
+            app:layout_constraintBottom_toTopOf="@+id/button_connect"
+            app:layout_constraintEnd_toEndOf="@+id/button_connect"
+            app:layout_constraintStart_toStartOf="@+id/button_connect"
+            app:layout_constraintTop_toBottomOf="@+id/text_log" />
+
+        <Button
+            android:id="@+id/button_select"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{(view)->presenter.onSelectDevice()}"
+            android:text="Select"
+            app:layout_constraintBottom_toBottomOf="@+id/button_scan"
+            app:layout_constraintEnd_toEndOf="@+id/button_serial"
+            app:layout_constraintStart_toStartOf="@+id/button_serial"
+            app:layout_constraintTop_toTopOf="@+id/button_scan" />
+
+        <TextView
+            android:id="@+id/text_device_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{incredist.selectedDevice}"
+            app:layout_constraintBottom_toBottomOf="@+id/button_scan"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/button_select"
+            app:layout_constraintTop_toTopOf="@+id/button_scan" />
+
+        <Button
+            android:id="@+id/button_connect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:onClick="@{(view)->presenter.onConnect()}"
+            android:text="Connect"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/button_serial"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button_scan" />
+
+        <Button
+            android:id="@+id/button_serial"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{(view)->presenter.onGetSerial()}"
+            android:text="Serial"
+            app:layout_constraintBottom_toBottomOf="@+id/button_connect"
+            app:layout_constraintEnd_toStartOf="@+id/button_disconnect"
+            app:layout_constraintStart_toEndOf="@+id/button_connect"
+            app:layout_constraintTop_toTopOf="@+id/button_connect" />
+
+        <Button
+            android:id="@+id/button_disconnect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{(view)->presenter.onDisconnect()}"
+            android:text="Disconnect"
+            app:layout_constraintBottom_toBottomOf="@+id/button_connect"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/button_serial"
+            app:layout_constraintTop_toTopOf="@+id/button_connect" />
+
+
+    </android.support.constraint.ConstraintLayout>
+</layout>

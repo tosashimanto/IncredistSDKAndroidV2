@@ -1,8 +1,9 @@
 apply plugin: 'com.android.library'
+apply plugin: 'checkstyle'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.1"
+    buildToolsVersion '26.0.2'
 
     defaultConfig {
         minSdkVersion 22
@@ -11,8 +12,13 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -21,11 +27,37 @@ android {
     }
 }
 
+
+def checkstyleConfigDir = new File(buildscript.sourceFile.parentFile.parentFile, 'config/checkstyle')
+
+checkstyle {
+    toolVersion = "8.4"
+    configFile = new File(checkstyleConfigDir, 'checkstyle.xml')
+    configProperties.config_loc = checkstyleConfigDir
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:26.+'
+    compile 'com.android.support:support-annotations:27.0.0'
     testCompile 'junit:junit:4.12'
 }
+
+task("checkstyleDebug", type: Checkstyle,
+        dependsOn: "assembleDebug") {
+    group 'Reporting'
+    description "Generate debug Checkstyle reports."
+
+    ignoreFailures = true
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+
+    showViolations true  // CheckStyle解析結果をStdOutに出力する
+    source = files(android.sourceSets.main.java.srcDirs)
+    classpath = files(configurations.compile.files)
+}
+
