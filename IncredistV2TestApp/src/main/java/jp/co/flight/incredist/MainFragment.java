@@ -1,5 +1,6 @@
 package jp.co.flight.incredist;
 
+import android.Manifest;
 import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
@@ -14,10 +15,13 @@ import java.util.ArrayList;
 
 import jp.co.flight.incredist.databinding.FragmentMainBinding;
 import jp.co.flight.incredist.model.IncredistModel;
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.RuntimePermissions;
 
 /**
  * MainFragment.
  */
+@RuntimePermissions
 public class MainFragment extends Fragment implements DeviceListDialogFragment.Listener {
 
     private static final String DIALOG_TAG_SELECT_DEVICE = "dialog_tag_select_device";
@@ -57,6 +61,8 @@ public class MainFragment extends Fragment implements DeviceListDialogFragment.L
 
         mBinding.setIncredist(mModel);
         mBinding.setPresenter(mPresenter);
+
+        MainFragmentPermissionsDispatcher.showPermissionStubWithPermissionCheck(this);
     }
 
     @Override
@@ -74,6 +80,11 @@ public class MainFragment extends Fragment implements DeviceListDialogFragment.L
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @NeedsPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+    public void showPermissionStub() {
+        // do nothing.
     }
 
     public void startSelectDevice(ArrayList<String> devices) {
