@@ -69,7 +69,11 @@ public interface MainPresenter {
         public void onSelectDevice() {
             addLog("selectDevice");
             List<String> devices = mIncredist.getDeviceList();
-            mFragment.startSelectDevice((ArrayList<String>) devices);
+            if (devices != null && devices.size() > 0) {
+                mFragment.startSelectDevice((ArrayList<String>) devices);
+            } else {
+                addLog("not scanned result.");
+            }
         }
 
         @Override
