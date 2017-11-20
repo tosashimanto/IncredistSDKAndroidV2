@@ -106,6 +106,7 @@ public class IncredistController {
 
     /**
      * シリアル番号を取得します.
+     * @param callback コールバック
      */
     public void getSerialNumber(Callback callback) {
         mProtoController.getSerialNumber(callback);
@@ -113,9 +114,10 @@ public class IncredistController {
 
     /**
      * FeliCa RF モードを開始します
+     * @param callback コールバック
      */
-    public void felicaOpen(Callback callback) {
-        mProtoController.felicaOpen(callback);
+    public void felicaOpen(boolean withLed, Callback callback) {
+        mProtoController.felicaOpen(withLed, callback);
     }
 
     /**
@@ -137,6 +139,7 @@ public class IncredistController {
 
     /**
      * Incredist デバイスから切断します.
+     * @param callback コールバック
      */
     public void disconnect(final Callback callback) {
         post(() -> {

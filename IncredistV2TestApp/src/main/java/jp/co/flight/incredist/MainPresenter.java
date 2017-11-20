@@ -31,6 +31,8 @@ public interface MainPresenter {
 
     void onFelicaOpen();
 
+    void onFelicaOpenWithoutLed();
+
     void onFelicaSend();
 
     void onFelicaClose();
@@ -115,8 +117,18 @@ public interface MainPresenter {
         @Override
         public void onFelicaOpen() {
             addLog("felicaOpen");
-            mIncredist.felicaOpen(success -> {
+            mIncredist.felicaOpen(true, success -> {
                 addLog("felicaOpen success");
+            }, (errorCode, failure) -> {
+                addLog(String.format(Locale.JAPANESE, "felicaOpen failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onFelicaOpenWithoutLed() {
+            addLog("felicaOpenWithoutLed");
+            mIncredist.felicaOpen(false, success -> {
+                addLog("felicaOpenWithoutLed success");
             }, (errorCode, failure) -> {
                 addLog(String.format(Locale.JAPANESE, "felicaOpen failure %d", errorCode));
             });
