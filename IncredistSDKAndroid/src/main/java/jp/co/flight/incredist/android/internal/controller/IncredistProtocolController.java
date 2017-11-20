@@ -11,9 +11,10 @@ interface IncredistProtocolController {
 
     /**
      * felica モードを開始します。
+     * @param withLed LED を点灯するかどうか
      * @param callback コールバック
      */
-    void felicaOpen(IncredistController.Callback callback);
+    void felicaOpen(boolean withLed, IncredistController.Callback callback);
 
     /**
      * felica コマンドを送信します.

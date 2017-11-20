@@ -31,7 +31,7 @@ public interface IncredistModel extends Observable {
 
     void getSerialNumber(OnSuccessFunction<String> success, OnFailureFunction<Void> failure);
 
-    void felicaOpen(OnSuccessFunction<Void> success, OnFailureFunction<Void> failure);
+    void felicaOpen(boolean withLed, OnSuccessFunction<Void> success, OnFailureFunction<Void> failure);
 
     void felicaSendCommand(OnSuccessFunction<FelicaCommandResult> success, OnFailureFunction<Void> failure);
 
@@ -45,6 +45,8 @@ public interface IncredistModel extends Observable {
     String getSelectedDevice();
 
     void setSelectedDevice(String deviceName);
+
+    String getApiVersion();
 
     class Impl extends BaseObservable implements IncredistModel {
         private final Context mContext;
@@ -104,9 +106,9 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
-        public void felicaOpen(OnSuccessFunction<Void> success, OnFailureFunction<Void> failure) {
+        public void felicaOpen(boolean withLed, OnSuccessFunction<Void> success, OnFailureFunction<Void> failure) {
             if (mIncredist != null) {
-                mIncredist.felicaOpen(success, failure);
+                mIncredist.felicaOpen(withLed, success, failure);
             } else {
                 failure.onFailure(-1, null);
             }
@@ -151,6 +153,10 @@ public interface IncredistModel extends Observable {
             notifyPropertyChanged(BR.selectedDevice);
         }
 
+        @Override
+        public String getApiVersion() {
+            return mIncredistManager.getAPIVersion();
+        }
 
 
     }

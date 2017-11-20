@@ -100,9 +100,13 @@ public class Incredist {
 
     /**
      * FeliCa アクセスのため、デバイスを FeliCa RF モードにします.
+     *
+     * @param withLed LED を点灯するかどうか
+     * @param success 設定成功時の処理
+     * @param failure 設定失敗時の処理
      */
-    public void felicaOpen(@Nullable OnSuccessFunction<Void> success, @Nullable OnFailureFunction<Void> failure) {
-        mController.felicaOpen(result -> {
+    public void felicaOpen(boolean withLed, @Nullable OnSuccessFunction<Void> success, @Nullable OnFailureFunction<Void> failure) {
+        mController.felicaOpen(withLed, result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 if (success != null) {
                     success.onSuccess(null);
@@ -118,7 +122,21 @@ public class Incredist {
     }
 
     /**
+     * FeliCa アクセスのため、デバイスを FeliCa RF モードにし、LEDを点灯します.
+     *
+     * @param success 設定成功時の処理
+     * @param failure 設定失敗時の処理
+     */
+    public void felicaOpen(@Nullable OnSuccessFunction<Void> success, @Nullable OnFailureFunction<Void> failure) {
+        felicaOpen(true, success, failure);
+    }
+
+    /**
      * FeliCa コマンドを送信します.
+     *
+     * @param felicaCommand FeliCaコマンドのバイト列
+     * @param success 送信成功時の処理
+     * @param failure 送信失敗時の処理
      */
     public void felicaSendCommand(byte[] felicaCommand, @Nullable OnSuccessFunction<FelicaCommandResult> success, @Nullable OnFailureFunction<Void> failure) {
         mController.felicaSendCommand(felicaCommand, (IncredistResult result) -> {
@@ -137,6 +155,9 @@ public class Incredist {
 
     /**
      * FeliCa RF モードを終了します.
+     *
+     * @param success 設定成功時の処理
+     * @param failure 設定失敗時の処理
      */
     public void felicaClose(@Nullable OnSuccessFunction<Void> success, @Nullable OnFailureFunction<Void> failure) {
         mController.felicaClose(result -> {

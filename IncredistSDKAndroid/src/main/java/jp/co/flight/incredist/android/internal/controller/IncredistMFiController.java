@@ -5,9 +5,10 @@ import android.support.annotation.NonNull;
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaCloseCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaOpenCommand;
+import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaOpenWithoutLedCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaSendCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiSerialNumberCommand;
-import jp.co.flight.incredist.android.internal.transport.mfi.MFiResponse;
+import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
 
 /**
@@ -21,52 +22,67 @@ public class IncredistMFiController implements IncredistProtocolController {
     @NonNull
     private final MFiTransport mMFiTransport;
 
+    /**
+     * コンストラクタ
+     * @param controller IncredistController オブジェクト
+     * @param connection BluetoothGattConnection オブジェクt
+     */
     IncredistMFiController(@NonNull IncredistController controller, @NonNull BluetoothGattConnection connection) {
         mController = controller;
         mMFiTransport = new MFiTransport(connection);
     }
 
     /**
-     * シリアル番号を取得します.
+     * MFi コマンドを送信します
+     * @param command 送信コマンド
+     * @param callback コールバック
      */
-    public void getSerialNumber(final IncredistController.Callback callback) {
+    private void postMFiCommand(final MFiCommand command, final IncredistController.Callback callback) {
         mController.post(() -> {
-            MFiSerialNumberCommand serialNumberCommand = new MFiSerialNumberCommand();
-            MFiResponse response = mMFiTransport.sendCommand(serialNumberCommand);
-
-            callback.onResult(serialNumberCommand.parseResponse(response));
+            callback.onResult(command.parseResponse(mMFiTransport.sendCommand(command)));
         }, callback);
     }
 
     /**
-     * FeliCa RF モードを開始します
+     * シリアル番号を取得します.
+     * @param callback コールバック
      */
-    public void felicaOpen(final IncredistController.Callback callback) {
-        mController.post(() -> {
-            MFiFelicaOpenCommand felicaOpenCommand = new MFiFelicaOpenCommand();
-            MFiResponse response = mMFiTransport.sendCommand(felicaOpenCommand);
-
-            callback.onResult(felicaOpenCommand.parseResponse(response));
-        }, callback);
+    public void getSerialNumber(final IncredistController.Callback callback) {
+        postMFiCommand(new MFiSerialNumberCommand(), callback);
     }
 
+    /**
+     * FeliCa RF モードを開始します
+     * @param withLed LED を点灯するかどうか
+     * @param callback コールバック
+     */
+    public void felicaOpen(boolean withLed, final IncredistController.Callback callback) {
+        MFiCommand command;
+        if (withLed) {
+            command = new MFiFelicaOpenCommand();
+        } else {
+            command = new MFiFelicaOpenWithoutLedCommand();
+        }
+
+        postMFiCommand(command, callback);
+    }
+
+    /**
+     * FeliCa コマンドを送信します
+     * @param command 送信するFeliCaコマンド
+     * @param callback コールバック
+     */
     @Override
     public void felicaSendCommand(byte[] command, IncredistController.Callback callback) {
-        mController.post(() -> {
-            MFiFelicaSendCommand felicaSendCommand = new MFiFelicaSendCommand(command);
-            MFiResponse response = mMFiTransport.sendCommand(felicaSendCommand);
-
-            callback.onResult(felicaSendCommand.parseResponse(response));
-        }, callback);
+        postMFiCommand(new MFiFelicaSendCommand(command), callback);
     }
 
+    /**
+     * FeliCa RF モードを終了します
+     * @param callback コールバック
+     */
     @Override
     public void felicaClose(IncredistController.Callback callback) {
-        mController.post(() -> {
-            MFiFelicaCloseCommand felicaCloseCommand = new MFiFelicaCloseCommand();
-            MFiResponse response = mMFiTransport.sendCommand(felicaCloseCommand);
-
-            callback.onResult(felicaCloseCommand.parseResponse(response));
-        }, callback);
+        postMFiCommand(new MFiFelicaCloseCommand(), callback);
     }
 }
