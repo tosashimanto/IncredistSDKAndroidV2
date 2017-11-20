@@ -46,6 +46,8 @@ public interface IncredistModel extends Observable {
 
     void setSelectedDevice(String deviceName);
 
+    String getApiVersion();
+
     class Impl extends BaseObservable implements IncredistModel {
         private final Context mContext;
         private IncredistManager mIncredistManager;
@@ -151,6 +153,10 @@ public interface IncredistModel extends Observable {
             notifyPropertyChanged(BR.selectedDevice);
         }
 
+        @Override
+        public String getApiVersion() {
+            return mIncredistManager.getAPIVersion();
+        }
 
 
     }

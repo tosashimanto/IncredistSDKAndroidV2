@@ -56,6 +56,8 @@ public interface MainPresenter {
 
             mIncredist.newIncredistObject();
             mMainThreadHandler = new Handler(Looper.getMainLooper());
+
+            addLog(String.format("%s:%s API:%s", BuildConfig.APPLICATION_ID, BuildConfig.VERSION_NAME, mIncredist.getApiVersion()));
         }
 
         @Override
