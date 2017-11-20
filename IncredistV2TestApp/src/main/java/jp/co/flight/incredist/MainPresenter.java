@@ -11,7 +11,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import jp.co.flight.incredist.databinding.FragmentMainBinding;
+import jp.co.flight.incredist.android.IncredistV2TestApp.BuildConfig;
+import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
 import jp.co.flight.incredist.model.IncredistModel;
 
 /**

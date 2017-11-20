@@ -14,7 +14,8 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 
-import jp.co.flight.incredist.databinding.FragmentMainBinding;
+import jp.co.flight.incredist.android.IncredistV2TestApp.R;
+import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
 import jp.co.flight.incredist.model.IncredistModel;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;

@@ -7,7 +7,7 @@ import android.databinding.Observable;
 
 import java.util.List;
 
-import jp.co.flight.incredist.BR;
+import jp.co.flight.incredist.android.IncredistV2TestApp.BR;
 import jp.co.flight.incredist.android.Incredist;
 import jp.co.flight.incredist.android.IncredistManager;
 import jp.co.flight.incredist.android.OnFailureFunction;
@@ -157,7 +157,7 @@ public interface IncredistModel extends Observable {
 
         @Override
         public String getApiVersion() {
-            return mIncredistManager.getAPIVersion();
+            return mIncredistManager.getApiVersion();
         }
 
 

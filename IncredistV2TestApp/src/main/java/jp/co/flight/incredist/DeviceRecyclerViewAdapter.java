@@ -9,7 +9,8 @@ import android.view.ViewGroup;
 
 import java.util.List;
 
-import jp.co.flight.incredist.databinding.FragmentDialogDeviceItemBinding;
+import jp.co.flight.incredist.android.IncredistV2TestApp.R;
+import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentDialogDeviceItemBinding;
 
 /**
  * RecyclerView.Adapter
