@@ -1,15 +1,17 @@
 package jp.co.flight.incredist.model;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
 import android.databinding.Observable;
+import android.preference.PreferenceManager;
 
 import java.util.List;
 
-import jp.co.flight.incredist.android.IncredistV2TestApp.BR;
 import jp.co.flight.incredist.android.Incredist;
 import jp.co.flight.incredist.android.IncredistManager;
+import jp.co.flight.incredist.android.IncredistV2TestApp.BR;
 import jp.co.flight.incredist.android.OnFailureFunction;
 import jp.co.flight.incredist.android.OnSuccessFunction;
 import jp.co.flight.incredist.android.OnSuccessVoidFunction;
@@ -51,15 +53,20 @@ public interface IncredistModel extends Observable {
     String getApiVersion();
 
     class Impl extends BaseObservable implements IncredistModel {
+        private static final String PREFERENCE_KEY_DEVICE_NAME = "device_name";
+
         private final Context mContext;
         private IncredistManager mIncredistManager;
         private Incredist mIncredist;
 
         private List<String> mDeviceList;
-        private String mSelectedDevice = "SamilF40726DF1105";
+        private String mSelectedDevice;
 
         public Impl(Context context) {
             mContext = context;
+
+            SharedPreferences sp = getSharedPreference();
+            mSelectedDevice = sp.getString(PREFERENCE_KEY_DEVICE_NAME, "not selected");
         }
 
         //-- methods from IncredistModel.
@@ -152,6 +159,11 @@ public interface IncredistModel extends Observable {
 
         public void setSelectedDevice(String device) {
             mSelectedDevice = device;
+            SharedPreferences sp = getSharedPreference();
+            SharedPreferences.Editor editor = sp.edit();
+            editor.putString(PREFERENCE_KEY_DEVICE_NAME, device);
+            editor.apply();
+
             notifyPropertyChanged(BR.selectedDevice);
         }
 
@@ -160,6 +172,8 @@ public interface IncredistModel extends Observable {
             return mIncredistManager.getApiVersion();
         }
 
-
+        private SharedPreferences getSharedPreference() {
+            return PreferenceManager.getDefaultSharedPreferences(mContext);
+        }
     }
 }
