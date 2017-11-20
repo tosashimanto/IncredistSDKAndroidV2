@@ -12,6 +12,7 @@ import jp.co.flight.incredist.android.Incredist;
 import jp.co.flight.incredist.android.IncredistManager;
 import jp.co.flight.incredist.android.OnFailureFunction;
 import jp.co.flight.incredist.android.OnSuccessFunction;
+import jp.co.flight.incredist.android.model.DeviceInfo;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
 
 /**
@@ -29,7 +30,7 @@ public interface IncredistModel extends Observable {
 
     void disconnect(OnSuccessFunction<Incredist> success, OnFailureFunction<Incredist> failure);
 
-    void getSerialNumber(OnSuccessFunction<String> success, OnFailureFunction<Void> failure);
+    void getDeviceInfo(OnSuccessFunction<DeviceInfo> success, OnFailureFunction<Void> failure);
 
     void felicaOpen(boolean withLed, OnSuccessFunction<Void> success, OnFailureFunction<Void> failure);
 
@@ -97,9 +98,9 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
-        public void getSerialNumber(OnSuccessFunction<String> success, OnFailureFunction<Void> failure) {
+        public void getDeviceInfo(OnSuccessFunction<DeviceInfo> success, OnFailureFunction<Void> failure) {
             if (mIncredist != null) {
-                mIncredist.getSerialNumber(success, failure);
+                mIncredist.getDeviceInfo(success, failure);
             } else {
                 failure.onFailure(-1, null);
             }

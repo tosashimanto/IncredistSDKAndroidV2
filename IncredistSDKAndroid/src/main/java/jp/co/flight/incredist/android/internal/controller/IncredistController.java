@@ -105,11 +105,11 @@ public class IncredistController {
     }
 
     /**
-     * シリアル番号を取得します.
+     * デバイス情報を取得します.
      * @param callback コールバック
      */
-    public void getSerialNumber(Callback callback) {
-        mProtoController.getSerialNumber(callback);
+    public void getDeviceInfo(Callback callback) {
+        mProtoController.getDeviceInfo(callback);
     }
 
     /**

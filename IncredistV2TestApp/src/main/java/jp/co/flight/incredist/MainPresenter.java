@@ -24,7 +24,7 @@ public interface MainPresenter {
 
     void onConnect();
 
-    void onGetSerial();
+    void onGetDeviceInfo();
 
     void onDisconnect();
 
@@ -92,12 +92,12 @@ public interface MainPresenter {
         }
 
         @Override
-        public void onGetSerial() {
-            addLog("getSerialNumber");
-            mIncredist.getSerialNumber(serial -> {
-                addLog(String.format(Locale.JAPANESE, "serial: %s", serial));
+        public void onGetDeviceInfo() {
+            addLog("getDeviceInfo");
+            mIncredist.getDeviceInfo(serial -> {
+                addLog(String.format(Locale.JAPANESE, "serial: %s firm: %s", serial.getSerialNumber(), serial.getFirmwareVersion()));
             }, (errorCode, failure) -> {
-                addLog(String.format(Locale.JAPANESE, "getSerialNumber failure %d", errorCode));
+                addLog(String.format(Locale.JAPANESE, "getDeviceInfo failure %d", errorCode));
             });
         }
 

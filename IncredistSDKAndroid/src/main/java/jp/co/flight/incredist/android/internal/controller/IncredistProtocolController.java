@@ -7,7 +7,7 @@ interface IncredistProtocolController {
     /**
      * シリアル番号を取得します.
      */
-    void getSerialNumber(IncredistController.Callback callback);
+    void getDeviceInfo(IncredistController.Callback callback);
 
     /**
      * felica モードを開始します。

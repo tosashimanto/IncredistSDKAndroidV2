@@ -6,9 +6,10 @@ import java.util.Locale;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.IncredistController;
+import jp.co.flight.incredist.android.internal.controller.result.DeviceInfoResult;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
-import jp.co.flight.incredist.android.internal.controller.result.SerialNumberResult;
 import jp.co.flight.incredist.android.internal.util.FLog;
+import jp.co.flight.incredist.android.model.DeviceInfo;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
 
 /**
@@ -85,10 +86,28 @@ public class Incredist {
      * @param failure 取得失敗時の処理
      */
     public void getSerialNumber(@Nullable OnSuccessFunction<String> success, @Nullable OnFailureFunction<Void> failure) {
-        mController.getSerialNumber(result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof SerialNumberResult) {
+        mController.getDeviceInfo(result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof DeviceInfoResult) {
                 if (success != null) {
-                    success.onSuccess(((SerialNumberResult) result).serialNumber);
+                    success.onSuccess(((DeviceInfoResult) result).serialNumber);
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status, null);
+                }
+            }
+        });
+    }
+
+    /**
+     * デバイス情報を取得します。
+     *
+     */
+    public void getDeviceInfo(@Nullable OnSuccessFunction<DeviceInfo> success, @Nullable OnFailureFunction<Void> failure) {
+        mController.getDeviceInfo(result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof DeviceInfoResult) {
+                if (success != null) {
+                    success.onSuccess(new DeviceInfo((DeviceInfoResult) result));
                 }
             } else {
                 if (failure != null) {
@@ -143,7 +162,7 @@ public class Incredist {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) {
                 jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult felicaResult = (jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) result;
                 if (success != null) {
-                    success.onSuccess(new FelicaCommandResult(felicaResult.status1, felicaResult.status2, felicaResult.resultData));
+                    success.onSuccess(new FelicaCommandResult(felicaResult));
                 }
             } else {
                 if (failure != null) {
