@@ -124,11 +124,11 @@ public class Incredist {
      * @param success 設定成功時の処理
      * @param failure 設定失敗時の処理
      */
-    public void felicaOpen(boolean withLed, @Nullable OnSuccessFunction<Void> success, @Nullable OnFailureFunction<Void> failure) {
+    public void felicaOpen(boolean withLed, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction<Void> failure) {
         mController.felicaOpen(withLed, result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 if (success != null) {
-                    success.onSuccess(null);
+                    success.onSuccess();
                 }
             } else {
                 if (failure != null) {
@@ -146,7 +146,7 @@ public class Incredist {
      * @param success 設定成功時の処理
      * @param failure 設定失敗時の処理
      */
-    public void felicaOpen(@Nullable OnSuccessFunction<Void> success, @Nullable OnFailureFunction<Void> failure) {
+    public void felicaOpen(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction<Void> failure) {
         felicaOpen(true, success, failure);
     }
 
@@ -178,11 +178,11 @@ public class Incredist {
      * @param success 設定成功時の処理
      * @param failure 設定失敗時の処理
      */
-    public void felicaClose(@Nullable OnSuccessFunction<Void> success, @Nullable OnFailureFunction<Void> failure) {
+    public void felicaClose(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction<Void> failure) {
         mController.felicaClose(result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 if (success != null) {
-                    success.onSuccess(null);
+                    success.onSuccess();
                 }
             } else {
                 if (failure != null) {

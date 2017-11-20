@@ -120,7 +120,7 @@ public interface MainPresenter {
         @Override
         public void onFelicaOpen() {
             addLog("felicaOpen");
-            mIncredist.felicaOpen(true, success -> {
+            mIncredist.felicaOpen(true, () -> {
                 addLog("felicaOpen success");
             }, (errorCode, failure) -> {
                 addLog(String.format(Locale.JAPANESE, "felicaOpen failure %d", errorCode));
@@ -130,7 +130,7 @@ public interface MainPresenter {
         @Override
         public void onFelicaOpenWithoutLed() {
             addLog("felicaOpenWithoutLed");
-            mIncredist.felicaOpen(false, success -> {
+            mIncredist.felicaOpen(false, () -> {
                 addLog("felicaOpenWithoutLed success");
             }, (errorCode, failure) -> {
                 addLog(String.format(Locale.JAPANESE, "felicaOpen failure %d", errorCode));
@@ -151,7 +151,7 @@ public interface MainPresenter {
         @Override
         public void onFelicaClose() {
             addLog("felicaClose");
-            mIncredist.felicaClose(success -> {
+            mIncredist.felicaClose(() -> {
                 addLog("felicaClose success");
             }, (errorCode, failure) -> {
                 addLog(String.format(Locale.JAPANESE, "felicaClose failure %d", errorCode));

@@ -12,6 +12,7 @@ import jp.co.flight.incredist.android.Incredist;
 import jp.co.flight.incredist.android.IncredistManager;
 import jp.co.flight.incredist.android.OnFailureFunction;
 import jp.co.flight.incredist.android.OnSuccessFunction;
+import jp.co.flight.incredist.android.OnSuccessVoidFunction;
 import jp.co.flight.incredist.android.model.DeviceInfo;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
 
@@ -32,11 +33,11 @@ public interface IncredistModel extends Observable {
 
     void getDeviceInfo(OnSuccessFunction<DeviceInfo> success, OnFailureFunction<Void> failure);
 
-    void felicaOpen(boolean withLed, OnSuccessFunction<Void> success, OnFailureFunction<Void> failure);
+    void felicaOpen(boolean withLed, OnSuccessVoidFunction success, OnFailureFunction<Void> failure);
 
     void felicaSendCommand(OnSuccessFunction<FelicaCommandResult> success, OnFailureFunction<Void> failure);
 
-    void felicaClose(OnSuccessFunction<Void> success, OnFailureFunction<Void> failure);
+    void felicaClose(OnSuccessVoidFunction success, OnFailureFunction<Void> failure);
 
     void release();
 
@@ -107,7 +108,7 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
-        public void felicaOpen(boolean withLed, OnSuccessFunction<Void> success, OnFailureFunction<Void> failure) {
+        public void felicaOpen(boolean withLed, OnSuccessVoidFunction success, OnFailureFunction<Void> failure) {
             if (mIncredist != null) {
                 mIncredist.felicaOpen(withLed, success, failure);
             } else {
@@ -126,7 +127,7 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
-        public void felicaClose(OnSuccessFunction<Void> success, OnFailureFunction<Void> failure) {
+        public void felicaClose(OnSuccessVoidFunction success, OnFailureFunction<Void> failure) {
             if (mIncredist != null) {
                 mIncredist.felicaClose(success, failure);
             } else {
