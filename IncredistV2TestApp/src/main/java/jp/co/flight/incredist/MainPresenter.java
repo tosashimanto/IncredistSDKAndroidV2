@@ -3,6 +3,7 @@ package jp.co.flight.incredist;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
+import android.text.Layout;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -159,7 +160,14 @@ public interface MainPresenter {
             String level = "-";
             SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.JAPANESE);
             final String logMessage = String.format(Locale.JAPANESE, "%s %d %d %s %s", sdf.format(new Date()), Process.myPid(), Process.myTid(), level, message);
-            mMainThreadHandler.post(() -> mBinding.textLog.append(logMessage + "\n"));
+            mMainThreadHandler.post(() -> {
+                mBinding.textLog.append(logMessage + "\n");
+                Layout layout = mBinding.textLog.getLayout();
+                int offsetBottom = layout.getLineBottom(layout.getLineCount() - 1);
+                int scrollY = offsetBottom - mBinding.textLog.getHeight();
+                scrollY = scrollY < 0 ? 0 : scrollY;
+                mBinding.textLog.setScrollY(scrollY);
+            });
         }
 
         private String hexString(byte[] bytes) {
