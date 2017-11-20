@@ -208,8 +208,8 @@ public class IncredistManager {
      *
      * @return バージョン文字列
      */
-    public String getAPIVersion() {
-        return "0.0.1-alpha";
+    public String getApiVersion() {
+        return BuildConfig.VERSION_NAME;
     }
 
     /**
