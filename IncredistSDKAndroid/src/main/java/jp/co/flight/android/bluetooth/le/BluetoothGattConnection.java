@@ -28,6 +28,8 @@ public class BluetoothGattConnection {
     private static final String TAG = "BluetoothGattConnection";
 
     public static final int ERROR_REGISTER_NOTIFICATION = 797;
+    public static final int ERROR_REGISTER_NOTIFICATION_TIMEOUT = 798;
+    public static final int ERROR_REGISTER_NOTIFICATION_INTERRUPTED = 799;
     public static final int ERROR_WRITE_FAILED = 796;
     public static final int ERROR_NO_CHARACTERISTIC = 990;
 
@@ -46,7 +48,7 @@ public class BluetoothGattConnection {
     @Nullable
     private ConnectionListener mListener;
 
-    private long mTimeout = 1000;
+    private long mTimeout = 1000;  // SUPPRESS CHECKSTYLE MagicNumber
 
     /**
      * 接続状態が変化した時のリスナ.
@@ -343,12 +345,12 @@ public class BluetoothGattConnection {
                                 }
                             } else {
                                 // timeout
-                                post(() -> failure.onFailure(ERROR_REGISTER_NOTIFICATION, null));
+                                post(() -> failure.onFailure(ERROR_REGISTER_NOTIFICATION_TIMEOUT, null));
                                 return;
                             }
                         } catch (InterruptedException e) {
                             // ignore.
-                            post(() -> failure.onFailure(ERROR_REGISTER_NOTIFICATION, null));
+                            post(() -> failure.onFailure(ERROR_REGISTER_NOTIFICATION_INTERRUPTED, null));
                             return;
                         }
                     }

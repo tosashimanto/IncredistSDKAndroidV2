@@ -24,7 +24,7 @@ public class MFiFelicaCloseCommand extends MFiCommand {
      */
     @Override
     public long getResponseTimeout() {
-        return 1000;
+        return 1000; // SUPPRESS CHECKSTYLE MagicNumber
     }
 
     /**
@@ -38,6 +38,7 @@ public class MFiFelicaCloseCommand extends MFiCommand {
     @NonNull
     @Override
     protected IncredistResult parseMFiResponse(MFiResponse response) {
+        // CHECKSTYLE:OFF MagicNumber
         byte[] bytes = response.getData();
         if (bytes != null && bytes.length == 5) {
             //TODO status 内容確認 (Hidctl 通りだと逆になっている)
@@ -45,6 +46,7 @@ public class MFiFelicaCloseCommand extends MFiCommand {
                 return new IncredistResult(IncredistResult.STATUS_SUCCESS);
             }
         }
+        // CHECKSTYLE:ON MagicNumber
 
         return new IncredistResult(IncredistResult.STATUS_INVALID_RESPONSE);
     }

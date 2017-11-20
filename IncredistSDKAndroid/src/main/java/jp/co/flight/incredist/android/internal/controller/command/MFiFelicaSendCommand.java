@@ -13,7 +13,7 @@ import jp.co.flight.incredist.android.internal.transport.mfi.MFiResponse;
  * MFi版 FeliCa コマンドパケット送信コマンド.
  */
 public class MFiFelicaSendCommand extends MFiCommand {
-    private static final byte[] FSOC_HEADER = { 'f', 's', 'o', 'c' };
+    private static final byte[] FSOC_HEADER = {'f', 's', 'o', 'c'};
 
     /**
      * コマンドパケット生成
@@ -22,6 +22,7 @@ public class MFiFelicaSendCommand extends MFiCommand {
      * @return fsoc コマンドのパケット内容
      */
     private static byte[] createPayload(byte[] felicaCommand) {
+        // CHECKSTYLE:OFF MagicNumber
         byte[] payload = new byte[felicaCommand.length + 7];
 
         System.arraycopy(FSOC_HEADER, 0, payload, 0, FSOC_HEADER.length);
@@ -30,6 +31,7 @@ public class MFiFelicaSendCommand extends MFiCommand {
         System.arraycopy(felicaCommand, 0, payload, 6, felicaCommand.length);
 
         return payload;
+        // CHECKSTYLE:ON MagicNumber
     }
 
     /**
@@ -46,7 +48,7 @@ public class MFiFelicaSendCommand extends MFiCommand {
      */
     @Override
     public long getResponseTimeout() {
-        return 5000;
+        return 5000;  // SUPPRESS CHECKSTYLE MagicNumber
     }
 
     /**
@@ -60,6 +62,7 @@ public class MFiFelicaSendCommand extends MFiCommand {
     @NonNull
     @Override
     protected IncredistResult parseMFiResponse(MFiResponse response) {
+        // CHECKSTYLE:OFF MagicNumber
         byte[] bytes = response.getData();
         if (bytes != null && bytes.length > 7) {
             int length = bytes[6] & 0xff;
@@ -69,6 +72,7 @@ public class MFiFelicaSendCommand extends MFiCommand {
                 return new FelicaCommandResult(bytes[4] & 0xff, bytes[5] & 0xff, Arrays.copyOfRange(bytes, 7, bytes.length));
             }
         }
+        // CHECKSTYLE:ON MagicNumber
 
         return new IncredistResult(IncredistResult.STATUS_INVALID_RESPONSE);
     }

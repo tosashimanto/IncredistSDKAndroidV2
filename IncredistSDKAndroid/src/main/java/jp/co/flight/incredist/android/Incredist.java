@@ -132,7 +132,7 @@ public class Incredist {
                 }
             } else {
                 if (failure != null) {
-                    FLog.d(TAG, String.format(Locale.JAPANESE, "falicaOpen: onFailure:%d %s", result.status, result.message));
+                    FLog.d(TAG, String.format(Locale.JAPANESE, "felicaOpen: onFailure:%d %s", result.status, result.message));
 
                     failure.onFailure(result.status, null);
                 }

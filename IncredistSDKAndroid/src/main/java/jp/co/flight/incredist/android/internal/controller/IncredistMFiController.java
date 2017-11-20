@@ -3,11 +3,11 @@ package jp.co.flight.incredist.android.internal.controller;
 import android.support.annotation.NonNull;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
+import jp.co.flight.incredist.android.internal.controller.command.MFiDeviceInfoCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaCloseCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaOpenCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaOpenWithoutLedCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaSendCommand;
-import jp.co.flight.incredist.android.internal.controller.command.MFiDeviceInfoCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
 

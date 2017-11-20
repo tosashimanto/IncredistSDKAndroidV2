@@ -82,7 +82,7 @@ public class IncredistManager {
                 failure.onFailure(errorCode, null);
             }
         }, (scanResult) -> {
-            FLog.d(TAG, String.format(Locale.JAPANESE, "startScanInternalcheck valid name %s %s", scanResult.getDeviceName(), scanResult.getDeviceAddress()));
+            FLog.d(TAG, String.format(Locale.JAPANESE, "startScanInternal check valid name %s %s", scanResult.getDeviceName(), scanResult.getDeviceAddress()));
             if (deviceFilter.isValid(scanResult.getDeviceName())) {
                 FLog.i(TAG, String.format(Locale.JAPANESE, "bleStartScanInternal found %s %s", scanResult.getDeviceName(), scanResult.getDeviceAddress()));
                 peripheralMap.put(scanResult.getDeviceName(), scanResult);
@@ -148,7 +148,7 @@ public class IncredistManager {
                     public void run() {
                         mHasTimeout = true;
                         mConnection.close();
-                        FLog.i(TAG, "connect timeouted");
+                        FLog.i(TAG, "connect timeout");
                         if (failure != null) {
                             failure.onFailure(CONNECT_ERROR_TIMEOUT, null);
                         }

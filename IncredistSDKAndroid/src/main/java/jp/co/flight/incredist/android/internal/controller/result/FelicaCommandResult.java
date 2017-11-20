@@ -4,8 +4,8 @@ package jp.co.flight.incredist.android.internal.controller.result;
  * FeliCa コマンド送信結果
  */
 public class FelicaCommandResult extends IncredistResult {
-    public int status1;
-    public int status2;
+    public final int status1;
+    public final int status2;
     public final byte[] resultData;
 
     /**

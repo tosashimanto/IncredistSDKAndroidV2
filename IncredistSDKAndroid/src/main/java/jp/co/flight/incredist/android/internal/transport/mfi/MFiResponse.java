@@ -84,11 +84,13 @@ public class MFiResponse extends MFiPacket {
      * @return パケット長. 不正なデータの場合 0.
      */
     private static int responseLength(@NonNull byte[] firstValue) {
+        // CHECKSTYLE:OFF MagicNumber
         if (firstValue.length > 10 && firstValue[0] == (byte) 0xff && firstValue[1] == (byte) 0x55) {
             return (firstValue[2] & 0xff) + 4;
         } else {
             return 0;
         }
+        // CHECKSTYLE:ON MagicNumber
     }
 
     /**
@@ -99,7 +101,7 @@ public class MFiResponse extends MFiPacket {
     @Nullable
     public synchronized byte[] getData() {
         if (mMFiData != null) {
-            return Arrays.copyOfRange(mMFiData, 9, mMFiData.length - 1);
+            return Arrays.copyOfRange(mMFiData, 9, mMFiData.length - 1); // SUPPRESS CHECKSTYLE MagicNumber
         } else {
             return null;
         }

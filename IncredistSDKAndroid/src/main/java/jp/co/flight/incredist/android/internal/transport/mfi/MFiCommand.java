@@ -29,6 +29,7 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
      * @param payload 送信内容
      */
     protected MFiCommand(@NonNull byte[] payload) {
+        // CHECKSTYLE:OFF MagicNumber
         super(payload.length + 10);
         byte[] mfiHeader = {
                 (byte) 0xff, (byte) 0x55, (byte) 0x00, (byte) 0x00, (byte) 0x43,
@@ -43,6 +44,7 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
 
             FLog.d(TAG, String.format(Locale.JAPANESE, "create MFiCommand %d %s", mMFiData.length, LogUtil.hexString(mMFiData)));
         }
+        // CHECKSTYLE:ON MagicNumber
     }
 
     /**
