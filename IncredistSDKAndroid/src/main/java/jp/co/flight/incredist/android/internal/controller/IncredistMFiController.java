@@ -7,7 +7,7 @@ import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaClose
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaOpenCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaOpenWithoutLedCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaSendCommand;
-import jp.co.flight.incredist.android.internal.controller.command.MFiSerialNumberCommand;
+import jp.co.flight.incredist.android.internal.controller.command.MFiDeviceInfoCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
 
@@ -47,8 +47,8 @@ public class IncredistMFiController implements IncredistProtocolController {
      * シリアル番号を取得します.
      * @param callback コールバック
      */
-    public void getSerialNumber(final IncredistController.Callback callback) {
-        postMFiCommand(new MFiSerialNumberCommand(), callback);
+    public void getDeviceInfo(final IncredistController.Callback callback) {
+        postMFiCommand(new MFiDeviceInfoCommand(), callback);
     }
 
     /**

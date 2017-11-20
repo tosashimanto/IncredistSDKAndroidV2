@@ -11,13 +11,14 @@ public class FelicaCommandResult {
     /**
      * コンストラクタ
      *
-     * @param resultData 処理結果データ
+     * @param result 処理結果データ
      */
-    public FelicaCommandResult(int status1, int status2, byte[] resultData) {
-        mStatus1 = status1;
-        mStatus2 = status2;
-        mResultData = resultData;
+    public FelicaCommandResult(jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult result) {
+        mStatus1 = result.status1;
+        mStatus2 = result.status2;
+        mResultData = result.resultData;
     }
+
 
     /**
      * 処理結果1 を取得します

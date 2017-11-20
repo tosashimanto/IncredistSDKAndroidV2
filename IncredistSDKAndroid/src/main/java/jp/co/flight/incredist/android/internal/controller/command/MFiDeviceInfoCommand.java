@@ -5,18 +5,18 @@ import android.support.annotation.NonNull;
 import java.nio.charset.Charset;
 
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
-import jp.co.flight.incredist.android.internal.controller.result.SerialNumberResult;
+import jp.co.flight.incredist.android.internal.controller.result.DeviceInfoResult;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiResponse;
 
 /**
- * MFi版 シリアル番号取得(d)コマンド.
+ * MFi版 デバイス情報取得(d)コマンド.
  */
-public class MFiSerialNumberCommand extends MFiCommand {
+public class MFiDeviceInfoCommand extends MFiCommand {
     /**
      * コンストラクタ.
      */
-    public MFiSerialNumberCommand() {
+    public MFiDeviceInfoCommand() {
         super(new byte[]{'d', 0x00});
     }
 
@@ -39,7 +39,7 @@ public class MFiSerialNumberCommand extends MFiCommand {
             String[] values = str.split("\n");
 
             if (values.length >= 4) {
-                return new SerialNumberResult(values[0], values[1], values[2], values[3]);
+                return new DeviceInfoResult(values[0], values[1], values[2], values[3]);
             }
         }
         return new IncredistResult(IncredistResult.STATUS_INVALID_RESPONSE);
