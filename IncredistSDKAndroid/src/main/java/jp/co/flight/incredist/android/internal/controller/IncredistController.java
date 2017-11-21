@@ -2,6 +2,7 @@ package jp.co.flight.incredist.android.internal.controller;
 
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.support.annotation.Nullable;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -118,6 +119,21 @@ public class IncredistController {
      */
     public void getDeviceInfo(Callback callback) {
         mProtoController.getDeviceInfo(callback);
+    }
+
+
+    /**
+     * EMV メッセージを表示します
+     */
+    public void emvDisplaymessage(int type, @Nullable String message, IncredistController.Callback callback) {
+        mProtoController.emvDisplaymessage(type, message, callback);
+    }
+
+    /**
+     * TFP メッセージを表示します
+     */
+    public void tfpDisplaymessage(int type, @Nullable String message, IncredistController.Callback callback) {
+        mProtoController.tfpDisplaymessage(type, message, callback);
     }
 
     /**

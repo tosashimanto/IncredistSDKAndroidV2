@@ -101,6 +101,8 @@ public class Incredist {
     /**
      * デバイス情報を取得します。
      *
+     * @param success 取得成功時の処理
+     * @param failure 取得失敗時の処理
      */
     private void getDeviceInfo(@Nullable OnSuccessFunction<DeviceInfo> success, @Nullable OnFailureFunction failure) {
         mController.getDeviceInfo(result -> {
@@ -117,13 +119,79 @@ public class Incredist {
     }
 
     /**
+     * EMV メッセージを表示します
+     *
+     * @param type    メッセージ番号
+     * @param message メッセージ文字列
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void emvDisplayMessage(int type, @Nullable String message, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        mController.emvDisplaymessage(type, message, result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                if (success != null) {
+                    success.onSuccess();
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
+     * EMV メッセージを表示します
+     *
+     * @param type    メッセージ番号
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void emvDisplayMessage(int type, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        emvDisplayMessage(type, null, success, failure);
+    }
+
+    /**
+     * TFP メッセージを表示します
+     *
+     * @param type    メッセージ番号
+     * @param message メッセージ文字列
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void tfpDisplayMessage(int type, @Nullable String message, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        mController.tfpDisplaymessage(type, message, result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                if (success != null) {
+                    success.onSuccess();
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
+     * TFP メッセージを表示します
+     *
+     * @param type    メッセージ番号
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void tfpDisplayMessage(int type, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        tfpDisplayMessage(type, null, success, failure);
+    }
+
+    /**
      * FeliCa アクセスのため、デバイスを FeliCa RF モードにします.
      *
      * @param withLed LED を点灯するかどうか
      * @param success 設定成功時の処理
      * @param failure 設定失敗時の処理
      */
-    private void felicaOpen(boolean withLed, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+    public void felicaOpen(boolean withLed, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
         mController.felicaOpen(withLed, result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 if (success != null) {
@@ -145,7 +213,7 @@ public class Incredist {
      * @param success 設定成功時の処理
      * @param failure 設定失敗時の処理
      */
-    private void felicaOpen(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+    public void felicaOpen(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
         felicaOpen(true, success, failure);
     }
 
@@ -153,10 +221,10 @@ public class Incredist {
      * FeliCa コマンドを送信します.
      *
      * @param felicaCommand FeliCaコマンドのバイト列
-     * @param success 送信成功時の処理
-     * @param failure 送信失敗時の処理
+     * @param success       送信成功時の処理
+     * @param failure       送信失敗時の処理
      */
-    private void felicaSendCommand(byte[] felicaCommand, @Nullable OnSuccessFunction<FelicaCommandResult> success, @Nullable OnFailureFunction failure) {
+    public void felicaSendCommand(byte[] felicaCommand, @Nullable OnSuccessFunction<FelicaCommandResult> success, @Nullable OnFailureFunction failure) {
         mController.felicaSendCommand(felicaCommand, (IncredistResult result) -> {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) {
                 jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult felicaResult = (jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) result;
@@ -177,7 +245,7 @@ public class Incredist {
      * @param success 設定成功時の処理
      * @param failure 設定失敗時の処理
      */
-    private void felicaClose(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+    public void felicaClose(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
         mController.felicaClose(result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 if (success != null) {

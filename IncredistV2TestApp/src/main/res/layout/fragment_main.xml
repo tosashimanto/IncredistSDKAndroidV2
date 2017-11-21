@@ -144,7 +144,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/button_felica_open_without_led"
             app:layout_constraintTop_toBottomOf="@+id/label_felica"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toTopOf="@+id/label_message" />
 
         <Button
             android:id="@+id/button_felica_open_without_led"
@@ -180,6 +180,40 @@
             app:layout_constraintTop_toTopOf="@+id/button_felica_open"
             app:layout_constraintBottom_toBottomOf="@+id/button_felica_open" />
 
+        <android.support.v7.widget.AppCompatTextView
+            android:id="@+id/label_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Message"
+            android:background="@color/colorHeaderBackground"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button_felica_open"
+            app:layout_constraintBottom_toTopOf="@+id/button_emv_message" />
+
+        <Button
+            android:id="@+id/button_emv_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:onClick="@{(view)->presenter.onEmvMessage()}"
+            android:text="EMV Msg"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/button_tfp_message"
+            app:layout_constraintTop_toBottomOf="@+id/label_message"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <Button
+            android:id="@+id/button_tfp_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:onClick="@{(view)->presenter.onTfpMessage()}"
+            android:text="TFP Msg"
+            app:layout_constraintStart_toEndOf="@+id/button_emv_message"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/button_emv_message"
+            app:layout_constraintBottom_toBottomOf="@+id/button_emv_message" />
 
     </android.support.constraint.ConstraintLayout>
 </layout>

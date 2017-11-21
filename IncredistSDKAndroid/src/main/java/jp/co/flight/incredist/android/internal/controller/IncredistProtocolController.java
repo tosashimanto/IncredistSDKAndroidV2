@@ -1,5 +1,7 @@
 package jp.co.flight.incredist.android.internal.controller;
 
+import android.support.annotation.Nullable;
+
 /**
  * Incredist MFi 版 / PCSC 版 共通インタフェース.
  */
@@ -8,6 +10,16 @@ interface IncredistProtocolController {
      * シリアル番号を取得します.
      */
     void getDeviceInfo(IncredistController.Callback callback);
+
+    /**
+     * EMV メッセージを表示します
+     */
+    void emvDisplaymessage(int type, @Nullable String message, IncredistController.Callback callback);
+
+    /**
+     * TFP メッセージを表示します
+     */
+    void tfpDisplaymessage(int type, @Nullable String message, IncredistController.Callback callback);
 
     /**
      * felica モードを開始します。

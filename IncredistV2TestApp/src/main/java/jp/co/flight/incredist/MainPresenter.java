@@ -41,6 +41,14 @@ public interface MainPresenter {
 
     void onFelicaClose();
 
+    void onEmvMessage();
+
+    void onTfpMessage();
+
+    void emvDisplayMessage(int type, String message);
+
+    void tfpDisplayMessage(int type, String message);
+
     void addLog(String message);
 
     /**
@@ -67,9 +75,9 @@ public interface MainPresenter {
         public void onStartScan() {
             addLog("bleStartScan");
             mIncredist.bleStartScan((List<String> scanResult) -> {
-                addLog(String.format(Locale.JAPANESE, "onStartScan result %d", scanResult.size()));
+                addLog(String.format(Locale.JAPANESE, "bleStartScan result %d", scanResult.size()));
             }, (errorCode) -> {
-                addLog(String.format(Locale.JAPANESE, "onStartScan failure %d", errorCode));
+                addLog(String.format(Locale.JAPANESE, "bleStartScan failure %d", errorCode));
             });
         }
 
@@ -78,7 +86,7 @@ public interface MainPresenter {
             addLog("selectDevice");
             List<String> devices = mIncredist.getDeviceList();
             if (devices != null && devices.size() > 0) {
-                mFragment.startSelectDevice((ArrayList<String>) devices);
+                mFragment.showDeviceListDialog((ArrayList<String>) devices);
             } else {
                 addLog("not scanned result.");
             }
@@ -171,6 +179,38 @@ public interface MainPresenter {
             });
         }
 
+        @Override
+        public void onEmvMessage() {
+            addLog("emvMessage");
+            mFragment.showEmvDisplayMessageDialog();
+        }
+
+        @Override
+        public void onTfpMessage() {
+            addLog("tfpMessage");
+            mFragment.showTfpDisplayMessageDialog();
+        }
+
+        @Override
+        public void emvDisplayMessage(int type, String message) {
+            addLog("emvDisplayMessage");
+            mIncredist.emvDisplayMessage(type, message, () -> {
+                addLog("emvDisplayMessage success");
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "emvDisplayMessage failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void tfpDisplayMessage(int type, String message) {
+            addLog("tfpMessage");
+            mIncredist.tfpDisplayMessage(type, message, () -> {
+                addLog("tfpMessage success");
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "tfpMessage failure %d", errorCode));
+            });
+        }
+
         public void addLog(String message) {
             String level = "-";
             SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.JAPANESE);
@@ -178,10 +218,12 @@ public interface MainPresenter {
             mMainThreadHandler.post(() -> {
                 mBinding.textLog.append(logMessage + "\n");
                 Layout layout = mBinding.textLog.getLayout();
-                int offsetBottom = layout.getLineBottom(layout.getLineCount() - 1);
-                int scrollY = offsetBottom - mBinding.textLog.getHeight();
-                scrollY = scrollY < 0 ? 0 : scrollY;
-                mBinding.textLog.setScrollY(scrollY);
+                if (layout != null) {
+                    int offsetBottom = layout.getLineBottom(layout.getLineCount() - 1);
+                    int scrollY = offsetBottom - mBinding.textLog.getHeight();
+                    scrollY = scrollY < 0 ? 0 : scrollY;
+                    mBinding.textLog.setScrollY(scrollY);
+                }
             });
         }
 

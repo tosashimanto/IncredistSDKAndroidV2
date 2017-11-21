@@ -1,13 +1,16 @@
 package jp.co.flight.incredist.android.internal.controller;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.command.MFiDeviceInfoCommand;
+import jp.co.flight.incredist.android.internal.controller.command.MFiEmvDisplayMessageCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaCloseCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaOpenCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaOpenWithoutLedCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaSendCommand;
+import jp.co.flight.incredist.android.internal.controller.command.MFiTfpDisplayMessageCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
 
@@ -49,6 +52,30 @@ public class IncredistMFiController implements IncredistProtocolController {
      */
     public void getDeviceInfo(final IncredistController.Callback callback) {
         postMFiCommand(new MFiDeviceInfoCommand(), callback);
+    }
+
+    /**
+     * EMV メッセージを表示します
+     *
+     * @param type メッセージ番号
+     * @param message メッセージ文字列
+     * @param callback コールバック
+     */
+    @Override
+    public void emvDisplaymessage(int type, @Nullable String message, IncredistController.Callback callback) {
+        postMFiCommand(new MFiEmvDisplayMessageCommand(type, message), callback);
+    }
+
+    /**
+     * TFP メッセージを表示します
+     *
+     * @param type メッセージ番号
+     * @param message メッセージ文字列
+     * @param callback コールバック
+     */
+    @Override
+    public void tfpDisplaymessage(int type, @Nullable String message, IncredistController.Callback callback) {
+        postMFiCommand(new MFiTfpDisplayMessageCommand(type, message), callback);
     }
 
     /**

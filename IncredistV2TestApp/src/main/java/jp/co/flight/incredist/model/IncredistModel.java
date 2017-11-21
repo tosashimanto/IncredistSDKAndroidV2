@@ -52,10 +52,26 @@ public interface IncredistModel extends Observable {
 
     String getApiVersion();
 
+    int getEmvMessageType();
+
+    String getEmvMessageString();
+
+    int getTfpMessageType();
+
+    String getTfpMessageString();
+
+    void emvDisplayMessage(int emvMessageType, String emvMessageString, OnSuccessVoidFunction success, OnFailureFunction failure);
+
+    void tfpDisplayMessage(int tfpMessageType, String tfpMessageString, OnSuccessVoidFunction success, OnFailureFunction failure);
+
     void auto(OnSuccessFunction<String> success, OnFailureFunction failure);
 
     class Impl extends BaseObservable implements IncredistModel {
         private static final String PREFERENCE_KEY_DEVICE_NAME = "device_name";
+        private static final String PREFERENCE_KEY_EMV_MESSAGE_TYPE = "emv_message_type";
+        private static final String PREFERENCE_KEY_EMV_MESSAGE_STRING = "emv_message_string";
+        private static final String PREFERENCE_KEY_TFP_MESSAGE_TYPE = "tfp_message_type";
+        private static final String PREFERENCE_KEY_TFP_MESSAGE_STRING = "tfp_message_string";
 
         private final Context mContext;
         private IncredistManager mIncredistManager;
@@ -63,12 +79,20 @@ public interface IncredistModel extends Observable {
 
         private List<String> mDeviceList;
         private String mSelectedDevice;
+        private int mEmvMessageType;
+        private String mEmvMessageString;
+        private int mTfpMessageType;
+        private String mTfpMessageString;
 
         public Impl(Context context) {
             mContext = context;
 
             SharedPreferences sp = getSharedPreference();
             mSelectedDevice = sp.getString(PREFERENCE_KEY_DEVICE_NAME, "not selected");
+            mEmvMessageType = sp.getInt(PREFERENCE_KEY_EMV_MESSAGE_TYPE, 0);
+            mEmvMessageString = sp.getString(PREFERENCE_KEY_EMV_MESSAGE_STRING, null);
+            mTfpMessageType = sp.getInt(PREFERENCE_KEY_TFP_MESSAGE_TYPE, 0);
+            mTfpMessageString = sp.getString(PREFERENCE_KEY_TFP_MESSAGE_STRING, null);
         }
 
         //-- methods from IncredistModel.
@@ -110,7 +134,7 @@ public interface IncredistModel extends Observable {
         @Override
         public void getDeviceInfo(OnSuccessFunction<DeviceInfo> success, OnFailureFunction failure) {
             if (mIncredist != null) {
-//                mIncredist.getDeviceInfo(success, failure);
+                mIncredist.getDeviceInfo(success, failure);
             } else {
                 failure.onFailure(-1);
             }
@@ -119,7 +143,7 @@ public interface IncredistModel extends Observable {
         @Override
         public void felicaOpen(boolean withLed, OnSuccessVoidFunction success, OnFailureFunction failure) {
             if (mIncredist != null) {
-//                mIncredist.felicaOpen(withLed, success, failure);
+                mIncredist.felicaOpen(withLed, success, failure);
             } else {
                 failure.onFailure(-1);
             }
@@ -129,7 +153,7 @@ public interface IncredistModel extends Observable {
         public void felicaSendCommand(OnSuccessFunction<FelicaCommandResult> success, OnFailureFunction failure) {
             if (mIncredist != null) {
                 byte[] felicaCommand = {(byte) 0x00, (byte) 0xff, (byte) 0xff, (byte) 0x00, (byte) 0x00};
-//                mIncredist.felicaSendCommand(felicaCommand, success, failure);
+                mIncredist.felicaSendCommand(felicaCommand, success, failure);
             } else {
                 failure.onFailure(-1);
             }
@@ -138,7 +162,7 @@ public interface IncredistModel extends Observable {
         @Override
         public void felicaClose(OnSuccessVoidFunction success, OnFailureFunction failure) {
             if (mIncredist != null) {
-//                mIncredist.felicaClose(success, failure);
+                mIncredist.felicaClose(success, failure);
             } else {
                 failure.onFailure(-1);
             }
@@ -172,6 +196,52 @@ public interface IncredistModel extends Observable {
         @Override
         public String getApiVersion() {
             return mIncredistManager.getApiVersion();
+        }
+
+        @Override
+        public int getEmvMessageType() {
+            return mEmvMessageType;
+        }
+
+        @Override
+        public String getEmvMessageString() {
+            return mEmvMessageString;
+        }
+
+        @Override
+        public int getTfpMessageType() {
+            return mTfpMessageType;
+        }
+
+        @Override
+        public String getTfpMessageString() {
+            return mTfpMessageString;
+        }
+
+        @Override
+        public void emvDisplayMessage(int emvMessageType, String emvMessageString, OnSuccessVoidFunction success, OnFailureFunction failure) {
+            SharedPreferences sp = getSharedPreference();
+            SharedPreferences.Editor editor = sp.edit();
+            editor.putInt(PREFERENCE_KEY_EMV_MESSAGE_TYPE, emvMessageType);
+            editor.putString(PREFERENCE_KEY_EMV_MESSAGE_STRING, emvMessageString);
+            editor.apply();
+            mEmvMessageType = emvMessageType;
+            mEmvMessageString = emvMessageString;
+
+            mIncredist.emvDisplayMessage(emvMessageType, emvMessageString, success, failure);
+        }
+
+        @Override
+        public void tfpDisplayMessage(int tfpMessageType, String tfpMessageString, OnSuccessVoidFunction success, OnFailureFunction failure) {
+            SharedPreferences sp = getSharedPreference();
+            SharedPreferences.Editor editor = sp.edit();
+            editor.putInt(PREFERENCE_KEY_TFP_MESSAGE_TYPE, tfpMessageType);
+            editor.putString(PREFERENCE_KEY_TFP_MESSAGE_STRING, tfpMessageString);
+            editor.apply();
+            mTfpMessageType = tfpMessageType;
+            mTfpMessageString = tfpMessageString;
+
+            mIncredist.tfpDisplayMessage(tfpMessageType, tfpMessageString, success, failure);
         }
 
         @Override
