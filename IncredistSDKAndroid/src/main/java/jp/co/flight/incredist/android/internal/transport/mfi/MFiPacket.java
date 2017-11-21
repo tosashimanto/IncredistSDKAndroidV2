@@ -46,7 +46,7 @@ abstract class MFiPacket {
             return mErrorCode == IncredistResult.STATUS_SUCCESS;
         } else {
             return mMFiData != null
-                    && mMFiData.length > 10
+                    && mMFiData.length > 10 // SUPPRESS CHECKSTYLE MagicNumber
                     && getPacketLengthValue() == mMFiData[2]
                     && getChecksum() == mMFiData[mMFiData.length - 1];
         }
@@ -59,7 +59,7 @@ abstract class MFiPacket {
      */
     byte getPacketLengthValue() {
         if (mMFiData != null) {
-            return (byte) ((mMFiData.length - 4) & 0xff);
+            return (byte) ((mMFiData.length - 4) & 0xff); // SUPPRESS CHECKSTYLE MagicNumber
         } else {
             return 0;
         }
@@ -78,7 +78,7 @@ abstract class MFiPacket {
                 sum += mMFiData[i];
             }
 
-            return (byte) (-(sum & 0xff));
+            return (byte) (-(sum & 0xff)); // SUPPRESS CHECKSTYLE MagicNumber
         } else {
             return 0;
         }

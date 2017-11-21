@@ -3,6 +3,7 @@ package jp.co.flight.incredist.android.internal.util;
 /**
  * ライブラリ外部でログ表示できるようにするためのインタフェース.
  */
+@SuppressWarnings("WeakerAccess")
 public interface LogInterface {
     int d(String tag, String msg, Throwable tr);
 

@@ -4,7 +4,7 @@ android {
     compileSdkVersion 26
     buildToolsVersion '26.0.2'
     defaultConfig {
-        applicationId "jp.co.flight.incredist"
+        applicationId "jp.co.flight.incredist.android.IncredistV2TestApp"
         minSdkVersion 22
         targetSdkVersion 26
         versionCode 1

@@ -11,7 +11,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import jp.co.flight.incredist.databinding.FragmentMainBinding;
+import jp.co.flight.incredist.android.IncredistV2TestApp.BuildConfig;
+import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
 import jp.co.flight.incredist.model.IncredistModel;
 
 /**
@@ -65,7 +66,7 @@ public interface MainPresenter {
             addLog("bleStartScan");
             mIncredist.bleStartScan((List<String> scanResult) -> {
                 addLog(String.format(Locale.JAPANESE, "onStartScan result %d", scanResult.size()));
-            }, (errorCode, failure) -> {
+            }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "onStartScan failure %d", errorCode));
             });
         }
@@ -86,7 +87,7 @@ public interface MainPresenter {
             addLog("connect");
             mIncredist.connect((incredist) -> {
                 addLog(String.format(Locale.JAPANESE, "connected: %s", incredist.getDeviceName()));
-            }, (errorCode, failure) -> {
+            }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "connect failure %d", errorCode));
             });
         }
@@ -96,7 +97,7 @@ public interface MainPresenter {
             addLog("getDeviceInfo");
             mIncredist.getDeviceInfo(serial -> {
                 addLog(String.format(Locale.JAPANESE, "serial: %s firm: %s", serial.getSerialNumber(), serial.getFirmwareVersion()));
-            }, (errorCode, failure) -> {
+            }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "getDeviceInfo failure %d", errorCode));
             });
         }
@@ -106,7 +107,7 @@ public interface MainPresenter {
             addLog("disconnect");
             mIncredist.disconnect(incredist -> {
                 addLog("disconnected");
-            }, (errorCode, incredist) -> {
+            }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "disconnect failure %d", errorCode));
             });
         }
@@ -120,9 +121,9 @@ public interface MainPresenter {
         @Override
         public void onFelicaOpen() {
             addLog("felicaOpen");
-            mIncredist.felicaOpen(true, success -> {
+            mIncredist.felicaOpen(true, () -> {
                 addLog("felicaOpen success");
-            }, (errorCode, failure) -> {
+            }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "felicaOpen failure %d", errorCode));
             });
         }
@@ -130,9 +131,9 @@ public interface MainPresenter {
         @Override
         public void onFelicaOpenWithoutLed() {
             addLog("felicaOpenWithoutLed");
-            mIncredist.felicaOpen(false, success -> {
+            mIncredist.felicaOpen(false, () -> {
                 addLog("felicaOpenWithoutLed success");
-            }, (errorCode, failure) -> {
+            }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "felicaOpen failure %d", errorCode));
             });
         }
@@ -143,7 +144,7 @@ public interface MainPresenter {
             mIncredist.felicaSendCommand(success -> {
                 addLog(String.format(Locale.JAPANESE, "felicaSend success status1:%d status2:%d result:%s",
                         success.getStatus1(), success.getStatus2(), hexString(success.getResultData())));
-            }, (errorCode, failure) -> {
+            }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "felicaSend failure %d", errorCode));
             });
         }
@@ -151,9 +152,9 @@ public interface MainPresenter {
         @Override
         public void onFelicaClose() {
             addLog("felicaClose");
-            mIncredist.felicaClose(success -> {
+            mIncredist.felicaClose(() -> {
                 addLog("felicaClose success");
-            }, (errorCode, failure) -> {
+            }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "felicaClose failure %d", errorCode));
             });
         }

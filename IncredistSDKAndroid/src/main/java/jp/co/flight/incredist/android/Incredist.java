@@ -46,7 +46,7 @@ public class Incredist {
     /**
      * Incredistとの接続を切断します.
      */
-    public void disconnect(@Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction<Incredist> failure) {
+    public void disconnect(@Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction failure) {
         mController.disconnect(result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 mController.release();
@@ -55,7 +55,7 @@ public class Incredist {
                 }
             } else {
                 if (failure != null) {
-                    failure.onFailure(result.status, this);
+                    failure.onFailure(result.status);
                 }
             }
         });
@@ -85,7 +85,7 @@ public class Incredist {
      * @param success 取得成功時の処理
      * @param failure 取得失敗時の処理
      */
-    public void getSerialNumber(@Nullable OnSuccessFunction<String> success, @Nullable OnFailureFunction<Void> failure) {
+    public void getSerialNumber(@Nullable OnSuccessFunction<String> success, @Nullable OnFailureFunction failure) {
         mController.getDeviceInfo(result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof DeviceInfoResult) {
                 if (success != null) {
@@ -93,7 +93,7 @@ public class Incredist {
                 }
             } else {
                 if (failure != null) {
-                    failure.onFailure(result.status, null);
+                    failure.onFailure(result.status);
                 }
             }
         });
@@ -103,7 +103,7 @@ public class Incredist {
      * デバイス情報を取得します。
      *
      */
-    public void getDeviceInfo(@Nullable OnSuccessFunction<DeviceInfo> success, @Nullable OnFailureFunction<Void> failure) {
+    public void getDeviceInfo(@Nullable OnSuccessFunction<DeviceInfo> success, @Nullable OnFailureFunction failure) {
         mController.getDeviceInfo(result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof DeviceInfoResult) {
                 if (success != null) {
@@ -111,7 +111,7 @@ public class Incredist {
                 }
             } else {
                 if (failure != null) {
-                    failure.onFailure(result.status, null);
+                    failure.onFailure(result.status);
                 }
             }
         });
@@ -124,17 +124,17 @@ public class Incredist {
      * @param success 設定成功時の処理
      * @param failure 設定失敗時の処理
      */
-    public void felicaOpen(boolean withLed, @Nullable OnSuccessFunction<Void> success, @Nullable OnFailureFunction<Void> failure) {
+    public void felicaOpen(boolean withLed, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
         mController.felicaOpen(withLed, result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 if (success != null) {
-                    success.onSuccess(null);
+                    success.onSuccess();
                 }
             } else {
                 if (failure != null) {
-                    FLog.d(TAG, String.format(Locale.JAPANESE, "falicaOpen: onFailure:%d %s", result.status, result.message));
+                    FLog.d(TAG, String.format(Locale.JAPANESE, "felicaOpen: onFailure:%d %s", result.status, result.message));
 
-                    failure.onFailure(result.status, null);
+                    failure.onFailure(result.status);
                 }
             }
         });
@@ -146,7 +146,7 @@ public class Incredist {
      * @param success 設定成功時の処理
      * @param failure 設定失敗時の処理
      */
-    public void felicaOpen(@Nullable OnSuccessFunction<Void> success, @Nullable OnFailureFunction<Void> failure) {
+    public void felicaOpen(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
         felicaOpen(true, success, failure);
     }
 
@@ -157,7 +157,7 @@ public class Incredist {
      * @param success 送信成功時の処理
      * @param failure 送信失敗時の処理
      */
-    public void felicaSendCommand(byte[] felicaCommand, @Nullable OnSuccessFunction<FelicaCommandResult> success, @Nullable OnFailureFunction<Void> failure) {
+    public void felicaSendCommand(byte[] felicaCommand, @Nullable OnSuccessFunction<FelicaCommandResult> success, @Nullable OnFailureFunction failure) {
         mController.felicaSendCommand(felicaCommand, (IncredistResult result) -> {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) {
                 jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult felicaResult = (jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) result;
@@ -166,7 +166,7 @@ public class Incredist {
                 }
             } else {
                 if (failure != null) {
-                    failure.onFailure(result.status, null);
+                    failure.onFailure(result.status);
                 }
             }
         });
@@ -178,15 +178,15 @@ public class Incredist {
      * @param success 設定成功時の処理
      * @param failure 設定失敗時の処理
      */
-    public void felicaClose(@Nullable OnSuccessFunction<Void> success, @Nullable OnFailureFunction<Void> failure) {
+    public void felicaClose(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
         mController.felicaClose(result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 if (success != null) {
-                    success.onSuccess(null);
+                    success.onSuccess();
                 }
             } else {
                 if (failure != null) {
-                    failure.onFailure(result.status, null);
+                    failure.onFailure(result.status);
                 }
             }
         });

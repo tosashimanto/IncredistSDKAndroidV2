@@ -14,7 +14,8 @@ import android.view.View;
 
 import java.util.ArrayList;
 
-import jp.co.flight.incredist.databinding.FragmentDialogDeviceListBinding;
+import jp.co.flight.incredist.android.IncredistV2TestApp.R;
+import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentDialogDeviceListBinding;
 
 public class DeviceListDialogFragment extends DialogFragment implements DeviceRecyclerViewAdapter.Listener {
 
@@ -27,6 +28,12 @@ public class DeviceListDialogFragment extends DialogFragment implements DeviceRe
     public DeviceListDialogFragment() {
     }
 
+    /**
+     * ダイアログのインスタンスを生成します
+     *
+     * @param deviceList 表示するデバイス名のリスト
+     * @return DeviceListDialogFragment のインスタンス
+     */
     public static DeviceListDialogFragment newInstance(ArrayList<String> deviceList) {
         DeviceListDialogFragment fragment = new DeviceListDialogFragment();
         Bundle bundle = new Bundle();

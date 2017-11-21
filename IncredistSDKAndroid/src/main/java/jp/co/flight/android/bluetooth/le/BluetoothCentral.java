@@ -105,6 +105,11 @@ public class BluetoothCentral {
         }
     }
 
+    /**
+     * コンストラクタ.
+     *
+     * @param context コンテキスト
+     */
     public BluetoothCentral(Context context) {
         this(context, null);
     }

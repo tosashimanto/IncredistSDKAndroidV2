@@ -5,6 +5,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 
+import jp.co.flight.incredist.android.IncredistV2TestApp.R;
 import jp.co.flight.incredist.model.IncredistModel;
 
 public class MainActivity extends AppCompatActivity implements MainFragment.OnFragmentInteractionListener {
