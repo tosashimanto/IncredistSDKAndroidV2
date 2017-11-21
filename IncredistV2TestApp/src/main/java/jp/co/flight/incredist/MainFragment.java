@@ -99,7 +99,7 @@ public class MainFragment extends Fragment implements DeviceListDialogFragment.L
 
     @Override
     public void onSelectDevice(int requestCode, String deviceName) {
-        mModel.setSelectedDevice(deviceName);
+        mPresenter.setSelectedDevice(deviceName);
         mPresenter.addLog(deviceName);
     }
 

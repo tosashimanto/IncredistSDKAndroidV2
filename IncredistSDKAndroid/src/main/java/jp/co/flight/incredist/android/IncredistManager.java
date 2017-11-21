@@ -66,7 +66,7 @@ public class IncredistManager {
      * @param success  スキャン完了時処理
      * @param failure  スキャン失敗時処理
      */
-    private void bleStartScanInternal(@Nullable DeviceFilter filter, long scanTime, OnSuccessFunction<Map<String, BluetoothPeripheral>> success, OnFailureFunction<Void> failure) {
+    private void bleStartScanInternal(@Nullable DeviceFilter filter, long scanTime, OnSuccessFunction<Map<String, BluetoothPeripheral>> success, OnFailureFunction failure) {
         final DeviceFilter deviceFilter = filter != null ? filter : new DeviceFilter();
         final Map<String, BluetoothPeripheral> peripheralMap = new HashMap<>();
 
@@ -79,7 +79,7 @@ public class IncredistManager {
         }, (errorCode, failureValue) -> {
             if (failure != null) {
                 FLog.i(TAG, String.format(Locale.JAPANESE, "bleStartScanInternal call onFailure errorCode:%d", errorCode));
-                failure.onFailure(errorCode, null);
+                failure.onFailure(errorCode);
             }
         }, (scanResult) -> {
             FLog.d(TAG, String.format(Locale.JAPANESE, "startScanInternal check valid name %s %s", scanResult.getDeviceName(), scanResult.getDeviceAddress()));
@@ -99,7 +99,7 @@ public class IncredistManager {
      * @param success  スキャン完了時処理
      * @param failure  スキャン失敗時処理
      */
-    public void bleStartScan(@Nullable DeviceFilter filter, long scanTime, OnSuccessFunction<List<String>> success, OnFailureFunction<Void> failure) {
+    public void bleStartScan(@Nullable DeviceFilter filter, long scanTime, OnSuccessFunction<List<String>> success, OnFailureFunction failure) {
         bleStartScanInternal(filter, scanTime, (peripheralMap) -> {
             success.onSuccess(new ArrayList<>(peripheralMap.keySet()));
         }, failure);
@@ -129,7 +129,7 @@ public class IncredistManager {
      * @param success    接続成功時処理
      * @param failure    接続失敗時処理
      */
-    public void connect(String deviceName, long timeout, @Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction<Void> failure) {
+    public void connect(String deviceName, long timeout, @Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction failure) {
         FLog.i(TAG, String.format(Locale.JAPANESE, "connect device:%s timeout:%d", deviceName, timeout));
 
         bleStartScanInternal(null, timeout, (peripheralMap) -> {
@@ -150,7 +150,7 @@ public class IncredistManager {
                         mConnection.close();
                         FLog.i(TAG, "connect timeout");
                         if (failure != null) {
-                            failure.onFailure(CONNECT_ERROR_TIMEOUT, null);
+                            failure.onFailure(CONNECT_ERROR_TIMEOUT);
                         }
                     }
 
@@ -196,7 +196,7 @@ public class IncredistManager {
                 Handler handler = mCentral.getHandler();
                 handler.post(() -> {
                     if (failure != null) {
-                        failure.onFailure(CONNECT_ERROR_NOT_FOUND, null);
+                        failure.onFailure(CONNECT_ERROR_NOT_FOUND);
                     }
                 });
             }

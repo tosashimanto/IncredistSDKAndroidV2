@@ -25,21 +25,21 @@ public interface IncredistModel extends Observable {
 
     void newIncredistObject();
 
-    void bleStartScan(OnSuccessFunction<List<String>> success, OnFailureFunction<Void> failure);
+    void bleStartScan(OnSuccessFunction<List<String>> success, OnFailureFunction failure);
 
     List<String> getDeviceList();
 
-    void connect(OnSuccessFunction<Incredist> success, OnFailureFunction<Void> failure);
+    void connect(OnSuccessFunction<Incredist> success, OnFailureFunction failure);
 
-    void disconnect(OnSuccessFunction<Incredist> success, OnFailureFunction<Incredist> failure);
+    void disconnect(OnSuccessFunction<Incredist> success, OnFailureFunction failure);
 
-    void getDeviceInfo(OnSuccessFunction<DeviceInfo> success, OnFailureFunction<Void> failure);
+    void getDeviceInfo(OnSuccessFunction<DeviceInfo> success, OnFailureFunction failure);
 
-    void felicaOpen(boolean withLed, OnSuccessVoidFunction success, OnFailureFunction<Void> failure);
+    void felicaOpen(boolean withLed, OnSuccessVoidFunction success, OnFailureFunction failure);
 
-    void felicaSendCommand(OnSuccessFunction<FelicaCommandResult> success, OnFailureFunction<Void> failure);
+    void felicaSendCommand(OnSuccessFunction<FelicaCommandResult> success, OnFailureFunction failure);
 
-    void felicaClose(OnSuccessVoidFunction success, OnFailureFunction<Void> failure);
+    void felicaClose(OnSuccessVoidFunction success, OnFailureFunction failure);
 
     void release();
 
@@ -76,7 +76,7 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
-        public void bleStartScan(OnSuccessFunction<List<String>> success, OnFailureFunction<Void> failure) {
+        public void bleStartScan(OnSuccessFunction<List<String>> success, OnFailureFunction failure) {
             mIncredistManager.bleStartScan(null, 5000, (deviceList) -> {
                 mDeviceList = deviceList;
                 success.onSuccess(deviceList);
@@ -89,7 +89,7 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
-        public void connect(OnSuccessFunction<Incredist> success, OnFailureFunction<Void> failure) {
+        public void connect(OnSuccessFunction<Incredist> success, OnFailureFunction failure) {
             mIncredistManager.connect(mSelectedDevice, 3000, (incredist) -> {
                 mIncredist = incredist;
                 success.onSuccess(incredist);
@@ -97,48 +97,48 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
-        public void disconnect(OnSuccessFunction<Incredist> success, OnFailureFunction<Incredist> failure) {
+        public void disconnect(OnSuccessFunction<Incredist> success, OnFailureFunction failure) {
             if (mIncredist != null) {
                 mIncredist.disconnect(success, failure);
             } else {
-                failure.onFailure(-1, null);
+                failure.onFailure(-1);
             }
         }
 
         @Override
-        public void getDeviceInfo(OnSuccessFunction<DeviceInfo> success, OnFailureFunction<Void> failure) {
+        public void getDeviceInfo(OnSuccessFunction<DeviceInfo> success, OnFailureFunction failure) {
             if (mIncredist != null) {
                 mIncredist.getDeviceInfo(success, failure);
             } else {
-                failure.onFailure(-1, null);
+                failure.onFailure(-1);
             }
         }
 
         @Override
-        public void felicaOpen(boolean withLed, OnSuccessVoidFunction success, OnFailureFunction<Void> failure) {
+        public void felicaOpen(boolean withLed, OnSuccessVoidFunction success, OnFailureFunction failure) {
             if (mIncredist != null) {
                 mIncredist.felicaOpen(withLed, success, failure);
             } else {
-                failure.onFailure(-1, null);
+                failure.onFailure(-1);
             }
         }
 
         @Override
-        public void felicaSendCommand(OnSuccessFunction<FelicaCommandResult> success, OnFailureFunction<Void> failure) {
+        public void felicaSendCommand(OnSuccessFunction<FelicaCommandResult> success, OnFailureFunction failure) {
             if (mIncredist != null) {
                 byte[] felicaCommand = {(byte) 0x00, (byte) 0xff, (byte) 0xff, (byte) 0x00, (byte) 0x00};
                 mIncredist.felicaSendCommand(felicaCommand, success, failure);
             } else {
-                failure.onFailure(-1, null);
+                failure.onFailure(-1);
             }
         }
 
         @Override
-        public void felicaClose(OnSuccessVoidFunction success, OnFailureFunction<Void> failure) {
+        public void felicaClose(OnSuccessVoidFunction success, OnFailureFunction failure) {
             if (mIncredist != null) {
                 mIncredist.felicaClose(success, failure);
             } else {
-                failure.onFailure(-1, null);
+                failure.onFailure(-1);
             }
         }
 
