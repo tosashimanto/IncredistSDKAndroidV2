@@ -114,7 +114,6 @@ public class BluetoothGattConnection {
                 switch (newState) {
                     case BluetoothGatt.STATE_CONNECTED:
                         post(() -> {
-                            listener.onConnect(BluetoothGattConnection.this);
                             gatt.discoverServices();
                         });
                         break;
@@ -125,6 +124,20 @@ public class BluetoothGattConnection {
                         break;
                     default:
                         break;
+                }
+            }
+        }
+
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            super.onServicesDiscovered(gatt, status);
+
+            final ConnectionListener listener = mListener;
+            if (listener != null) {
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    post(() -> {
+                        listener.onConnect(BluetoothGattConnection.this);
+                    });
                 }
             }
         }
