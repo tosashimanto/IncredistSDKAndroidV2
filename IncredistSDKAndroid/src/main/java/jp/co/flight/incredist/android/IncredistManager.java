@@ -24,8 +24,8 @@ import jp.co.flight.incredist.android.internal.util.FLog;
 public class IncredistManager {
     private static final String TAG = "IncredistManager";
 
-    private static final int CONNECT_ERROR_NOT_FOUND = 798;
-    private static final int CONNECT_ERROR_TIMEOUT = 799;
+    private static final int CONNECT_ERROR_NOT_FOUND = 1798;
+    private static final int CONNECT_ERROR_TIMEOUT = 1799;
 
     private final BluetoothCentral mCentral;
 
