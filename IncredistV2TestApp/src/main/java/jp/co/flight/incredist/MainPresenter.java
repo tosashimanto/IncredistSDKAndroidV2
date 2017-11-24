@@ -23,13 +23,15 @@ public interface MainPresenter {
 
     void onSelectDevice();
 
+    void setSelectedDevice(String deviceName);
+
     void onConnect();
 
     void onGetDeviceInfo();
 
     void onDisconnect();
 
-    void setSelectedDevice(String deviceName);
+    void onAuto();
 
     void onFelicaOpen();
 
@@ -83,6 +85,12 @@ public interface MainPresenter {
         }
 
         @Override
+        public void setSelectedDevice(String deviceName) {
+            addLog(String.format("setSelectedDevice:%s", deviceName));
+            mIncredist.setSelectedDevice(deviceName);
+        }
+
+        @Override
         public void onConnect() {
             addLog("connect");
             mIncredist.connect((incredist) -> {
@@ -113,9 +121,13 @@ public interface MainPresenter {
         }
 
         @Override
-        public void setSelectedDevice(String deviceName) {
-            addLog(String.format("setSelectedDevice:%s", deviceName));
-            mIncredist.setSelectedDevice(deviceName);
+        public void onAuto() {
+            addLog("auto");
+            mIncredist.auto((serialNumber) -> {
+                addLog(String.format(Locale.JAPANESE, "auto serial: %s", serialNumber));
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "auto serial failure %d", errorCode));
+            });
         }
 
         @Override
