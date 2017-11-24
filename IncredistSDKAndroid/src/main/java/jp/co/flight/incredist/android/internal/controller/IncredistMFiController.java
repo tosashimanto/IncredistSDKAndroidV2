@@ -10,9 +10,11 @@ import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaClose
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaOpenCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaOpenWithoutLedCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaSendCommand;
+import jp.co.flight.incredist.android.internal.controller.command.MFiSetEncryptionModeCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiTfpDisplayMessageCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
+import jp.co.flight.incredist.android.model.EncryptionMode;
 
 /**
  * MFi版 Incredist 用 Controller.
@@ -79,7 +81,19 @@ public class IncredistMFiController implements IncredistProtocolController {
     }
 
     /**
+     * 暗号化モードを設定します
+     *
+     * @param mode 暗号化モード
+     * @param callback コールバック
+     */
+    @Override
+    public void setEncryptionMode(EncryptionMode mode, IncredistController.Callback callback) {
+        postMFiCommand(new MFiSetEncryptionModeCommand(mode), callback);
+    }
+
+    /**
      * FeliCa RF モードを開始します
+     *
      * @param withLed LED を点灯するかどうか
      * @param callback コールバック
      */
@@ -96,6 +110,7 @@ public class IncredistMFiController implements IncredistProtocolController {
 
     /**
      * FeliCa コマンドを送信します
+     *
      * @param command 送信するFeliCaコマンド
      * @param callback コールバック
      */
@@ -106,6 +121,7 @@ public class IncredistMFiController implements IncredistProtocolController {
 
     /**
      * FeliCa RF モードを終了します
+     *
      * @param callback コールバック
      */
     @Override

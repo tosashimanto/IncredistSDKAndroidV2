@@ -8,6 +8,7 @@ import java.util.concurrent.CountDownLatch;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
+import jp.co.flight.incredist.android.model.EncryptionMode;
 
 import static jp.co.flight.incredist.android.internal.controller.result.IncredistResult.STATUS_FAILED_EXECUTION;
 
@@ -115,6 +116,7 @@ public class IncredistController {
 
     /**
      * デバイス情報を取得します.
+     *
      * @param callback コールバック
      */
     public void getDeviceInfo(Callback callback) {
@@ -124,16 +126,34 @@ public class IncredistController {
 
     /**
      * EMV メッセージを表示します
+     *
+     * @param type メッセージ番号
+     * @param message メッセージ文字列
+     * @param callback コールバック
      */
-    public void emvDisplaymessage(int type, @Nullable String message, IncredistController.Callback callback) {
+    public void emvDisplaymessage(int type, @Nullable String message, Callback callback) {
         mProtoController.emvDisplaymessage(type, message, callback);
     }
 
     /**
      * TFP メッセージを表示します
+     *
+     * @param type メッセージ番号
+     * @param message メッセージ文字列
+     * @param callback コールバック
      */
-    public void tfpDisplaymessage(int type, @Nullable String message, IncredistController.Callback callback) {
+    public void tfpDisplaymessage(int type, @Nullable String message, Callback callback) {
         mProtoController.tfpDisplaymessage(type, message, callback);
+    }
+
+    /**
+     * 暗号化モードを設定します
+     *
+     * @param mode 暗号化モード
+     * @param callback コールバック　
+     */
+    public void setEncryptionMode(EncryptionMode mode, Callback callback) {
+        mProtoController.setEncryptionMode(mode, callback);
     }
 
     /**
@@ -188,6 +208,9 @@ public class IncredistController {
                 return false;
             }
         }
+
+        mConnection = null;
+        mProtoController = null;
 
         return true;
     }

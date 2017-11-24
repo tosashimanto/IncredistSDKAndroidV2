@@ -10,7 +10,7 @@ import java.util.List;
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class FLog {
-    private static List<LogInterface> sLogInstances = new ArrayList<>();
+    private static final List<LogInterface> sLogInstances = new ArrayList<>();
 
     static {
         FLog.addLogInstance(new AndroidLog());

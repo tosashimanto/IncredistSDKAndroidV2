@@ -2,6 +2,8 @@ package jp.co.flight.incredist.android.internal.controller;
 
 import android.support.annotation.Nullable;
 
+import jp.co.flight.incredist.android.model.EncryptionMode;
+
 /**
  * Incredist MFi 版 / PCSC 版 共通インタフェース.
  */
@@ -22,6 +24,13 @@ interface IncredistProtocolController {
     void tfpDisplaymessage(int type, @Nullable String message, IncredistController.Callback callback);
 
     /**
+     * 暗号化モードを設定します
+     * @param mode 暗号化モード
+     * @param callback コールバック
+     */
+    void setEncryptionMode(EncryptionMode mode, IncredistController.Callback callback);
+
+    /**
      * felica モードを開始します。
      * @param withLed LED を点灯するかどうか
      * @param callback コールバック
@@ -40,4 +49,5 @@ interface IncredistProtocolController {
      * @param callback コールバック
      */
     void felicaClose(IncredistController.Callback callback);
+
 }

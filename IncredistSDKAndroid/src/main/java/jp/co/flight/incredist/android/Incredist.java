@@ -10,6 +10,7 @@ import jp.co.flight.incredist.android.internal.controller.result.DeviceInfoResul
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.util.FLog;
 import jp.co.flight.incredist.android.model.DeviceInfo;
+import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
 
 /**
@@ -182,6 +183,27 @@ public class Incredist {
      */
     public void tfpDisplayMessage(int type, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
         tfpDisplayMessage(type, null, success, failure);
+    }
+
+    /**
+     * 暗号化モードを設定します
+     *
+     * @param mode 暗号化モード
+     * @param success 設定成功時処理
+     * @param failure 設定失敗時処理
+     */
+    public void setEncryptionMode(EncryptionMode mode, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        mController.setEncryptionMode(mode, result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                if (success != null) {
+                    success.onSuccess();
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
     }
 
     /**

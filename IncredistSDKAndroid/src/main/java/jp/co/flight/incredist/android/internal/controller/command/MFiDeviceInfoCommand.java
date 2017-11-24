@@ -28,7 +28,6 @@ public class MFiDeviceInfoCommand extends MFiCommand {
     @Override
     public long getResponseTimeout() {
         return 1000; // SUPPRESS CHECKSTYLE MagicNumber
-
     }
 
     @NonNull
