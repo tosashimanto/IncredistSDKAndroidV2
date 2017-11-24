@@ -103,7 +103,7 @@ public class Incredist {
      * デバイス情報を取得します。
      *
      */
-    public void getDeviceInfo(@Nullable OnSuccessFunction<DeviceInfo> success, @Nullable OnFailureFunction failure) {
+    private void getDeviceInfo(@Nullable OnSuccessFunction<DeviceInfo> success, @Nullable OnFailureFunction failure) {
         mController.getDeviceInfo(result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof DeviceInfoResult) {
                 if (success != null) {
@@ -124,7 +124,7 @@ public class Incredist {
      * @param success 設定成功時の処理
      * @param failure 設定失敗時の処理
      */
-    public void felicaOpen(boolean withLed, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+    private void felicaOpen(boolean withLed, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
         mController.felicaOpen(withLed, result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 if (success != null) {
@@ -146,7 +146,7 @@ public class Incredist {
      * @param success 設定成功時の処理
      * @param failure 設定失敗時の処理
      */
-    public void felicaOpen(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+    private void felicaOpen(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
         felicaOpen(true, success, failure);
     }
 
@@ -157,7 +157,7 @@ public class Incredist {
      * @param success 送信成功時の処理
      * @param failure 送信失敗時の処理
      */
-    public void felicaSendCommand(byte[] felicaCommand, @Nullable OnSuccessFunction<FelicaCommandResult> success, @Nullable OnFailureFunction failure) {
+    private void felicaSendCommand(byte[] felicaCommand, @Nullable OnSuccessFunction<FelicaCommandResult> success, @Nullable OnFailureFunction failure) {
         mController.felicaSendCommand(felicaCommand, (IncredistResult result) -> {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) {
                 jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult felicaResult = (jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) result;
@@ -178,7 +178,7 @@ public class Incredist {
      * @param success 設定成功時の処理
      * @param failure 設定失敗時の処理
      */
-    public void felicaClose(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+    private void felicaClose(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
         mController.felicaClose(result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 if (success != null) {
