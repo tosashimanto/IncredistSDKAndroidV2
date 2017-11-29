@@ -146,11 +146,15 @@ public class IncredistManager {
                      */
                     @Override
                     public void run() {
-                        mHasTimeout = true;
-                        mConnection.close();
-                        FLog.i(TAG, "connect timeout");
-                        if (failure != null) {
-                            failure.onFailure(CONNECT_ERROR_TIMEOUT);
+                        synchronized (this) {
+                            if (!mHasSucceed) {
+                                mHasTimeout = true;
+                                mConnection.close();
+                                FLog.i(TAG, "connect timeout");
+                                if (failure != null) {
+                                    failure.onFailure(CONNECT_ERROR_TIMEOUT);
+                                }
+                            }
                         }
                     }
 
@@ -161,12 +165,14 @@ public class IncredistManager {
                      */
                     @Override
                     public void onConnect(BluetoothGattConnection connection) {
-                        FLog.i(TAG, "connect succeed");
-                        if (!mHasSucceed && !mHasTimeout && success != null) {
-                            final Incredist incredist = new Incredist(IncredistManager.this, connection, deviceName);
-                            mHasSucceed = true;
-                            handler.removeCallbacks(this);
-                            success.onSuccess(incredist);
+                        synchronized (this) {
+                            FLog.i(TAG, "connect succeed");
+                            if (!mHasSucceed && !mHasTimeout && success != null) {
+                                final Incredist incredist = new Incredist(IncredistManager.this, connection, deviceName);
+                                mHasSucceed = true;
+                                handler.removeCallbacks(this);
+                                success.onSuccess(incredist);
+                            }
                         }
                     }
 
