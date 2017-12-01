@@ -47,13 +47,12 @@ public class Incredist {
      * Incredistとの接続を切断します.
      */
     public void disconnect(@Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction failure) {
+        mManager.setupDisconnect(this, success, failure);
         mController.disconnect(result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
-                mController.release();
-                if (success != null) {
-                    success.onSuccess(this);
-                }
+                // 成功時のコールバックは IncredistManager の setupDisconnect から呼ぶため何もしない
             } else {
+                mManager.resetConnectionListener();
                 if (failure != null) {
                     failure.onFailure(result.status);
                 }
@@ -192,5 +191,12 @@ public class Incredist {
         });
     }
 
+
+    /**
+     * Incredist との接続リソースを解放します
+     */
+    public void release() {
+        mController.release();
+    }
 
 }

@@ -161,6 +161,8 @@ public class IncredistController {
      * Incredist デバイスとの接続を破棄します.
      */
     public boolean release() {
+        mConnection.close();
+
         HandlerThread handlerThread = mHandlerThread;
         if (handlerThread != null) {
             if (handlerThread.quitSafely()) {
