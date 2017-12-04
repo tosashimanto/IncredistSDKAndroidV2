@@ -132,12 +132,13 @@ public class BluetoothGattConnection {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
 
+            FLog.d(TAG, String.format(Locale.JAPANESE, "onServicesDiscovered: status %d", status));
             final ConnectionListener listener = mListener;
             if (listener != null) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
-                    post(() -> {
+                    postDelayed(() -> {
                         listener.onConnect(BluetoothGattConnection.this);
-                    });
+                    }, 300);
                 }
             }
         }
@@ -212,17 +213,31 @@ public class BluetoothGattConnection {
      * @param listener   接続状態リスナ
      */
     BluetoothGattConnection(@NonNull BluetoothCentral central, @NonNull BluetoothPeripheral peripheral, @Nullable ConnectionListener listener) {
+        if (central.getConnectionState(peripheral) == BluetoothGatt.STATE_CONNECTED) {
+            // すでに接続中の場合
+            if (mGatt != null) {
+                disconnect();
+            }
+        }
+
         mGatt = central.connectGatt(peripheral, mGattCallback);
         mCentral = central;
         mListener = listener;
+        final CountDownLatch latch = new CountDownLatch(1);
         mHandlerThread = new HandlerThread(String.format(Locale.JAPANESE, "%s:%s:%s", TAG, peripheral.getDeviceName(), peripheral.getDeviceAddress())) {
             @Override
             protected void onLooperPrepared() {
                 super.onLooperPrepared();
                 mHandler = new Handler(getLooper());
+                latch.countDown();
             }
         };
         mHandlerThread.start();
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            // ignore.
+        }
     }
 
     /**
@@ -428,6 +443,20 @@ public class BluetoothGattConnection {
         }
 
         handler.post(r);
+    }
+
+    /**
+     * HandlerThread もしくは準備ができていない場合は MainLooper で Runnable を実行します.
+     *
+     * @param r 実行する処理.
+     */
+    private void postDelayed(Runnable r, long delay) {
+        Handler handler = mHandler;
+        if (handler == null) {
+            handler = new Handler(Looper.getMainLooper());
+        }
+
+        handler.postDelayed(r, delay);
     }
 
 }

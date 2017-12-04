@@ -284,7 +284,20 @@ public class BluetoothCentral {
      * @return 接続状態
      */
     int getConnectionState(BluetoothDevice device) {
-        return mManager.getConnectionState(device, BluetoothProfile.GATT);
+        if (device != null) {
+            return mManager.getConnectionState(device, BluetoothProfile.GATT);
+        } else {
+            return BluetoothGatt.STATE_DISCONNECTED;
+        }
+    }
+
+    /**
+     * デバイスの接続状態を取得します.
+     *
+     */
+    int getConnectionState(BluetoothPeripheral peripheral) {
+        BluetoothDevice device = mAdapter.getRemoteDevice(peripheral.getDeviceAddress());
+        return getConnectionState(device);
     }
 
     /**
