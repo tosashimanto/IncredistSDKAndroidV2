@@ -27,11 +27,11 @@ import jp.co.flight.incredist.android.internal.util.FLog;
 public class BluetoothGattConnection {
     private static final String TAG = "BluetoothGattConnection";
 
-    public static final int ERROR_REGISTER_NOTIFICATION = 797;
-    public static final int ERROR_REGISTER_NOTIFICATION_TIMEOUT = 798;
-    public static final int ERROR_REGISTER_NOTIFICATION_INTERRUPTED = 799;
-    public static final int ERROR_WRITE_FAILED = 796;
-    public static final int ERROR_NO_CHARACTERISTIC = 990;
+    public static final int ERROR_REGISTER_NOTIFICATION = 4797;
+    public static final int ERROR_REGISTER_NOTIFICATION_TIMEOUT = 4798;
+    public static final int ERROR_REGISTER_NOTIFICATION_INTERRUPTED = 4799;
+    public static final int ERROR_WRITE_FAILED = 4796;
+    public static final int ERROR_NO_CHARACTERISTIC = 4990;
 
     @NonNull
     private final HandlerThread mHandlerThread;
@@ -114,7 +114,6 @@ public class BluetoothGattConnection {
                 switch (newState) {
                     case BluetoothGatt.STATE_CONNECTED:
                         post(() -> {
-                            listener.onConnect(BluetoothGattConnection.this);
                             gatt.discoverServices();
                         });
                         break;
@@ -125,6 +124,20 @@ public class BluetoothGattConnection {
                         break;
                     default:
                         break;
+                }
+            }
+        }
+
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            super.onServicesDiscovered(gatt, status);
+
+            final ConnectionListener listener = mListener;
+            if (listener != null) {
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    post(() -> {
+                        listener.onConnect(BluetoothGattConnection.this);
+                    });
                 }
             }
         }

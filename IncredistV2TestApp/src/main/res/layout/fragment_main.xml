@@ -30,6 +30,7 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- incredist -->
         <android.support.v7.widget.AppCompatTextView
             android:id="@+id/label_incredist"
             android:layout_width="match_parent"
@@ -81,7 +82,7 @@
             android:layout_marginBottom="8dp"
             android:onClick="@{(view)->presenter.onConnect()}"
             android:text="Connect"
-            app:layout_constraintBottom_toTopOf="@+id/label_felica"
+            app:layout_constraintBottom_toTopOf="@+id/button_auto"
             app:layout_constraintEnd_toStartOf="@+id/button_device_info"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/button_scan" />
@@ -108,6 +109,19 @@
             app:layout_constraintStart_toEndOf="@+id/button_device_info"
             app:layout_constraintTop_toTopOf="@+id/button_connect" />
 
+        <Button
+            android:id="@+id/button_auto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{(view)->presenter.onAuto()}"
+            android:text="Auto"
+            app:layout_constraintBottom_toTopOf="@+id/label_felica"
+            app:layout_constraintEnd_toEndOf="@+id/button_device_info"
+            app:layout_constraintStart_toStartOf="@+id/button_device_info"
+            app:layout_constraintTop_toBottomOf="@+id/button_connect"
+            />
+
+        <!-- felica -->
         <android.support.v7.widget.AppCompatTextView
             android:id="@+id/label_felica"
             android:layout_width="match_parent"

@@ -52,6 +52,8 @@ public interface IncredistModel extends Observable {
 
     String getApiVersion();
 
+    void auto(OnSuccessFunction<String> success, OnFailureFunction failure);
+
     class Impl extends BaseObservable implements IncredistModel {
         private static final String PREFERENCE_KEY_DEVICE_NAME = "device_name";
 
@@ -108,7 +110,7 @@ public interface IncredistModel extends Observable {
         @Override
         public void getDeviceInfo(OnSuccessFunction<DeviceInfo> success, OnFailureFunction failure) {
             if (mIncredist != null) {
-                mIncredist.getDeviceInfo(success, failure);
+//                mIncredist.getDeviceInfo(success, failure);
             } else {
                 failure.onFailure(-1);
             }
@@ -117,7 +119,7 @@ public interface IncredistModel extends Observable {
         @Override
         public void felicaOpen(boolean withLed, OnSuccessVoidFunction success, OnFailureFunction failure) {
             if (mIncredist != null) {
-                mIncredist.felicaOpen(withLed, success, failure);
+//                mIncredist.felicaOpen(withLed, success, failure);
             } else {
                 failure.onFailure(-1);
             }
@@ -127,7 +129,7 @@ public interface IncredistModel extends Observable {
         public void felicaSendCommand(OnSuccessFunction<FelicaCommandResult> success, OnFailureFunction failure) {
             if (mIncredist != null) {
                 byte[] felicaCommand = {(byte) 0x00, (byte) 0xff, (byte) 0xff, (byte) 0x00, (byte) 0x00};
-                mIncredist.felicaSendCommand(felicaCommand, success, failure);
+//                mIncredist.felicaSendCommand(felicaCommand, success, failure);
             } else {
                 failure.onFailure(-1);
             }
@@ -136,7 +138,7 @@ public interface IncredistModel extends Observable {
         @Override
         public void felicaClose(OnSuccessVoidFunction success, OnFailureFunction failure) {
             if (mIncredist != null) {
-                mIncredist.felicaClose(success, failure);
+//                mIncredist.felicaClose(success, failure);
             } else {
                 failure.onFailure(-1);
             }
@@ -170,6 +172,13 @@ public interface IncredistModel extends Observable {
         @Override
         public String getApiVersion() {
             return mIncredistManager.getApiVersion();
+        }
+
+        @Override
+        public void auto(OnSuccessFunction<String> success, OnFailureFunction failure) {
+            mIncredistManager.connect(mSelectedDevice, 3000, (incredist) -> {
+                incredist.getSerialNumber(success, failure);
+            }, failure);
         }
 
         private SharedPreferences getSharedPreference() {
