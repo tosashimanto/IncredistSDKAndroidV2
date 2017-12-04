@@ -3,6 +3,8 @@ package jp.co.flight.incredist.android.internal.controller;
 import android.os.Handler;
 import android.os.HandlerThread;
 
+import java.util.concurrent.CountDownLatch;
+
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 
@@ -56,15 +58,21 @@ public class IncredistController {
 
         // 最初は MFi のみ対応
         mProtoController = new IncredistMFiController(this, connection);
-
+        final CountDownLatch latch = new CountDownLatch(1);
         mHandlerThread = new HandlerThread(String.format("%s:%s", TAG, deviceName)) {
             @Override
             protected void onLooperPrepared() {
                 super.onLooperPrepared();
                 mHandler = new Handler(this.getLooper());
+                latch.countDown();
             }
         };
         mHandlerThread.start();
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            // ignore.
+        }
     }
 
     /**
