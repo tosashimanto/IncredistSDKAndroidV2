@@ -239,6 +239,9 @@ public interface MainPresenter {
             addLog("mj2");
             mIncredist.scanMagnetic(20000, (magCard) -> {
                 addLog(String.format(Locale.JAPANESE, "mj2 success : %s", magCard.getCardType().name()));
+
+                addLog(String.format(Locale.JAPANESE, "  track1: %s", hexString(magCard.getDec1().getTrack1())));
+
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "mj2 failure %d", errorCode));
             });

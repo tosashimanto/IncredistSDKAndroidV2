@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/IncredistSDKAndroid/IncredistSDKAndroid.iml" filepath="$PROJECT_DIR$/IncredistSDKAndroid/IncredistSDKAndroid.iml" />
       <module fileurl="file://$PROJECT_DIR$/IncredistSDKAndroidV2.iml" filepath="$PROJECT_DIR$/IncredistSDKAndroidV2.iml" />
       <module fileurl="file://$PROJECT_DIR$/IncredistV2TestApp/IncredistV2TestApp.iml" filepath="$PROJECT_DIR$/IncredistV2TestApp/IncredistV2TestApp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/dukpt/dukpt.iml" filepath="$PROJECT_DIR$/dukpt/dukpt.iml" />
     </modules>
   </component>
 </project>

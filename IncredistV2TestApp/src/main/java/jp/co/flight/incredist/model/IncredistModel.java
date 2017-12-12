@@ -18,7 +18,6 @@ import jp.co.flight.incredist.android.OnSuccessVoidFunction;
 import jp.co.flight.incredist.android.model.DeviceInfo;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
-import jp.co.flight.incredist.android.model.MagCard;
 
 /**
  * Incredist テストプログラム用モデル.
@@ -43,7 +42,7 @@ public interface IncredistModel extends Observable {
 
     void felicaClose(OnSuccessVoidFunction success, OnFailureFunction failure);
 
-    void scanMagnetic(long timeout, OnSuccessFunction<MagCard> success, OnFailureFunction failure);
+    void scanMagnetic(long timeout, OnSuccessFunction<DecodedMagCard> success, OnFailureFunction failure);
 
     void release();
 
@@ -175,9 +174,11 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
-        public void scanMagnetic(long timeout, OnSuccessFunction<MagCard> success, OnFailureFunction failure) {
+        public void scanMagnetic(long timeout, OnSuccessFunction<DecodedMagCard> success, OnFailureFunction failure) {
             if (mIncredist != null) {
-                mIncredist.scanMagneticCard(timeout, success, failure);
+                mIncredist.scanMagneticCard(timeout, (magCard) -> {
+                    success.onSuccess(new DecodedMagCard(magCard));
+                }, failure);
             } else {
                 failure.onFailure(-1);
             }

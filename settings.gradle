@@ -1,1 +1,1 @@
-include ':IncredistV2TestApp', ':IncredistSDKAndroid'
+include ':IncredistV2TestApp', ':IncredistSDKAndroid', ':dukpt'

@@ -1,4 +1,4 @@
-package jp.co.nttdocomo.incredist_docomoif.domain;
+package jp.co.flight.android.dukpt.domain;
 
 /**
  * Created by ss990011 on 16/03/30.

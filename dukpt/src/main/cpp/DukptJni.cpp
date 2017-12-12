@@ -13,7 +13,6 @@
 //#include "openssl/des.h"
 //#include "openssl/aes.h"
 #include "Dukpt.h"
-#include "jp_co_nttdocomo_incredist_docomoif_main_Incredist_DocomoIF.h"
 
 #include <android/log.h>
 
@@ -39,7 +38,10 @@ static BYTE t3dec[128];
 
 extern "C"{
 
-    JNIEXPORT jobject JNICALL Java_jp_co_nttdocomo_incredist_1docomoif_main_Incredist_1DocomoIF_decrypt2
+unsigned char* createCharArray(JNIEnv* ,jbyteArray);
+jbyteArray createByteArray(JNIEnv* , unsigned char* , int);
+
+    JNIEXPORT jobject JNICALL Java_jp_co_flight_android_dukpt_Dukpt_decrypt2
             (JNIEnv *env, jobject me, jbyteArray ksn, jlong size, const jbyteArray encdata, jbyteArray decdata){
         jobject ret;
         jboolean b;
@@ -86,7 +88,7 @@ __android_log_print(ANDROID_LOG_DEBUG,"Tag","Decrypt2 : Call 3");
         DES_ede2_cbc_encrypt(szEncData, szDecData, size, &ks1, &ks2, &iv, DES_DECRYPT);
 
         //Return Object
-        jclass c = env->FindClass("jp/co/nttdocomo/incredist_docomoif/domain/Decrypto");
+        jclass c = env->FindClass("jp/co/flight/android/dukpt/domain/Decrypto");
         jmethodID getStatusMethod,setStatusMethod,getTrack1SizeMethod,setTrack1SizeMethod,
             getTrack1Method,setTrack1Method,getTrack2SizeMethod,
             setTrack2SizeMethod,getTrack2Method,setTrack2Method,paramConstractor;
@@ -124,7 +126,7 @@ __android_log_print(ANDROID_LOG_DEBUG,"Tag","Decrypt2 : jobject Make End");
         return ret;
 }
 
-JNIEXPORT jobject JNICALL Java_jp_co_nttdocomo_incredist_1docomoif_main_Incredist_1DocomoIF_aesDecrypt2
+JNIEXPORT jobject JNICALL Java_jp_co_flight_android_dukpt_Dukpt_aesDecrypt2
         (JNIEnv *env, jobject me, jlong wSize, jbyteArray encdata, jbyteArray decdata){
     __android_log_print(ANDROID_LOG_DEBUG,"Tag","aesDecrypt2 : Call 1");
     jobject ret;
@@ -162,7 +164,7 @@ JNIEXPORT jobject JNICALL Java_jp_co_nttdocomo_incredist_1docomoif_main_Incredis
 __android_log_print(ANDROID_LOG_DEBUG,"Tag","aesDecrypt2 : szEncData size : %d", sizeof(szEncData));
 
     //Return Object
-    jclass c = env->FindClass("jp/co/nttdocomo/incredist_docomoif/domain/Decrypto");
+    jclass c = env->FindClass("jp/co/flight/android/dukpt/domain/Decrypto");
 
 __android_log_print(ANDROID_LOG_DEBUG,"Tag","aesDecrypt2 : jclass make");
 
@@ -251,7 +253,7 @@ jbyteArray createByteArray(JNIEnv* env,unsigned char* buf, int len) {
     return array;
 }
 
-JNIEXPORT jobject JNICALL Java_jp_co_nttdocomo_incredist_1docomoif_main_Incredist_1DocomoIF_desEncrypt
+JNIEXPORT jobject JNICALL Java_jp_co_flight_android_dukpt_Dukpt_desEncrypt
         (JNIEnv *env, jobject me, jlong wSize, jbyteArray szOrgData, jbyteArray encdata, jbyteArray sessionKey, jint parity_Flag)
 {
     int ret;
@@ -283,7 +285,7 @@ JNIEXPORT jobject JNICALL Java_jp_co_nttdocomo_incredist_1docomoif_main_Incredis
         DES_ecb_encrypt((const_DES_cblock *)&szDecData[i*8], (DES_cblock *)&szEncData[i*8], schedule, DES_ENCRYPT);
 
     //Return Object
-    jclass c = env->FindClass("jp/co/nttdocomo/incredist_docomoif/domain/DesDecrypto");
+    jclass c = env->FindClass("jp/co/flight/android/dukpt/domain/DesDecrypto");
     jmethodID getStatusMethod,setStatusMethod,getTrack1SizeMethod,setTrack1SizeMethod,
             getTrack1Method,setTrack1Method,getTrack2SizeMethod,
             setTrack2SizeMethod,getTrack2Method,setTrack2Method,
@@ -331,7 +333,7 @@ JNIEXPORT jobject JNICALL Java_jp_co_nttdocomo_incredist_1docomoif_main_Incredis
     return retObj;
 }
 
-JNIEXPORT jobject JNICALL Java_jp_co_nttdocomo_incredist_1docomoif_main_Incredist_1DocomoIF_desDecrypt
+JNIEXPORT jobject JNICALL Java_jp_co_flight_android_dukpt_Dukpt_desDecrypt
         (JNIEnv *env, jobject me, jlong wSize, jbyteArray encdata, jbyteArray decdata, jbyteArray sessionKey){
 
     int ret;
@@ -367,7 +369,7 @@ JNIEXPORT jobject JNICALL Java_jp_co_nttdocomo_incredist_1docomoif_main_Incredis
         DES_ecb_encrypt((const_DES_cblock *)&szEncData[i*8], (DES_cblock *)&szDecData[i*8], schedule, DES_DECRYPT);
 
     //Return Object
-    jclass c = env->FindClass("jp/co/nttdocomo/incredist_docomoif/domain/DesDecrypto");
+    jclass c = env->FindClass("jp/co/flight/android/dukpt/domain/DesDecrypto");
     jmethodID getStatusMethod,setStatusMethod,getTrack1SizeMethod,setTrack1SizeMethod,
             getTrack1Method,setTrack1Method,getTrack2SizeMethod,
             setTrack2SizeMethod,getTrack2Method,setTrack2Method,
