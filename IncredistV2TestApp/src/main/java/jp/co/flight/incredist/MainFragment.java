@@ -16,6 +16,7 @@ import java.util.ArrayList;
 
 import jp.co.flight.incredist.android.IncredistV2TestApp.R;
 import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
+import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.model.IncredistModel;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
@@ -24,14 +25,18 @@ import permissions.dispatcher.RuntimePermissions;
  * MainFragment.
  */
 @RuntimePermissions
-public class MainFragment extends Fragment implements DeviceListDialogFragment.Listener, DisplayMessageDialogFragment.Listener {
+public class MainFragment extends Fragment
+        implements DeviceListDialogFragment.Listener, DisplayMessageDialogFragment.Listener,
+        EncryptionSettingDialogFragment.Listener {
 
     private static final String DIALOG_TAG_SELECT_DEVICE = "dialog_tag_select_device";
     private static final String DIALOG_TAG_EMV_MESSAGE = "dialog_tag_emv_message";
     private static final String DIALOG_TAG_TFP_MESSAGE = "dialog_tag_tfp_message";
+    private static final String DIALOG_TAG_ENCRYPTION_SETTING = "dialog_tag_encryption_setting";
     private static final int REQUEST_SELECT_DEVICE = 1;
     private static final int REQUEST_EMV_MESSAGE = 2;
     private static final int REQUEST_TFP_MESSAGE = 3;
+    private static final int REQUEST_ENCRYPTION = 4;
 
     private OnFragmentInteractionListener mListener;
     private FragmentMainBinding mBinding;
@@ -130,6 +135,17 @@ public class MainFragment extends Fragment implements DeviceListDialogFragment.L
             default:
                 break;
         }
+    }
+
+    public void showEncryptSettingDialog() {
+        DialogFragment dialog = EncryptionSettingDialogFragment.newInstance(null);
+        dialog.setTargetFragment(this, REQUEST_ENCRYPTION);
+        dialog.show(getFragmentManager(), DIALOG_TAG_ENCRYPTION_SETTING);
+    }
+
+    @Override
+    public void onSetEncryptionSetting(int requestCode, EncryptionMode mode) {
+        mPresenter.setEncryptionMode(mode);
     }
 
     public interface OnFragmentInteractionListener {

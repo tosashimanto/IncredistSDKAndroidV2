@@ -14,6 +14,13 @@ public class IncredistResult {
     public static final int STATUS_TOO_LARGE_RESPONSE = 702;
     public static final int STATUS_INVALID_RESPONSE_HEADER = 703;
 
+    public static final int STATUS_PARAMETER_ERROR = 300;
+    public static final int STATUS_PIN_TIMEOUT = 600;
+    public static final int STATUS_PIN_CANCEL = 602;
+    public static final int STATUS_PIN_SKIP = 603;
+    public static final int STATUS_CANCELED = 101;
+    public static final int STATUS_MAG_TRACK_ERROR = 604;
+
     public final int status;
     public final String message;
 

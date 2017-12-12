@@ -21,7 +21,7 @@ public class MFiSetEncryptionModeCommand extends MFiCommand {
         payload[3] = mode.getKeyNumber();
         payload[4] = mode.getCipherMethod().getValue();
         payload[5] = mode.getBlockCipherMode().getValue();
-        payload[6] = mode.getDSConstant().getValue();
+        payload[6] = mode.getDsConstant().getValue();
         payload[7] = mode.getPaddingMode().getValue();
         payload[8] = mode.getPaddingValue();
         payload[17] = mode.isPin() ? (byte) 0x01 : (byte) 0x00;
@@ -44,7 +44,7 @@ public class MFiSetEncryptionModeCommand extends MFiCommand {
     protected IncredistResult parseMFiResponse(MFiResponse response) {
         // CHECKSTYLE:OFF MagicNumber
         byte[] bytes = response.getData();
-        if (bytes != null && bytes[0] == 'o' && bytes[1] == 'k') {
+        if (bytes != null && bytes[0] == 'O' && bytes[1] == 'K') {
             return new IncredistResult(IncredistResult.STATUS_SUCCESS);
         }
         // CHECKSTYLE:ON MagicNumber

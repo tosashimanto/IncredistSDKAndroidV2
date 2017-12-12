@@ -24,11 +24,11 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginBottom="8dp"
-            android:layout_marginTop="0dp"
             app:layout_constraintBottom_toTopOf="@+id/label_incredist"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="spread_inside" />
 
         <!-- incredist -->
         <android.support.v7.widget.AppCompatTextView
@@ -130,7 +130,7 @@
             android:background="@color/colorHeaderBackground"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/button_connect"
+            app:layout_constraintTop_toBottomOf="@+id/button_auto"
             app:layout_constraintBottom_toTopOf="@+id/button_felica_open" />
 
         <Button
@@ -201,7 +201,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/button_tfp_message"
             app:layout_constraintTop_toBottomOf="@+id/label_message"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toTopOf="@+id/label_mag" />
 
         <Button
             android:id="@+id/button_tfp_message"
@@ -214,6 +214,41 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/button_emv_message"
             app:layout_constraintBottom_toBottomOf="@+id/button_emv_message" />
+
+        <android.support.v7.widget.AppCompatTextView
+            android:id="@+id/label_mag"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mag"
+            android:background="@color/colorHeaderBackground"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button_emv_message"
+            app:layout_constraintBottom_toTopOf="@+id/button_sdm" />
+
+        <Button
+            android:id="@+id/button_sdm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:onClick="@{(view)->presenter.onSdm()}"
+            android:text="SDM"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/button_mag_mj2"
+            app:layout_constraintTop_toBottomOf="@+id/label_mag"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <Button
+            android:id="@+id/button_mag_mj2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{(view)->presenter.onMj2()}"
+            android:text="MJ2"
+            app:layout_constraintStart_toEndOf="@+id/button_sdm"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/button_sdm"
+            app:layout_constraintBottom_toBottomOf="@+id/button_sdm" />
+
 
     </android.support.constraint.ConstraintLayout>
 </layout>

@@ -13,6 +13,7 @@ import java.util.Locale;
 
 import jp.co.flight.incredist.android.IncredistV2TestApp.BuildConfig;
 import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
+import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.model.IncredistModel;
 
 /**
@@ -48,6 +49,12 @@ public interface MainPresenter {
     void emvDisplayMessage(int type, String message);
 
     void tfpDisplayMessage(int type, String message);
+
+    void onSdm();
+
+    void setEncryptionMode(EncryptionMode mode);
+
+    void onMj2();
 
     void addLog(String message);
 
@@ -208,6 +215,32 @@ public interface MainPresenter {
                 addLog("tfpMessage success");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "tfpMessage failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onSdm() {
+            addLog("sdm");
+            mFragment.showEncryptSettingDialog();
+        }
+
+        @Override
+        public void setEncryptionMode(EncryptionMode mode) {
+            addLog("sdm");
+            mIncredist.setEncryptionMode(mode, () -> {
+                addLog("sdm success");
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "sdm failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onMj2() {
+            addLog("mj2");
+            mIncredist.scanMagnetic(20000, (magCard) -> {
+                addLog(String.format(Locale.JAPANESE, "mj2 success : %s", magCard.getCardType().name()));
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "mj2 failure %d", errorCode));
             });
         }
 

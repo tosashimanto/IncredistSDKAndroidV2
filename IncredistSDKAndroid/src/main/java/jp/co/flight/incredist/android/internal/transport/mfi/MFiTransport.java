@@ -29,9 +29,19 @@ public class MFiTransport {
     private BluetoothGattCharacteristic mNotifyCharacteristic = null;
 
     /**
+     * 送信中のコマンド
+     */
+    private MFiCommand mCommand = null;
+
+    /**
      * 受信用パケット.
      */
     private final MFiResponse mResponse = new MFiResponse();
+
+    /**
+     * キャンセルフラグ
+     */
+    private CountDownLatch mCancelling = null;
 
     class ErrorLatch extends CountDownLatch {
         int mErrorCode;
@@ -60,6 +70,8 @@ public class MFiTransport {
 
         // 送信コマンドの途中で割り込まれないように　synchronize で同期化
         synchronized (this) {
+            mCommand = command;
+
             // 受信用パケットを初期化
             if (command.getResponseTimeout() > 0) {
                 mResponse.clear();
@@ -98,6 +110,12 @@ public class MFiTransport {
                 synchronized (mResponse) {
                     do {
                         mResponse.wait(command.getResponseTimeout());
+
+                        if (mCommand.cancelable() && !mResponse.hasData() && mCancelling != null) {
+                            mCancelling.countDown();
+                            mCommand = null;
+                            return new MFiInvalidResponse(IncredistResult.STATUS_CANCELED);
+                        }
                     } while (mResponse.needMoreData());
 
                     if (mResponse.isValid()) {
@@ -107,6 +125,7 @@ public class MFiTransport {
                         } catch (InterruptedException ex) {
                             // ignore.
                         }
+                        mCommand = null;
                         return mResponse.copyInstance();
                     }
                 }
@@ -121,6 +140,7 @@ public class MFiTransport {
                 // ignore.
             }
 
+            mCommand = null;
             return new MFiInvalidResponse(IncredistResult.STATUS_TIMEOUT);
         }
 
@@ -130,6 +150,7 @@ public class MFiTransport {
             // ignore.
         }
 
+        mCommand = null;
         return new MFiNoResponse();
     }
 
@@ -162,6 +183,7 @@ public class MFiTransport {
         }, (errorCode, failure) -> {
         }, (notify) -> {
             synchronized (mResponse) {
+                // BLE notify 受信時処理 : mResponse に append する
                 FLog.d(TAG, String.format(Locale.JAPANESE, "receive notify %d", notify.getValue().length));
                 mResponse.appendData(notify.getValue());
                 if (!mResponse.needMoreData()) {
@@ -169,5 +191,40 @@ public class MFiTransport {
                 }
             }
         });
+    }
+
+    /**
+     * 受信待ち処理をキャンセル
+     *
+     * 送信 / 受信待ち処理には、
+     *  - 送信前
+     *  - 送信中
+     *  - 受信待ち
+     *  - 受信中
+     *  - 受信完了後
+     * の状態がある。送信前・送信中の場合は完了まで一旦待つ
+     * 受信中(すでにMFiパケットの一部を受け取っている)場合には
+     * 失敗として扱う(MFiパケットの残りを受信して通常処理を行う)
+     *
+     * sendCommand とは別のスレッドで実行する必要がある
+     *
+     * @return キャンセル成功した場合は True, 失敗した場合は False を返す　
+     */
+    @WorkerThread
+    public boolean cancelReceive() {
+        synchronized (mResponse) {
+            mCancelling = new CountDownLatch(1);
+            mResponse.notifyAll();
+
+            try {
+                mCancelling.await(1000, TimeUnit.MILLISECONDS);
+
+                return true;
+            } catch (InterruptedException e) {
+                // ignore.
+            }
+
+            return false;
+        }
     }
 }

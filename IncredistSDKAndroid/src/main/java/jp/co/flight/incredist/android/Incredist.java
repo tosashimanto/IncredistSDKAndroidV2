@@ -8,10 +8,14 @@ import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.IncredistController;
 import jp.co.flight.incredist.android.internal.controller.result.DeviceInfoResult;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
+import jp.co.flight.incredist.android.internal.controller.result.MagCardResult;
+import jp.co.flight.incredist.android.internal.controller.result.PinEntryResult;
 import jp.co.flight.incredist.android.internal.util.FLog;
 import jp.co.flight.incredist.android.model.DeviceInfo;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
+import jp.co.flight.incredist.android.model.MagCard;
+import jp.co.flight.incredist.android.model.PinEntry;
 
 /**
  * Incredist API クラス.
@@ -105,7 +109,7 @@ public class Incredist {
      * @param success 取得成功時の処理
      * @param failure 取得失敗時の処理
      */
-    private void getDeviceInfo(@Nullable OnSuccessFunction<DeviceInfo> success, @Nullable OnFailureFunction failure) {
+    public void getDeviceInfo(@Nullable OnSuccessFunction<DeviceInfo> success, @Nullable OnFailureFunction failure) {
         mController.getDeviceInfo(result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof DeviceInfoResult) {
                 if (success != null) {
@@ -197,6 +201,56 @@ public class Incredist {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 if (success != null) {
                     success.onSuccess();
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
+     * PIN入力を行います(D向け)
+     *
+     * @param pinType PIN入力タイプ
+     * @param pinMode PIN暗号化モード
+     * @param mask 表示マスク
+     * @param min 最小桁数
+     * @param max 最大桁数
+     * @param align 表示左右寄せ
+     * @param line 表示行
+     * @param timeout タイムアウト時間(msec)
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void pinEntryD(PinEntry.Type pinType, PinEntry.Mode pinMode, PinEntry.MaskMode mask, int min, int max, PinEntry.Alignment align, int line, long timeout,
+                          @Nullable OnSuccessFunction<PinEntry.Result> success, @Nullable OnFailureFunction failure) {
+        mController.pinEntryD(pinType, pinMode, mask, min, max, align, line, timeout, result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof PinEntryResult) {
+                if (success != null) {
+                    success.onSuccess(new PinEntry.Result((PinEntryResult) result));
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
+     * 磁気カード読み取り
+     *
+     * @param timeout タイムアウト時間(msec)
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void scanMagneticCard(long timeout, @Nullable OnSuccessFunction<MagCard> success, @Nullable OnFailureFunction failure) {
+        mController.scanMagneticCard(timeout, result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof MagCardResult) {
+                if (success != null) {
+                    success.onSuccess(new MagCard((MagCardResult) result));
                 }
             } else {
                 if (failure != null) {

@@ -10,11 +10,16 @@ import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaClose
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaOpenCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaOpenWithoutLedCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaSendCommand;
+import jp.co.flight.incredist.android.internal.controller.command.MFiPinEntryDCommand;
+import jp.co.flight.incredist.android.internal.controller.command.MFiScanMagneticCard2Command;
 import jp.co.flight.incredist.android.internal.controller.command.MFiSetEncryptionModeCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiTfpDisplayMessageCommand;
+import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
+import jp.co.flight.incredist.android.internal.exception.ParameterException;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
 import jp.co.flight.incredist.android.model.EncryptionMode;
+import jp.co.flight.incredist.android.model.PinEntry;
 
 /**
  * MFi版 Incredist 用 Controller.
@@ -43,7 +48,7 @@ public class IncredistMFiController implements IncredistProtocolController {
      * @param callback コールバック
      */
     private void postMFiCommand(final MFiCommand command, final IncredistController.Callback callback) {
-        mController.post(() -> {
+        mController.postCommand(() -> {
             callback.onResult(command.parseResponse(mMFiTransport.sendCommand(command)));
         }, callback);
     }
@@ -89,6 +94,41 @@ public class IncredistMFiController implements IncredistProtocolController {
     @Override
     public void setEncryptionMode(EncryptionMode mode, IncredistController.Callback callback) {
         postMFiCommand(new MFiSetEncryptionModeCommand(mode), callback);
+    }
+
+    /**
+     * PIN 入力を行います
+     *
+     * @param pinType PIN入力タイプ
+     * @param pinMode PIN暗号化モード
+     * @param mask 表示マスク
+     * @param min 最小桁数
+     * @param max 最大桁数
+     * @param align 表示左右寄せ
+     * @param line 表示行
+     * @param timeout タイムアウト時間(msec)
+     * @param callback コールバック
+     */
+    @Override
+    public void pinEntryD(PinEntry.Type pinType, PinEntry.Mode pinMode, PinEntry.MaskMode mask, int min, int max, PinEntry.Alignment align, int line, long timeout, IncredistController.Callback callback) {
+        try {
+            postMFiCommand(new MFiPinEntryDCommand(pinType, pinMode, mask, min, max, align, line, timeout), callback);
+        } catch (ParameterException ex) {
+            mController.postCallback(() -> {
+                callback.onResult(new IncredistResult(IncredistResult.STATUS_PARAMETER_ERROR));
+            });
+        }
+    }
+
+    /**
+     * 磁気カードを読み取ります
+     *
+     * @param timeout タイムアウト時間(msec)
+     * @param callback コールバック
+     */
+    @Override
+    public void scanMagneticCard(long timeout, IncredistController.Callback callback) {
+        postMFiCommand(new MFiScanMagneticCard2Command(timeout), callback);
     }
 
     /**

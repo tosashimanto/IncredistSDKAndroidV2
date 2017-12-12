@@ -1,9 +1,12 @@
 package jp.co.flight.incredist.android.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
- * 暗号化モード設定用クラス
+ * 暗号化モード設定パラメータクラス
  */
-public class EncryptionMode {
+public class EncryptionMode implements Parcelable {
     public enum CipherMethod {
         DUKTPTDES(1),            // DUKTP TDES
         DUKTPAES(2),             // DUKTP AES
@@ -37,7 +40,7 @@ public class EncryptionMode {
         }
     }
 
-    public enum DSConstant {
+    public enum DsConstant {
         PINEncryption(1),                    // PIN Encryption
         MessageAuthRequest(2),               // Message Authentication, request or both ways
         MessageAuthResponse(3),              // Message Authentication, response
@@ -46,7 +49,7 @@ public class EncryptionMode {
 
         private final byte mValue;
 
-        DSConstant(int value) {
+        DsConstant(int value) {
             mValue = (byte) value;
         }
 
@@ -73,7 +76,7 @@ public class EncryptionMode {
     private byte mKeyNumber;
     private CipherMethod mCipherMethod;
     private BlockCipherMode mBlockCipherMode;
-    private DSConstant mDSConstant;
+    private DsConstant mDsConstant;
     private PaddingMode mPaddingMode;
     private byte mPaddingValue;
     private boolean mIsPin;
@@ -90,14 +93,42 @@ public class EncryptionMode {
      * @param isPin 磁気入力の後PIN入力するかどうか
      */
     public EncryptionMode(byte keyNumber, CipherMethod cipherMethod, BlockCipherMode blockCipherMode,
-                          DSConstant dsConstant, PaddingMode paddingMode, byte paddingValue, boolean isPin) {
+                          DsConstant dsConstant, PaddingMode paddingMode, byte paddingValue, boolean isPin) {
         mKeyNumber = keyNumber;
         mCipherMethod = cipherMethod;
         mBlockCipherMode = blockCipherMode;
-        mDSConstant = dsConstant;
+        mDsConstant = dsConstant;
         mPaddingMode = paddingMode;
         mPaddingValue = paddingValue;
         mIsPin = isPin;
+    }
+
+    public void setKeyNumber(byte keyNumber) {
+        mKeyNumber = keyNumber;
+    }
+
+    public void setCipherMethod(CipherMethod cipherMethod) {
+        mCipherMethod = cipherMethod;
+    }
+
+    public void setBlockCipherMode(BlockCipherMode blockCipherMode) {
+        mBlockCipherMode = blockCipherMode;
+    }
+
+    public void setDsConstant(DsConstant dsConstant) {
+        mDsConstant = dsConstant;
+    }
+
+    public void setPaddingMode(PaddingMode paddingMode) {
+        mPaddingMode = paddingMode;
+    }
+
+    public void setPaddingValue(byte paddingValue) {
+        mPaddingValue = paddingValue;
+    }
+
+    public void setPin(boolean pin) {
+        mIsPin = pin;
     }
 
     /**
@@ -132,8 +163,8 @@ public class EncryptionMode {
      *
      * @return キー種別
      */
-    public DSConstant getDSConstant() {
-        return mDSConstant;
+    public DsConstant getDsConstant() {
+        return mDsConstant;
     }
 
     /**
@@ -162,4 +193,46 @@ public class EncryptionMode {
     public boolean isPin() {
         return mIsPin;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeByte(this.mKeyNumber);
+        dest.writeInt(this.mCipherMethod == null ? -1 : this.mCipherMethod.ordinal());
+        dest.writeInt(this.mBlockCipherMode == null ? -1 : this.mBlockCipherMode.ordinal());
+        dest.writeInt(this.mDsConstant == null ? -1 : this.mDsConstant.ordinal());
+        dest.writeInt(this.mPaddingMode == null ? -1 : this.mPaddingMode.ordinal());
+        dest.writeByte(this.mPaddingValue);
+        dest.writeByte(this.mIsPin ? (byte) 1 : (byte) 0);
+    }
+
+    protected EncryptionMode(Parcel in) {
+        this.mKeyNumber = in.readByte();
+        int tmpCipherMethod = in.readInt();
+        this.mCipherMethod = tmpCipherMethod == -1 ? null : CipherMethod.values()[tmpCipherMethod];
+        int tmpBlockCipherMode = in.readInt();
+        this.mBlockCipherMode = tmpBlockCipherMode == -1 ? null : BlockCipherMode.values()[tmpBlockCipherMode];
+        int tmpDsConstant = in.readInt();
+        this.mDsConstant = tmpDsConstant == -1 ? null : DsConstant.values()[tmpDsConstant];
+        int tmpPaddingMode = in.readInt();
+        this.mPaddingMode = tmpPaddingMode == -1 ? null : PaddingMode.values()[tmpPaddingMode];
+        this.mPaddingValue = in.readByte();
+        this.mIsPin = in.readByte() != 0;
+    }
+
+    public static final Parcelable.Creator<EncryptionMode> CREATOR = new Parcelable.Creator<EncryptionMode>() {
+        @Override
+        public EncryptionMode createFromParcel(Parcel source) {
+            return new EncryptionMode(source);
+        }
+
+        @Override
+        public EncryptionMode[] newArray(int size) {
+            return new EncryptionMode[size];
+        }
+    };
 }

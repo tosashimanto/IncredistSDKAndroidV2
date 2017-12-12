@@ -123,4 +123,13 @@ public class MFiResponse extends MFiPacket {
         }
         return copy;
     }
+
+    /**
+     * 受信データが存在するかどうかを返します
+     *
+     * @return 受信データがある場合 true
+     */
+    public boolean hasData() {
+        return mAppendPos > 0;
+    }
 }

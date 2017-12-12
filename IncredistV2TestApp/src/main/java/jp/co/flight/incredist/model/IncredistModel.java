@@ -16,7 +16,9 @@ import jp.co.flight.incredist.android.OnFailureFunction;
 import jp.co.flight.incredist.android.OnSuccessFunction;
 import jp.co.flight.incredist.android.OnSuccessVoidFunction;
 import jp.co.flight.incredist.android.model.DeviceInfo;
+import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
+import jp.co.flight.incredist.android.model.MagCard;
 
 /**
  * Incredist テストプログラム用モデル.
@@ -40,6 +42,8 @@ public interface IncredistModel extends Observable {
     void felicaSendCommand(OnSuccessFunction<FelicaCommandResult> success, OnFailureFunction failure);
 
     void felicaClose(OnSuccessVoidFunction success, OnFailureFunction failure);
+
+    void scanMagnetic(long timeout, OnSuccessFunction<MagCard> success, OnFailureFunction failure);
 
     void release();
 
@@ -65,6 +69,8 @@ public interface IncredistModel extends Observable {
     void tfpDisplayMessage(int tfpMessageType, String tfpMessageString, OnSuccessVoidFunction success, OnFailureFunction failure);
 
     void auto(OnSuccessFunction<String> success, OnFailureFunction failure);
+
+    void setEncryptionMode(EncryptionMode mode, OnSuccessVoidFunction success, OnFailureFunction failure);
 
     class Impl extends BaseObservable implements IncredistModel {
         private static final String PREFERENCE_KEY_DEVICE_NAME = "device_name";
@@ -169,6 +175,15 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
+        public void scanMagnetic(long timeout, OnSuccessFunction<MagCard> success, OnFailureFunction failure) {
+            if (mIncredist != null) {
+                mIncredist.scanMagneticCard(timeout, success, failure);
+            } else {
+                failure.onFailure(-1);
+            }
+        }
+
+        @Override
         public void release() {
             mIncredistManager.release();
         }
@@ -249,6 +264,11 @@ public interface IncredistModel extends Observable {
             mIncredistManager.connect(mSelectedDevice, 3000, (incredist) -> {
                 incredist.getSerialNumber(success, failure);
             }, failure);
+        }
+
+        @Override
+        public void setEncryptionMode(EncryptionMode mode, OnSuccessVoidFunction success, OnFailureFunction failure) {
+            mIncredist.setEncryptionMode(mode, success, failure);
         }
 
         private SharedPreferences getSharedPreference() {
