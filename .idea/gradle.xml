@@ -10,6 +10,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/IncredistSDKAndroid" />
             <option value="$PROJECT_DIR$/IncredistV2TestApp" />
+            <option value="$PROJECT_DIR$/dukpt" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

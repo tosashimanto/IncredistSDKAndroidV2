@@ -83,4 +83,13 @@ abstract class MFiPacket {
             return 0;
         }
     }
+
+    /**
+     * エラーコードを取得します
+     *
+     * @return エラーコード
+     */
+    public int getErrorCode() {
+        return mErrorCode;
+    }
 }

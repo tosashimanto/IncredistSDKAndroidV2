@@ -1,0 +1,14 @@
+//
+// Created by ss990011 on 16/03/30.
+//
+
+#ifndef INCREDIST_DOCOMOIF_DUKPTJNI_H
+#define INCREDIST_DOCOMOIF_DUKPTJNI_H
+
+
+class DukptJni {
+
+};
+
+
+#endif //INCREDIST_DOCOMOIF_DUKPTJNI_H

@@ -8,9 +8,14 @@ import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.IncredistController;
 import jp.co.flight.incredist.android.internal.controller.result.DeviceInfoResult;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
+import jp.co.flight.incredist.android.internal.controller.result.MagCardResult;
+import jp.co.flight.incredist.android.internal.controller.result.PinEntryResult;
 import jp.co.flight.incredist.android.internal.util.FLog;
 import jp.co.flight.incredist.android.model.DeviceInfo;
+import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
+import jp.co.flight.incredist.android.model.MagCard;
+import jp.co.flight.incredist.android.model.PinEntry;
 
 /**
  * Incredist API クラス.
@@ -101,12 +106,151 @@ public class Incredist {
     /**
      * デバイス情報を取得します。
      *
+     * @param success 取得成功時の処理
+     * @param failure 取得失敗時の処理
      */
-    private void getDeviceInfo(@Nullable OnSuccessFunction<DeviceInfo> success, @Nullable OnFailureFunction failure) {
+    public void getDeviceInfo(@Nullable OnSuccessFunction<DeviceInfo> success, @Nullable OnFailureFunction failure) {
         mController.getDeviceInfo(result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof DeviceInfoResult) {
                 if (success != null) {
                     success.onSuccess(new DeviceInfo((DeviceInfoResult) result));
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
+     * EMV メッセージを表示します
+     *
+     * @param type    メッセージ番号
+     * @param message メッセージ文字列
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void emvDisplayMessage(int type, @Nullable String message, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        mController.emvDisplaymessage(type, message, result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                if (success != null) {
+                    success.onSuccess();
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
+     * EMV メッセージを表示します
+     *
+     * @param type    メッセージ番号
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void emvDisplayMessage(int type, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        emvDisplayMessage(type, null, success, failure);
+    }
+
+    /**
+     * TFP メッセージを表示します
+     *
+     * @param type    メッセージ番号
+     * @param message メッセージ文字列
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void tfpDisplayMessage(int type, @Nullable String message, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        mController.tfpDisplaymessage(type, message, result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                if (success != null) {
+                    success.onSuccess();
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
+     * TFP メッセージを表示します
+     *
+     * @param type    メッセージ番号
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void tfpDisplayMessage(int type, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        tfpDisplayMessage(type, null, success, failure);
+    }
+
+    /**
+     * 暗号化モードを設定します
+     *
+     * @param mode 暗号化モード
+     * @param success 設定成功時処理
+     * @param failure 設定失敗時処理
+     */
+    public void setEncryptionMode(EncryptionMode mode, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        mController.setEncryptionMode(mode, result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                if (success != null) {
+                    success.onSuccess();
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
+     * PIN入力を行います(D向け)
+     *
+     * @param pinType PIN入力タイプ
+     * @param pinMode PIN暗号化モード
+     * @param mask 表示マスク
+     * @param min 最小桁数
+     * @param max 最大桁数
+     * @param align 表示左右寄せ
+     * @param line 表示行
+     * @param timeout タイムアウト時間(msec)
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void pinEntryD(PinEntry.Type pinType, PinEntry.Mode pinMode, PinEntry.MaskMode mask, int min, int max, PinEntry.Alignment align, int line, long timeout,
+                          @Nullable OnSuccessFunction<PinEntry.Result> success, @Nullable OnFailureFunction failure) {
+        mController.pinEntryD(pinType, pinMode, mask, min, max, align, line, timeout, result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof PinEntryResult) {
+                if (success != null) {
+                    success.onSuccess(new PinEntry.Result((PinEntryResult) result));
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
+     * 磁気カード読み取り
+     *
+     * @param timeout タイムアウト時間(msec)
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void scanMagneticCard(long timeout, @Nullable OnSuccessFunction<MagCard> success, @Nullable OnFailureFunction failure) {
+        mController.scanMagneticCard(timeout, result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof MagCardResult) {
+                if (success != null) {
+                    success.onSuccess(new MagCard((MagCardResult) result));
                 }
             } else {
                 if (failure != null) {
@@ -123,7 +267,7 @@ public class Incredist {
      * @param success 設定成功時の処理
      * @param failure 設定失敗時の処理
      */
-    private void felicaOpen(boolean withLed, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+    public void felicaOpen(boolean withLed, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
         mController.felicaOpen(withLed, result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 if (success != null) {
@@ -145,7 +289,7 @@ public class Incredist {
      * @param success 設定成功時の処理
      * @param failure 設定失敗時の処理
      */
-    private void felicaOpen(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+    public void felicaOpen(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
         felicaOpen(true, success, failure);
     }
 
@@ -153,10 +297,10 @@ public class Incredist {
      * FeliCa コマンドを送信します.
      *
      * @param felicaCommand FeliCaコマンドのバイト列
-     * @param success 送信成功時の処理
-     * @param failure 送信失敗時の処理
+     * @param success       送信成功時の処理
+     * @param failure       送信失敗時の処理
      */
-    private void felicaSendCommand(byte[] felicaCommand, @Nullable OnSuccessFunction<FelicaCommandResult> success, @Nullable OnFailureFunction failure) {
+    public void felicaSendCommand(byte[] felicaCommand, @Nullable OnSuccessFunction<FelicaCommandResult> success, @Nullable OnFailureFunction failure) {
         mController.felicaSendCommand(felicaCommand, (IncredistResult result) -> {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) {
                 jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult felicaResult = (jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) result;
@@ -177,7 +321,7 @@ public class Incredist {
      * @param success 設定成功時の処理
      * @param failure 設定失敗時の処理
      */
-    private void felicaClose(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+    public void felicaClose(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
         mController.felicaClose(result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 if (success != null) {

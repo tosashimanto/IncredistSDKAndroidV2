@@ -13,7 +13,9 @@ import java.util.Locale;
 
 import jp.co.flight.incredist.android.IncredistV2TestApp.BuildConfig;
 import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
+import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.model.IncredistModel;
+import jp.co.flight.incredist.model.PinEntryDParam;
 
 /**
  * MainActivity 用 Presenter インタフェース.
@@ -41,6 +43,24 @@ public interface MainPresenter {
 
     void onFelicaClose();
 
+    void onEmvMessage();
+
+    void onTfpMessage();
+
+    void emvDisplayMessage(int type, String message);
+
+    void tfpDisplayMessage(int type, String message);
+
+    void onSdm();
+
+    void setEncryptionMode(EncryptionMode mode);
+
+    void onMj2();
+
+    void onPinD();
+
+    void pinEntryD(PinEntryDParam setting);
+
     void addLog(String message);
 
     /**
@@ -67,9 +87,9 @@ public interface MainPresenter {
         public void onStartScan() {
             addLog("bleStartScan");
             mIncredist.bleStartScan((List<String> scanResult) -> {
-                addLog(String.format(Locale.JAPANESE, "onStartScan result %d", scanResult.size()));
+                addLog(String.format(Locale.JAPANESE, "bleStartScan result %d", scanResult.size()));
             }, (errorCode) -> {
-                addLog(String.format(Locale.JAPANESE, "onStartScan failure %d", errorCode));
+                addLog(String.format(Locale.JAPANESE, "bleStartScan failure %d", errorCode));
             });
         }
 
@@ -78,7 +98,7 @@ public interface MainPresenter {
             addLog("selectDevice");
             List<String> devices = mIncredist.getDeviceList();
             if (devices != null && devices.size() > 0) {
-                mFragment.startSelectDevice((ArrayList<String>) devices);
+                mFragment.showDeviceListDialog((ArrayList<String>) devices);
             } else {
                 addLog("not scanned result.");
             }
@@ -171,6 +191,84 @@ public interface MainPresenter {
             });
         }
 
+        @Override
+        public void onEmvMessage() {
+            addLog("emvMessage setting");
+            mFragment.showEmvDisplayMessageDialog();
+        }
+
+        @Override
+        public void onTfpMessage() {
+            addLog("tfpMessage setting");
+            mFragment.showTfpDisplayMessageDialog();
+        }
+
+        @Override
+        public void emvDisplayMessage(int type, String message) {
+            addLog("emvDisplayMessage");
+            mIncredist.emvDisplayMessage(type, message, () -> {
+                addLog("emvDisplayMessage success");
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "emvDisplayMessage failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void tfpDisplayMessage(int type, String message) {
+            addLog("tfpMessage");
+            mIncredist.tfpDisplayMessage(type, message, () -> {
+                addLog("tfpMessage success");
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "tfpMessage failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onSdm() {
+            addLog("sdm setting");
+            mFragment.showEncryptSettingDialog();
+        }
+
+        @Override
+        public void setEncryptionMode(EncryptionMode mode) {
+            addLog("sdm");
+            mIncredist.setEncryptionMode(mode, () -> {
+                addLog("sdm success");
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "sdm failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onMj2() {
+            addLog("mj2");
+            mIncredist.scanMagnetic(20000, (magCard) -> {
+                addLog(String.format(Locale.JAPANESE, "mj2 success : %s", magCard.getCardType().name()));
+
+                addLog(String.format(Locale.JAPANESE, "  track1: %s", hexString(magCard.getDec1().getTrack1())));
+
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "mj2 failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onPinD() {
+            addLog("pind setting");
+            mFragment.showPinEntryDParamDialog();
+        }
+
+        @Override
+        public void pinEntryD(PinEntryDParam param) {
+            addLog("pind");
+            mIncredist.pinEntryD(param, (pinEntry) -> {
+                addLog(String.format(Locale.JAPANESE, "pind success ksn:%s pinData:%s", hexString(pinEntry.getKsn()), hexString(pinEntry.getPinData())));
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "pind failure %d", errorCode));
+            });
+
+        }
+
         public void addLog(String message) {
             String level = "-";
             SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.JAPANESE);
@@ -178,10 +276,12 @@ public interface MainPresenter {
             mMainThreadHandler.post(() -> {
                 mBinding.textLog.append(logMessage + "\n");
                 Layout layout = mBinding.textLog.getLayout();
-                int offsetBottom = layout.getLineBottom(layout.getLineCount() - 1);
-                int scrollY = offsetBottom - mBinding.textLog.getHeight();
-                scrollY = scrollY < 0 ? 0 : scrollY;
-                mBinding.textLog.setScrollY(scrollY);
+                if (layout != null) {
+                    int offsetBottom = layout.getLineBottom(layout.getLineCount() - 1);
+                    int scrollY = offsetBottom - mBinding.textLog.getHeight();
+                    scrollY = scrollY < 0 ? 0 : scrollY;
+                    mBinding.textLog.setScrollY(scrollY);
+                }
             });
         }
 

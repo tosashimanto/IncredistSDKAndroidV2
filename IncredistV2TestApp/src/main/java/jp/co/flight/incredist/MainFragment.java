@@ -16,7 +16,9 @@ import java.util.ArrayList;
 
 import jp.co.flight.incredist.android.IncredistV2TestApp.R;
 import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
+import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.model.IncredistModel;
+import jp.co.flight.incredist.model.PinEntryDParam;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
 
@@ -24,10 +26,20 @@ import permissions.dispatcher.RuntimePermissions;
  * MainFragment.
  */
 @RuntimePermissions
-public class MainFragment extends Fragment implements DeviceListDialogFragment.Listener {
+public class MainFragment extends Fragment
+        implements DeviceListDialogFragment.Listener, DisplayMessageDialogFragment.Listener,
+        EncryptionSettingDialogFragment.Listener, PinEntryDParamDialogFragment.Listener {
 
     private static final String DIALOG_TAG_SELECT_DEVICE = "dialog_tag_select_device";
+    private static final String DIALOG_TAG_EMV_MESSAGE = "dialog_tag_emv_message";
+    private static final String DIALOG_TAG_TFP_MESSAGE = "dialog_tag_tfp_message";
+    private static final String DIALOG_TAG_ENCRYPTION_SETTING = "dialog_tag_encryption_setting";
+    private static final String DIALOG_TAG_PIN_D_PARAM = "dialog_tag_pin_d_setting";
     private static final int REQUEST_SELECT_DEVICE = 1;
+    private static final int REQUEST_EMV_MESSAGE = 2;
+    private static final int REQUEST_TFP_MESSAGE = 3;
+    private static final int REQUEST_ENCRYPTION = 4;
+    private static final int REQUEST_PIN_D_PARAM = 5;
 
     private OnFragmentInteractionListener mListener;
     private FragmentMainBinding mBinding;
@@ -39,11 +51,6 @@ public class MainFragment extends Fragment implements DeviceListDialogFragment.L
 
     public static MainFragment newInstance() {
         return new MainFragment();
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
     }
 
     @Override
@@ -91,7 +98,7 @@ public class MainFragment extends Fragment implements DeviceListDialogFragment.L
         // do nothing.
     }
 
-    public void startSelectDevice(ArrayList<String> devices) {
+    void showDeviceListDialog(ArrayList<String> devices) {
         DialogFragment dialog = DeviceListDialogFragment.newInstance(devices);
         dialog.setTargetFragment(this, REQUEST_SELECT_DEVICE);
         dialog.show(getFragmentManager(), DIALOG_TAG_SELECT_DEVICE);
@@ -101,6 +108,58 @@ public class MainFragment extends Fragment implements DeviceListDialogFragment.L
     public void onSelectDevice(int requestCode, String deviceName) {
         mPresenter.setSelectedDevice(deviceName);
         mPresenter.addLog(deviceName);
+    }
+
+    void showEmvDisplayMessageDialog() {
+        DialogFragment dialog = DisplayMessageDialogFragment.newInstance("EMV message",
+                mModel.getEmvMessageType(), mModel.getEmvMessageString());
+        dialog.setTargetFragment(this, REQUEST_EMV_MESSAGE);
+        dialog.show(getFragmentManager(), DIALOG_TAG_EMV_MESSAGE);
+    }
+
+    void showTfpDisplayMessageDialog() {
+        DialogFragment dialog = DisplayMessageDialogFragment.newInstance("TFP message",
+                mModel.getTfpMessageType(), mModel.getTfpMessageString());
+        dialog.setTargetFragment(this, REQUEST_TFP_MESSAGE);
+        dialog.show(getFragmentManager(), DIALOG_TAG_TFP_MESSAGE);
+    }
+
+    @Override
+    public void onDisplayMessage(int requestCode, int type, String message) {
+        switch (requestCode) {
+            case REQUEST_EMV_MESSAGE:
+                mPresenter.emvDisplayMessage(type, message);
+                break;
+
+            case REQUEST_TFP_MESSAGE:
+                mPresenter.tfpDisplayMessage(type, message);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    public void showEncryptSettingDialog() {
+        DialogFragment dialog = EncryptionSettingDialogFragment.newInstance(null);
+        dialog.setTargetFragment(this, REQUEST_ENCRYPTION);
+        dialog.show(getFragmentManager(), DIALOG_TAG_ENCRYPTION_SETTING);
+    }
+
+    @Override
+    public void onSetEncryptionSetting(int requestCode, EncryptionMode mode) {
+        mPresenter.setEncryptionMode(mode);
+    }
+
+    public void showPinEntryDParamDialog() {
+        DialogFragment dialog = PinEntryDParamDialogFragment.newInstance(null);
+        dialog.setTargetFragment(this, REQUEST_PIN_D_PARAM);
+        dialog.show(getFragmentManager(), DIALOG_TAG_PIN_D_PARAM);
+    }
+
+    @Override
+    public void onSetPinEntryDParam(int requestCode, PinEntryDParam param) {
+        mPresenter.pinEntryD(param);
     }
 
     public interface OnFragmentInteractionListener {

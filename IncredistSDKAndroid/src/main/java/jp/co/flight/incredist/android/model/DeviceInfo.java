@@ -3,7 +3,7 @@ package jp.co.flight.incredist.android.model;
 import jp.co.flight.incredist.android.internal.controller.result.DeviceInfoResult;
 
 /**
- * デバイス情報
+ * デバイス情報取得結果
  */
 public class DeviceInfo {
     private final String mDeviceName;

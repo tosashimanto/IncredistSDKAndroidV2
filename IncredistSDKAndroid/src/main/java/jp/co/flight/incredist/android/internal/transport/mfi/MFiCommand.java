@@ -66,7 +66,6 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
      * @param count 何番目のパケットか
      * @return 分割されたパケットデータ
      */
-
     @Nullable
     byte[] getValueData(int count) {
         if (mMFiData != null && count >= 0 && count < getPacketCount()) {
@@ -81,6 +80,14 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
         }
     }
 
+    /**
+     * キャンセル可能かどうか
+     *
+     * @return キャンセルできるコマンドの場合 true
+     */
+    public boolean cancelable() {
+        return false;
+    }
 
     /**
      * 処理後のウェイト時間.
@@ -98,6 +105,8 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
 
     /**
      * 応答の解析.
+     *
+     * @return 解析結果
      */
     public IncredistResult parseResponse(MFiResponse response) {
         if (response.isValid()) {

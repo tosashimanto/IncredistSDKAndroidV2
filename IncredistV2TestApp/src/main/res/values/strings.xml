@@ -1,6 +1,12 @@
 <resources>
-    <string name="app_name">IncredistSDKAndroidV2</string>
+    <string name="app_name">IncredistV2TestApp</string>
+
+    <string name="ok">@android:string/ok</string>
+    <string name="cancel">@android:string/cancel</string>
+    <string name="label_type">メッセージ番号</string>
+    <string name="label_message">メッセージ</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="dialog_title_encryption_setting">暗号化設定</string>
 </resources>
