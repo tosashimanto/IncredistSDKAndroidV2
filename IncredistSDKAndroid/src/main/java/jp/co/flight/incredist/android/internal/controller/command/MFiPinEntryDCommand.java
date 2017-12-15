@@ -13,6 +13,7 @@ import jp.co.flight.incredist.android.model.PinEntry;
 
 /**
  * MFi版 PIN入力(docomo用)送信コマンド
+ * なお、本コマンドは IncredistPremium では対応していない
  */
 public class MFiPinEntryDCommand extends MFiCommand {
     private static final byte[] PIND_HEADER = {'p', 'i', 'n', 'd'};
@@ -89,11 +90,11 @@ public class MFiPinEntryDCommand extends MFiCommand {
             // CHECKSTYLE:OFF MagicNumber
             int status = data[0];
 
-            if (status == 1 && data.length > KSN_LENGTH + 1) {
+            if (status == 1 && data.length > 1 + KSN_LENGTH) {
                 // 正常
-                int pinLength = data[KSN_LENGTH + 1];
-                if (data.length == KSN_LENGTH + 1 + pinLength) {
-                    return new PinEntryResult(Arrays.copyOfRange(data, 1, KSN_LENGTH + 1), Arrays.copyOfRange(data, KSN_LENGTH + 1, KSN_LENGTH + 1 + pinLength));
+                int pinLength = data[1 + KSN_LENGTH];
+                if (data.length == 1 + KSN_LENGTH + 1 + pinLength) {
+                    return new PinEntryResult(Arrays.copyOfRange(data, 1, 1 + KSN_LENGTH), Arrays.copyOfRange(data, 1 + KSN_LENGTH + 1, 1 + KSN_LENGTH + 1 + pinLength));
                 }
             } else if (status == 0) {
                 // タイムアウト

@@ -1,0 +1,131 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="jp.co.flight.incredist.PinEntryDParamDialogFragment">
+
+    <data>
+        <variable
+            name="setting"
+            type="jp.co.flight.incredist.model.PinEntryDParam" />
+
+    </data>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <android.support.constraint.Guideline
+            android:id="@+id/vertical_line"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.4" />
+
+        <TextView
+            android:id="@+id/label_length"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Length"
+            app:layout_constraintBottom_toTopOf="@+id/label_mask_mode"
+            app:layout_constraintEnd_toStartOf="@+id/vertical_line"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/edit_length"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="@={setting.length}"
+            app:layout_constraintBottom_toBottomOf="@+id/label_length"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/vertical_line"
+            app:layout_constraintTop_toTopOf="@+id/label_length" />
+
+        <TextView
+            android:id="@+id/label_mask_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MaskMode"
+            app:layout_constraintBottom_toTopOf="@+id/label_pin_mode"
+            app:layout_constraintEnd_toStartOf="@+id/vertical_line"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/label_length" />
+
+        <EditText
+            android:id="@+id/edit_mask_mode"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="@={setting.maskMode}"
+            app:layout_constraintBottom_toBottomOf="@+id/label_mask_mode"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/vertical_line"
+            app:layout_constraintTop_toTopOf="@+id/label_mask_mode" />
+
+        <TextView
+            android:id="@+id/label_pin_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PinMode"
+            app:layout_constraintBottom_toTopOf="@+id/label_position"
+            app:layout_constraintEnd_toStartOf="@+id/vertical_line"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/label_mask_mode" />
+
+        <EditText
+            android:id="@+id/edit_pin_mode"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="@={setting.pinMode}"
+            app:layout_constraintBottom_toBottomOf="@+id/label_pin_mode"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/vertical_line"
+            app:layout_constraintTop_toTopOf="@+id/label_pin_mode" />
+
+        <TextView
+            android:id="@+id/label_position"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Position"
+            app:layout_constraintBottom_toTopOf="@+id/label_direction"
+            app:layout_constraintEnd_toStartOf="@+id/vertical_line"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/label_pin_mode" />
+
+        <EditText
+            android:id="@+id/edit_position"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="@={setting.position}"
+            app:layout_constraintBottom_toBottomOf="@+id/label_position"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/vertical_line"
+            app:layout_constraintTop_toTopOf="@+id/label_position" />
+
+        <TextView
+            android:id="@+id/label_direction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Direction"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/vertical_line"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/label_position" />
+
+        <EditText
+            android:id="@+id/edit_direction"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="@={setting.direction}"
+            app:layout_constraintBottom_toBottomOf="@+id/label_direction"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/vertical_line"
+            app:layout_constraintTop_toTopOf="@+id/label_direction" />
+
+    </android.support.constraint.ConstraintLayout>
+
+</layout>

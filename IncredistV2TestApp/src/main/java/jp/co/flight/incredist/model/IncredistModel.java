@@ -18,6 +18,7 @@ import jp.co.flight.incredist.android.OnSuccessVoidFunction;
 import jp.co.flight.incredist.android.model.DeviceInfo;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
+import jp.co.flight.incredist.android.model.PinEntry;
 
 /**
  * Incredist テストプログラム用モデル.
@@ -42,7 +43,15 @@ public interface IncredistModel extends Observable {
 
     void felicaClose(OnSuccessVoidFunction success, OnFailureFunction failure);
 
+    void emvDisplayMessage(int emvMessageType, String emvMessageString, OnSuccessVoidFunction success, OnFailureFunction failure);
+
+    void tfpDisplayMessage(int tfpMessageType, String tfpMessageString, OnSuccessVoidFunction success, OnFailureFunction failure);
+
+    void setEncryptionMode(EncryptionMode mode, OnSuccessVoidFunction success, OnFailureFunction failure);
+
     void scanMagnetic(long timeout, OnSuccessFunction<DecodedMagCard> success, OnFailureFunction failure);
+
+    void pinEntryD(PinEntryDParam setting, OnSuccessFunction<PinEntry.Result> success, OnFailureFunction failure);
 
     void release();
 
@@ -63,13 +72,8 @@ public interface IncredistModel extends Observable {
 
     String getTfpMessageString();
 
-    void emvDisplayMessage(int emvMessageType, String emvMessageString, OnSuccessVoidFunction success, OnFailureFunction failure);
-
-    void tfpDisplayMessage(int tfpMessageType, String tfpMessageString, OnSuccessVoidFunction success, OnFailureFunction failure);
-
     void auto(OnSuccessFunction<String> success, OnFailureFunction failure);
 
-    void setEncryptionMode(EncryptionMode mode, OnSuccessVoidFunction success, OnFailureFunction failure);
 
     class Impl extends BaseObservable implements IncredistModel {
         private static final String PREFERENCE_KEY_DEVICE_NAME = "device_name";
@@ -174,11 +178,66 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
+        public void emvDisplayMessage(int emvMessageType, String emvMessageString, OnSuccessVoidFunction success, OnFailureFunction failure) {
+            if (mIncredist != null) {
+                SharedPreferences sp = getSharedPreference();
+                SharedPreferences.Editor editor = sp.edit();
+                editor.putInt(PREFERENCE_KEY_EMV_MESSAGE_TYPE, emvMessageType);
+                editor.putString(PREFERENCE_KEY_EMV_MESSAGE_STRING, emvMessageString);
+                editor.apply();
+                mEmvMessageType = emvMessageType;
+                mEmvMessageString = emvMessageString;
+
+                mIncredist.emvDisplayMessage(emvMessageType, emvMessageString, success, failure);
+            } else {
+                failure.onFailure(-1);
+            }
+        }
+
+        @Override
+        public void tfpDisplayMessage(int tfpMessageType, String tfpMessageString, OnSuccessVoidFunction success, OnFailureFunction failure) {
+            if (mIncredist != null) {
+                SharedPreferences sp = getSharedPreference();
+                SharedPreferences.Editor editor = sp.edit();
+                editor.putInt(PREFERENCE_KEY_TFP_MESSAGE_TYPE, tfpMessageType);
+                editor.putString(PREFERENCE_KEY_TFP_MESSAGE_STRING, tfpMessageString);
+                editor.apply();
+                mTfpMessageType = tfpMessageType;
+                mTfpMessageString = tfpMessageString;
+
+                mIncredist.tfpDisplayMessage(tfpMessageType, tfpMessageString, success, failure);
+            } else {
+                failure.onFailure(-1);
+            }
+        }
+
+        @Override
+        public void setEncryptionMode(EncryptionMode mode, OnSuccessVoidFunction success, OnFailureFunction failure) {
+            if (mIncredist != null) {
+                mIncredist.setEncryptionMode(mode, success, failure);
+            } else {
+                failure.onFailure(-1);
+            }
+        }
+
+        @Override
         public void scanMagnetic(long timeout, OnSuccessFunction<DecodedMagCard> success, OnFailureFunction failure) {
             if (mIncredist != null) {
                 mIncredist.scanMagneticCard(timeout, (magCard) -> {
                     success.onSuccess(new DecodedMagCard(magCard));
                 }, failure);
+            } else {
+                failure.onFailure(-1);
+            }
+        }
+
+        @Override
+        public void pinEntryD(PinEntryDParam setting, OnSuccessFunction<PinEntry.Result> success, OnFailureFunction failure) {
+            if (mIncredist != null) {
+                PinEntry.Mode pinMode = PinEntry.Mode.values()[setting.getPinMode()];
+                int min = (pinMode == PinEntry.Mode.DebitScramble) ? setting.getLength() : 1;
+                mIncredist.pinEntryD(PinEntry.Type.ISO9564, pinMode, PinEntry.MaskMode.values()[setting.getMaskMode()],
+                        min, setting.getLength(), PinEntry.Alignment.values()[setting.getDirection()], setting.getPosition(), 30000, success, failure);
             } else {
                 failure.onFailure(-1);
             }
@@ -235,41 +294,10 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
-        public void emvDisplayMessage(int emvMessageType, String emvMessageString, OnSuccessVoidFunction success, OnFailureFunction failure) {
-            SharedPreferences sp = getSharedPreference();
-            SharedPreferences.Editor editor = sp.edit();
-            editor.putInt(PREFERENCE_KEY_EMV_MESSAGE_TYPE, emvMessageType);
-            editor.putString(PREFERENCE_KEY_EMV_MESSAGE_STRING, emvMessageString);
-            editor.apply();
-            mEmvMessageType = emvMessageType;
-            mEmvMessageString = emvMessageString;
-
-            mIncredist.emvDisplayMessage(emvMessageType, emvMessageString, success, failure);
-        }
-
-        @Override
-        public void tfpDisplayMessage(int tfpMessageType, String tfpMessageString, OnSuccessVoidFunction success, OnFailureFunction failure) {
-            SharedPreferences sp = getSharedPreference();
-            SharedPreferences.Editor editor = sp.edit();
-            editor.putInt(PREFERENCE_KEY_TFP_MESSAGE_TYPE, tfpMessageType);
-            editor.putString(PREFERENCE_KEY_TFP_MESSAGE_STRING, tfpMessageString);
-            editor.apply();
-            mTfpMessageType = tfpMessageType;
-            mTfpMessageString = tfpMessageString;
-
-            mIncredist.tfpDisplayMessage(tfpMessageType, tfpMessageString, success, failure);
-        }
-
-        @Override
         public void auto(OnSuccessFunction<String> success, OnFailureFunction failure) {
             mIncredistManager.connect(mSelectedDevice, 3000, (incredist) -> {
                 incredist.getSerialNumber(success, failure);
             }, failure);
-        }
-
-        @Override
-        public void setEncryptionMode(EncryptionMode mode, OnSuccessVoidFunction success, OnFailureFunction failure) {
-            mIncredist.setEncryptionMode(mode, success, failure);
         }
 
         private SharedPreferences getSharedPreference() {

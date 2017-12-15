@@ -15,6 +15,7 @@ import jp.co.flight.incredist.android.IncredistV2TestApp.BuildConfig;
 import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.model.IncredistModel;
+import jp.co.flight.incredist.model.PinEntryDParam;
 
 /**
  * MainActivity 用 Presenter インタフェース.
@@ -55,6 +56,10 @@ public interface MainPresenter {
     void setEncryptionMode(EncryptionMode mode);
 
     void onMj2();
+
+    void onPinD();
+
+    void pinEntryD(PinEntryDParam setting);
 
     void addLog(String message);
 
@@ -188,13 +193,13 @@ public interface MainPresenter {
 
         @Override
         public void onEmvMessage() {
-            addLog("emvMessage");
+            addLog("emvMessage setting");
             mFragment.showEmvDisplayMessageDialog();
         }
 
         @Override
         public void onTfpMessage() {
-            addLog("tfpMessage");
+            addLog("tfpMessage setting");
             mFragment.showTfpDisplayMessageDialog();
         }
 
@@ -220,7 +225,7 @@ public interface MainPresenter {
 
         @Override
         public void onSdm() {
-            addLog("sdm");
+            addLog("sdm setting");
             mFragment.showEncryptSettingDialog();
         }
 
@@ -245,6 +250,23 @@ public interface MainPresenter {
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "mj2 failure %d", errorCode));
             });
+        }
+
+        @Override
+        public void onPinD() {
+            addLog("pind setting");
+            mFragment.showPinEntryDParamDialog();
+        }
+
+        @Override
+        public void pinEntryD(PinEntryDParam param) {
+            addLog("pind");
+            mIncredist.pinEntryD(param, (pinEntry) -> {
+                addLog(String.format(Locale.JAPANESE, "pind success ksn:%s pinData:%s", hexString(pinEntry.getKsn()), hexString(pinEntry.getPinData())));
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "pind failure %d", errorCode));
+            });
+
         }
 
         public void addLog(String message) {

@@ -18,6 +18,7 @@ import jp.co.flight.incredist.android.IncredistV2TestApp.R;
 import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.model.IncredistModel;
+import jp.co.flight.incredist.model.PinEntryDParam;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
 
@@ -27,16 +28,18 @@ import permissions.dispatcher.RuntimePermissions;
 @RuntimePermissions
 public class MainFragment extends Fragment
         implements DeviceListDialogFragment.Listener, DisplayMessageDialogFragment.Listener,
-        EncryptionSettingDialogFragment.Listener {
+        EncryptionSettingDialogFragment.Listener, PinEntryDParamDialogFragment.Listener {
 
     private static final String DIALOG_TAG_SELECT_DEVICE = "dialog_tag_select_device";
     private static final String DIALOG_TAG_EMV_MESSAGE = "dialog_tag_emv_message";
     private static final String DIALOG_TAG_TFP_MESSAGE = "dialog_tag_tfp_message";
     private static final String DIALOG_TAG_ENCRYPTION_SETTING = "dialog_tag_encryption_setting";
+    private static final String DIALOG_TAG_PIN_D_PARAM = "dialog_tag_pin_d_setting";
     private static final int REQUEST_SELECT_DEVICE = 1;
     private static final int REQUEST_EMV_MESSAGE = 2;
     private static final int REQUEST_TFP_MESSAGE = 3;
     private static final int REQUEST_ENCRYPTION = 4;
+    private static final int REQUEST_PIN_D_PARAM = 5;
 
     private OnFragmentInteractionListener mListener;
     private FragmentMainBinding mBinding;
@@ -146,6 +149,17 @@ public class MainFragment extends Fragment
     @Override
     public void onSetEncryptionSetting(int requestCode, EncryptionMode mode) {
         mPresenter.setEncryptionMode(mode);
+    }
+
+    public void showPinEntryDParamDialog() {
+        DialogFragment dialog = PinEntryDParamDialogFragment.newInstance(null);
+        dialog.setTargetFragment(this, REQUEST_PIN_D_PARAM);
+        dialog.show(getFragmentManager(), DIALOG_TAG_PIN_D_PARAM);
+    }
+
+    @Override
+    public void onSetPinEntryDParam(int requestCode, PinEntryDParam param) {
+        mPresenter.pinEntryD(param);
     }
 
     public interface OnFragmentInteractionListener {
