@@ -131,7 +131,7 @@ public interface IncredistModel extends Observable {
 
         @Override
         public void connect(OnSuccessFunction<Incredist> success, OnFailureFunction failure) {
-            mIncredistManager.connect(mSelectedDevice, 3000, (incredist) -> {
+            mIncredistManager.connect(mSelectedDevice, 3000, 5000, (incredist) -> {
                 mIncredist = incredist;
                 success.onSuccess(incredist);
             }, failure);
@@ -319,7 +319,7 @@ public interface IncredistModel extends Observable {
 
         @Override
         public void auto(OnSuccessFunction<String> success, OnFailureFunction failure) {
-            mIncredistManager.connect(mSelectedDevice, 3000, (incredist) -> {
+            mIncredistManager.connect(mSelectedDevice, 3000, 5000, (incredist) -> {
                 incredist.getSerialNumber(success, failure);
             }, failure);
         }
