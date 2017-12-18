@@ -6,6 +6,7 @@ import android.widget.Spinner;
 
 import jp.co.flight.incredist.EnumSpinnerAdapter;
 import jp.co.flight.incredist.android.model.EncryptionMode;
+import jp.co.flight.incredist.android.model.LedColor;
 
 /**
  * EnumSpinnerAdapter 用の BindingAdapter 定義
@@ -41,5 +42,10 @@ public class EnumSpinnerBindingAdapter {
     @InverseBindingAdapter(attribute = "android:selectedItemPosition")
     public static EncryptionMode.PaddingMode getPaddingMode(Spinner spinner) {
         return EncryptionMode.PaddingMode.values()[spinner.getSelectedItemPosition()];
+    }
+
+    @InverseBindingAdapter(attribute = "android:selectedItemPosition")
+    public static LedColor getLedColor(Spinner spinner) {
+        return LedColor.values()[spinner.getSelectedItemPosition()];
     }
 }

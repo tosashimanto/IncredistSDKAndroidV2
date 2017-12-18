@@ -10,6 +10,7 @@ import java.util.concurrent.CountDownLatch;
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.model.EncryptionMode;
+import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.PinEntry;
 
 import static jp.co.flight.incredist.android.internal.controller.result.IncredistResult.STATUS_FAILED_EXECUTION;
@@ -214,6 +215,16 @@ public class IncredistController {
     }
 
     /**
+     * LED色を設定します。
+     * @param color LED色
+     * @param isOn true: 点灯 false: 消灯
+     * @param callback コールバック
+     */
+    public void setLedColor(LedColor color, boolean isOn, IncredistController.Callback callback) {
+        mProtoController.setLedColor(color, isOn, callback);
+    }
+
+    /**
      * FeliCa RF モードを開始します
      * @param callback コールバック
      */
@@ -228,6 +239,15 @@ public class IncredistController {
      */
     public void felicaSendCommand(byte[] command, IncredistController.Callback callback) {
         mProtoController.felicaSendCommand(command, callback);
+    }
+
+    /**
+     * felica モード時のLED色を設定します。
+     * @param color LED色
+     * @param callback コールバック
+     */
+    public void felicaLedColor(LedColor color, IncredistController.Callback callback) {
+        mProtoController.felicaLedColor(color, callback);
     }
 
     /**
