@@ -18,6 +18,7 @@ import jp.co.flight.incredist.android.OnSuccessVoidFunction;
 import jp.co.flight.incredist.android.model.DeviceInfo;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
+import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.PinEntry;
 
 /**
@@ -39,6 +40,8 @@ public interface IncredistModel extends Observable {
 
     void felicaOpen(boolean withLed, OnSuccessVoidFunction success, OnFailureFunction failure);
 
+    void felicaLedColor(LedColor color, OnSuccessVoidFunction success, OnFailureFunction failure);
+
     void felicaSendCommand(OnSuccessFunction<FelicaCommandResult> success, OnFailureFunction failure);
 
     void felicaClose(OnSuccessVoidFunction success, OnFailureFunction failure);
@@ -52,6 +55,8 @@ public interface IncredistModel extends Observable {
     void scanMagnetic(long timeout, OnSuccessFunction<DecodedMagCard> success, OnFailureFunction failure);
 
     void pinEntryD(PinEntryDParam setting, OnSuccessFunction<PinEntry.Result> success, OnFailureFunction failure);
+
+    void setLedColor(LedColor color, boolean isOn, OnSuccessVoidFunction success, OnFailureFunction failure);
 
     void release();
 
@@ -73,6 +78,7 @@ public interface IncredistModel extends Observable {
     String getTfpMessageString();
 
     void auto(OnSuccessFunction<String> success, OnFailureFunction failure);
+
 
 
     class Impl extends BaseObservable implements IncredistModel {
@@ -159,6 +165,15 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
+        public void felicaLedColor(LedColor color, OnSuccessVoidFunction success, OnFailureFunction failure) {
+            if (mIncredist != null) {
+                mIncredist.feliaLedColor(color, success, failure);
+            } else {
+                failure.onFailure(-1);
+            }
+        }
+
+        @Override
         public void felicaSendCommand(OnSuccessFunction<FelicaCommandResult> success, OnFailureFunction failure) {
             if (mIncredist != null) {
                 byte[] felicaCommand = {(byte) 0x00, (byte) 0xff, (byte) 0xff, (byte) 0x00, (byte) 0x00};
@@ -238,6 +253,15 @@ public interface IncredistModel extends Observable {
                 int min = (pinMode == PinEntry.Mode.DebitScramble) ? setting.getLength() : 1;
                 mIncredist.pinEntryD(PinEntry.Type.ISO9564, pinMode, PinEntry.MaskMode.values()[setting.getMaskMode()],
                         min, setting.getLength(), PinEntry.Alignment.values()[setting.getDirection()], setting.getPosition(), 30000, success, failure);
+            } else {
+                failure.onFailure(-1);
+            }
+        }
+
+        @Override
+        public void setLedColor(LedColor color, boolean isOn, OnSuccessVoidFunction success, OnFailureFunction failure) {
+            if (mIncredist != null) {
+                mIncredist.setLedColor(color, isOn, success, failure);
             } else {
                 failure.onFailure(-1);
             }

@@ -7,18 +7,21 @@ import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.command.MFiDeviceInfoCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiEmvDisplayMessageCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaCloseCommand;
+import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaLedColorCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaOpenCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaOpenWithoutLedCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaSendCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiPinEntryDCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiScanMagneticCard2Command;
 import jp.co.flight.incredist.android.internal.controller.command.MFiSetEncryptionModeCommand;
+import jp.co.flight.incredist.android.internal.controller.command.MFiSetLedColorCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiTfpDisplayMessageCommand;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.exception.ParameterException;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
 import jp.co.flight.incredist.android.model.EncryptionMode;
+import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.PinEntry;
 
 /**
@@ -132,6 +135,17 @@ public class IncredistMFiController implements IncredistProtocolController {
     }
 
     /**
+     * LED色を設定します。
+     * @param color LED色
+     * @param isOn true: 点灯 false: 消灯
+     * @param callback コールバック
+     */
+    @Override
+    public void setLedColor(LedColor color, boolean isOn, IncredistController.Callback callback) {
+        postMFiCommand(new MFiSetLedColorCommand(color, isOn), callback);
+    }
+
+    /**
      * FeliCa RF モードを開始します
      *
      * @param withLed LED を点灯するかどうか
@@ -157,6 +171,16 @@ public class IncredistMFiController implements IncredistProtocolController {
     @Override
     public void felicaSendCommand(byte[] command, IncredistController.Callback callback) {
         postMFiCommand(new MFiFelicaSendCommand(command), callback);
+    }
+
+    /**
+     * felica モード時のLED色を設定します。
+     * @param color LED色
+     * @param callback コールバック
+     */
+    @Override
+    public void felicaLedColor(LedColor color, IncredistController.Callback callback) {
+        postMFiCommand(new MFiFelicaLedColorCommand(color), callback);
     }
 
     /**

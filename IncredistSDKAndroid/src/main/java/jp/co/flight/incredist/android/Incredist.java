@@ -2,18 +2,16 @@ package jp.co.flight.incredist.android;
 
 import android.support.annotation.Nullable;
 
-import java.util.Locale;
-
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.IncredistController;
 import jp.co.flight.incredist.android.internal.controller.result.DeviceInfoResult;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.controller.result.MagCardResult;
 import jp.co.flight.incredist.android.internal.controller.result.PinEntryResult;
-import jp.co.flight.incredist.android.internal.util.FLog;
 import jp.co.flight.incredist.android.model.DeviceInfo;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
+import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.MagCard;
 import jp.co.flight.incredist.android.model.PinEntry;
 
@@ -192,7 +190,7 @@ public class Incredist {
     /**
      * 暗号化モードを設定します
      *
-     * @param mode 暗号化モード
+     * @param mode    暗号化モード
      * @param success 設定成功時処理
      * @param failure 設定失敗時処理
      */
@@ -215,11 +213,11 @@ public class Incredist {
      *
      * @param pinType PIN入力タイプ
      * @param pinMode PIN暗号化モード
-     * @param mask 表示マスク
-     * @param min 最小桁数
-     * @param max 最大桁数
-     * @param align 表示左右寄せ
-     * @param line 表示行
+     * @param mask    表示マスク
+     * @param min     最小桁数
+     * @param max     最大桁数
+     * @param align   表示左右寄せ
+     * @param line    表示行
      * @param timeout タイムアウト時間(msec)
      * @param success 成功時処理
      * @param failure 失敗時処理
@@ -261,6 +259,29 @@ public class Incredist {
     }
 
     /**
+     * LED色を設定します。
+     *
+     * @param color   LED色
+     * @param isOn    true: 点灯 false: 消灯
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void setLedColor(LedColor color, boolean isOn, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        mController.setLedColor(color, isOn, result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                if (success != null) {
+                    success.onSuccess();
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+
+    /**
      * FeliCa アクセスのため、デバイスを FeliCa RF モードにします.
      *
      * @param withLed LED を点灯するかどうか
@@ -275,8 +296,6 @@ public class Incredist {
                 }
             } else {
                 if (failure != null) {
-                    FLog.d(TAG, String.format(Locale.JAPANESE, "felicaOpen: onFailure:%d %s", result.status, result.message));
-
                     failure.onFailure(result.status);
                 }
             }
@@ -294,6 +313,27 @@ public class Incredist {
     }
 
     /**
+     * felica モード時のLED色を設定します。
+     *
+     * @param color   LED色
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void feliaLedColor(LedColor color, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        mController.felicaLedColor(color, result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                if (success != null) {
+                    success.onSuccess();
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
      * FeliCa コマンドを送信します.
      *
      * @param felicaCommand FeliCaコマンドのバイト列
@@ -301,7 +341,7 @@ public class Incredist {
      * @param failure       送信失敗時の処理
      */
     public void felicaSendCommand(byte[] felicaCommand, @Nullable OnSuccessFunction<FelicaCommandResult> success, @Nullable OnFailureFunction failure) {
-        mController.felicaSendCommand(felicaCommand, (IncredistResult result) -> {
+        mController.felicaSendCommand(felicaCommand, result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) {
                 jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult felicaResult = (jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) result;
                 if (success != null) {

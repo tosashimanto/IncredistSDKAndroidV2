@@ -3,6 +3,7 @@ package jp.co.flight.incredist.android.internal.controller;
 import android.support.annotation.Nullable;
 
 import jp.co.flight.incredist.android.model.EncryptionMode;
+import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.PinEntry;
 
 /**
@@ -66,6 +67,14 @@ interface IncredistProtocolController {
     void scanMagneticCard(long timeout, IncredistController.Callback callback);
 
     /**
+     * LED色を設定します。
+     * @param color LED色
+     * @param isOn true: 点灯 false: 消灯
+     * @param callback コールバック
+     */
+    void setLedColor(LedColor color, boolean isOn, IncredistController.Callback callback);
+
+    /**
      * felica モードを開始します。
      *
      * @param withLed LED を点灯するかどうか
@@ -82,10 +91,16 @@ interface IncredistProtocolController {
     void felicaSendCommand(byte[] command, IncredistController.Callback callback);
 
     /**
+     * felica モード時のLED色を設定します。
+     * @param color LED色
+     * @param callback コールバック
+     */
+    void felicaLedColor(LedColor color, IncredistController.Callback callback);
+
+    /**
      * felica モードを終了します。
      *
      * @param callback コールバック
      */
     void felicaClose(IncredistController.Callback callback);
-
 }

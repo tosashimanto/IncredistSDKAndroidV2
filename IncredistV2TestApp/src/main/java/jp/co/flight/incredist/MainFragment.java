@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import jp.co.flight.incredist.android.IncredistV2TestApp.R;
 import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
 import jp.co.flight.incredist.android.model.EncryptionMode;
+import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.model.IncredistModel;
 import jp.co.flight.incredist.model.PinEntryDParam;
 import permissions.dispatcher.NeedsPermission;
@@ -28,18 +29,23 @@ import permissions.dispatcher.RuntimePermissions;
 @RuntimePermissions
 public class MainFragment extends Fragment
         implements DeviceListDialogFragment.Listener, DisplayMessageDialogFragment.Listener,
-        EncryptionSettingDialogFragment.Listener, PinEntryDParamDialogFragment.Listener {
+        EncryptionSettingDialogFragment.Listener, PinEntryDParamDialogFragment.Listener,
+        LedColorDialogFragment.Listener {
 
     private static final String DIALOG_TAG_SELECT_DEVICE = "dialog_tag_select_device";
     private static final String DIALOG_TAG_EMV_MESSAGE = "dialog_tag_emv_message";
     private static final String DIALOG_TAG_TFP_MESSAGE = "dialog_tag_tfp_message";
     private static final String DIALOG_TAG_ENCRYPTION_SETTING = "dialog_tag_encryption_setting";
     private static final String DIALOG_TAG_PIN_D_PARAM = "dialog_tag_pin_d_setting";
+    private static final String DIALOG_TAG_SET_LED_COLOR = "dialog_tag_set_led_color";
+    private static final String DIALOG_TAG_FELICA_LED_COLOR = "dialog_tag_felica_led_color";
     private static final int REQUEST_SELECT_DEVICE = 1;
     private static final int REQUEST_EMV_MESSAGE = 2;
     private static final int REQUEST_TFP_MESSAGE = 3;
     private static final int REQUEST_ENCRYPTION = 4;
     private static final int REQUEST_PIN_D_PARAM = 5;
+    private static final int REQUEST_SET_LED_COLOR = 6;
+    private static final int REQUEST_FELICA_LED_COLOR = 7;
 
     private OnFragmentInteractionListener mListener;
     private FragmentMainBinding mBinding;
@@ -160,6 +166,27 @@ public class MainFragment extends Fragment
     @Override
     public void onSetPinEntryDParam(int requestCode, PinEntryDParam param) {
         mPresenter.pinEntryD(param);
+    }
+
+    public void showSetLedColorDialog() {
+        DialogFragment dialog = LedColorDialogFragment.newInstance(true);
+        dialog.setTargetFragment(this, REQUEST_SET_LED_COLOR);
+        dialog.show(getFragmentManager(), DIALOG_TAG_SET_LED_COLOR);
+    }
+
+    public void showFelicaLedColorDialog() {
+        DialogFragment dialog = LedColorDialogFragment.newInstance(false);
+        dialog.setTargetFragment(this, REQUEST_FELICA_LED_COLOR);
+        dialog.show(getFragmentManager(), DIALOG_TAG_FELICA_LED_COLOR);
+    }
+
+    @Override
+    public void onSetLedColor(int requestCode, LedColor color, boolean isOn) {
+        if (requestCode == REQUEST_SET_LED_COLOR) {
+            mPresenter.setLedColor(color, isOn);
+        } else if (requestCode == REQUEST_FELICA_LED_COLOR) {
+            mPresenter.felicaLedColor(color);
+        }
     }
 
     public interface OnFragmentInteractionListener {

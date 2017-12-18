@@ -25,6 +25,12 @@ public class PinEntryDParamDialogFragment extends DialogFragment {
         // Required empty public constructor
     }
 
+    /**
+     * インスタンスを生成します
+     *
+     * @param param パラメータの初期値
+     * @return PinEntryDParamDialogFragment のインスタンス
+     */
     public static PinEntryDParamDialogFragment newInstance(@Nullable PinEntryDParam param) {
         PinEntryDParamDialogFragment fragment = new PinEntryDParamDialogFragment();
         Bundle args = new Bundle();

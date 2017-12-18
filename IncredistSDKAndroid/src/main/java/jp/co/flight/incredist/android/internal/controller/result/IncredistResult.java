@@ -6,6 +6,7 @@ package jp.co.flight.incredist.android.internal.controller.result;
 @SuppressWarnings({"WeakerAccess", "unused"}) // for public API.
 public class IncredistResult {
     public static final int STATUS_SUCCESS = 1;
+    public static final int STATUS_FAILURE = 2;
     public static final int STATUS_FAILED_EXECUTION = 901;
     public static final int STATUS_BUSY = 902;
     public static final int STATUS_INTERRUPTED = 801;

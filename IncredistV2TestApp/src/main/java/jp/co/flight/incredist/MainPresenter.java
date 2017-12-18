@@ -14,6 +14,7 @@ import java.util.Locale;
 import jp.co.flight.incredist.android.IncredistV2TestApp.BuildConfig;
 import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
 import jp.co.flight.incredist.android.model.EncryptionMode;
+import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.model.IncredistModel;
 import jp.co.flight.incredist.model.PinEntryDParam;
 
@@ -37,6 +38,10 @@ public interface MainPresenter {
 
     void onFelicaOpen();
 
+    void onFelicaLedColor();
+
+    void felicaLedColor(LedColor color);
+
     void onFelicaOpenWithoutLed();
 
     void onFelicaSend();
@@ -47,9 +52,13 @@ public interface MainPresenter {
 
     void onTfpMessage();
 
+    void onSetLed();
+
     void emvDisplayMessage(int type, String message);
 
     void tfpDisplayMessage(int type, String message);
+
+    void setLedColor(LedColor color, boolean isOn);
 
     void onSdm();
 
@@ -161,6 +170,22 @@ public interface MainPresenter {
         }
 
         @Override
+        public void onFelicaLedColor() {
+            addLog("felica LED setting");
+            mFragment.showFelicaLedColorDialog();
+        }
+
+        @Override
+        public void felicaLedColor(LedColor color) {
+            addLog("felicaLedColor");
+            mIncredist.felicaLedColor(color, () -> {
+                addLog("felicaLedColor success");
+            }, errorCode -> {
+                addLog(String.format(Locale.JAPANESE, "felicaLedColor failure %d", errorCode));
+            });
+        }
+
+        @Override
         public void onFelicaOpenWithoutLed() {
             addLog("felicaOpenWithoutLed");
             mIncredist.felicaOpen(false, () -> {
@@ -204,6 +229,12 @@ public interface MainPresenter {
         }
 
         @Override
+        public void onSetLed() {
+            addLog("led");
+            mFragment.showSetLedColorDialog();
+        }
+
+        @Override
         public void emvDisplayMessage(int type, String message) {
             addLog("emvDisplayMessage");
             mIncredist.emvDisplayMessage(type, message, () -> {
@@ -220,6 +251,16 @@ public interface MainPresenter {
                 addLog("tfpMessage success");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "tfpMessage failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void setLedColor(LedColor color, boolean isOn) {
+            addLog("led");
+            mIncredist.setLedColor(color, isOn, () -> {
+                addLog("led success");
+            }, errorCode -> {
+                addLog(String.format(Locale.JAPANESE, "led failure %d", errorCode));
             });
         }
 

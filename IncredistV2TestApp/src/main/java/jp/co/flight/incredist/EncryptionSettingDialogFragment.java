@@ -25,6 +25,12 @@ public class EncryptionSettingDialogFragment extends DialogFragment {
     public EncryptionSettingDialogFragment() {
     }
 
+    /**
+     * インスタンスを生成します
+     *
+     * @param mode 暗号化モードの初期値
+     * @return EncryptionSettingDialogFragment のインスタンス
+     */
     public static EncryptionSettingDialogFragment newInstance(@Nullable EncryptionMode mode) {
         Bundle args = new Bundle();
         args.putParcelable(ARG_KEY_ENCRYPTION_MODE, mode);
@@ -46,8 +52,10 @@ public class EncryptionSettingDialogFragment extends DialogFragment {
         if (argMode != null) {
             mode = argMode;
         } else {
+            // CHECKSTYLE:OFF MagicNumber
             mode = new EncryptionMode((byte) 1, EncryptionMode.CipherMethod.DUKTPAES, EncryptionMode.BlockCipherMode.ECB,
                     EncryptionMode.DsConstant.DataEncryptionRequest, EncryptionMode.PaddingMode.FixedData, (byte) 0xff, true);
+            // CHECKSTYLE:ON MagicNumber
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context)
