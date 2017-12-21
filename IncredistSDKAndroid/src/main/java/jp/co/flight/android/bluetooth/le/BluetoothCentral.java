@@ -18,6 +18,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import jp.co.flight.incredist.android.internal.util.FLog;
@@ -314,10 +316,27 @@ public class BluetoothCentral {
     /**
      * デバイスの接続状態を取得します.
      *
+     * @param peripheral Bluetoothペリフェラル
      */
     int getConnectionState(BluetoothPeripheral peripheral) {
         BluetoothDevice device = mAdapter.getRemoteDevice(peripheral.getDeviceAddress());
         return getConnectionState(device);
+    }
+
+    /**
+     * 接続中のデバイスの一覧を取得します
+     *
+     * @return BluetoothPeripheral のリスト
+     */
+    public @NonNull List<BluetoothPeripheral> getConnectedPeripherals() {
+        List<BluetoothDevice> devices = mManager.getConnectedDevices(BluetoothGatt.GATT);
+
+        List<BluetoothPeripheral> peripherals = new ArrayList<>();
+        for (BluetoothDevice device : devices) {
+            peripherals.add(new BluetoothPeripheral(device.getName(), device.getAddress()));
+        }
+
+        return peripherals;
     }
 
     /**

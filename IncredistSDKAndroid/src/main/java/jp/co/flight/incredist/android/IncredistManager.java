@@ -340,6 +340,16 @@ public class IncredistManager {
     public void connect(@NonNull String deviceName, long scanTimeout, long connectTimeout, @Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction failure) {
         FLog.i(TAG, String.format(Locale.JAPANESE, "connect device:%s scanTimeout:%d connectTimeout:%d", deviceName, scanTimeout, connectTimeout));
 
+        // 接続中のペリフェラルの場合は直接 connectInternal を呼び出す
+        List<BluetoothPeripheral> peripherals = mCentral.getConnectedPeripherals();
+        for (BluetoothPeripheral peripheral : peripherals) {
+            if (peripheral.getDeviceName().equals(deviceName)) {
+                connectInternal(peripheral, connectTimeout, success, failure);
+                return;
+            }
+        }
+
+        // デバイス名が一致したら停止するフィルタ
         DeviceFilter filter = new DeviceFilter() {
             @Override
             public boolean isValid(String devName) {
@@ -352,6 +362,7 @@ public class IncredistManager {
             }
         };
 
+        // BLE スキャンを実行してデバイス名が一致したら接続する
         bleStartScanInternal(filter, scanTimeout, (peripheralMap) -> {
             BluetoothPeripheral peripheral = peripheralMap.get(deviceName);
             if (peripheral != null) {
