@@ -58,9 +58,11 @@ public interface IncredistModel extends Observable {
 
     void setLedColor(LedColor color, boolean isOn, OnSuccessVoidFunction success, OnFailureFunction failure);
 
-    void release();
+    void release(OnSuccessVoidFunction success, OnFailureFunction failure);
 
-    void clearIncredist();
+    void releaseManager();
+
+    void clearManager();
 
     @Bindable
     String getSelectedDevice();
@@ -131,7 +133,7 @@ public interface IncredistModel extends Observable {
 
         @Override
         public void connect(OnSuccessFunction<Incredist> success, OnFailureFunction failure) {
-            mIncredistManager.connect(mSelectedDevice, 3000, (incredist) -> {
+            mIncredistManager.connect(mSelectedDevice, 3000, 5000, (incredist) -> {
                 mIncredist = incredist;
                 success.onSuccess(incredist);
             }, failure);
@@ -268,12 +270,23 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
-        public void release() {
+        public void release(OnSuccessVoidFunction success, OnFailureFunction failure) {
+            if (mIncredist != null) {
+                mIncredist.release();
+                mIncredist = null;
+                success.onSuccess();
+            } else {
+                failure.onFailure(-1);
+            }
+        }
+
+        @Override
+        public void releaseManager() {
             mIncredistManager.release();
         }
 
         @Override
-        public void clearIncredist() {
+        public void clearManager() {
             mIncredistManager = null;
         }
 
@@ -319,8 +332,26 @@ public interface IncredistModel extends Observable {
 
         @Override
         public void auto(OnSuccessFunction<String> success, OnFailureFunction failure) {
-            mIncredistManager.connect(mSelectedDevice, 3000, (incredist) -> {
-                incredist.getSerialNumber(success, failure);
+            mIncredistManager.connect(mSelectedDevice, 3000, 5000, (incredist) -> {
+                incredist.getSerialNumber((serialNumber) -> {
+                    incredist.disconnect((incredist1) -> {
+                        incredist.release();
+                        mIncredist = null;
+                        if (success != null) {
+                            success.onSuccess(serialNumber);
+                        }
+                    }, (errorCode) -> {
+                        incredist.release();
+                        mIncredist = null;
+                        if (failure != null) {
+                            failure.onFailure(errorCode);
+                        }
+                    });
+                }, (errorCode) -> {
+                    if (failure != null) {
+                        failure.onFailure(errorCode);
+                    }
+                });
             }, failure);
         }
 
