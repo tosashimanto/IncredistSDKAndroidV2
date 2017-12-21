@@ -96,7 +96,7 @@ public class IncredistController {
      *
      * @param r 処理内容の Runnable インスタンス
      */
-    private void postCommand(Runnable r, Callback callback) {
+    void postCommand(Runnable r, Callback callback) {
         Handler handler = mCommandHandler;
         if (handler != null) {
             if (handler.post(r)) {

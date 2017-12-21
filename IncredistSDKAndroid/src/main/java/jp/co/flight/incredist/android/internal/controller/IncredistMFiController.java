@@ -38,7 +38,7 @@ public class IncredistMFiController implements IncredistProtocolController {
      * @param callback コールバック
      */
     private void postMFiCommand(final MFiCommand command, final IncredistController.Callback callback) {
-        mController.post(() -> {
+        mController.postCommand(() -> {
             callback.onResult(command.parseResponse(mMFiTransport.sendCommand(command)));
         }, callback);
     }

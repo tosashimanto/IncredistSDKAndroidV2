@@ -259,7 +259,9 @@ public class BluetoothCentral {
     }
 
     /**
-     * 接続中だった場合に強制切断する
+     * 接続中だった場合に強制切断します
+     *
+     * @param peripheral 切断するペリフェラル
      */
     void disconnectGatt(@NonNull BluetoothPeripheral peripheral) {
         Context context = mContext.get();
