@@ -36,6 +36,8 @@ public interface MainPresenter {
 
     void onAuto();
 
+    void onRelease();
+
     void onFelicaOpen();
 
     void onFelicaLedColor();
@@ -156,6 +158,16 @@ public interface MainPresenter {
                 addLog(String.format(Locale.JAPANESE, "auto serial: %s", serialNumber));
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "auto serial failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onRelease() {
+            addLog("release");
+            mIncredist.release(() -> {
+                addLog("release success");
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "release failure %d", errorCode));
             });
         }
 

@@ -98,7 +98,6 @@
                     android:id="@+id/button_connect"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
                     android:onClick="@{(view)->presenter.onConnect()}"
                     android:text="Connect"
                     app:layout_constraintBottom_toTopOf="@+id/button_auto"
@@ -139,6 +138,17 @@
                     app:layout_constraintStart_toStartOf="@+id/button_device_info"
                     app:layout_constraintTop_toBottomOf="@+id/button_connect" />
 
+                <Button
+                    android:id="@+id/button_release"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{(view)->presenter.onRelease()}"
+                    android:text="Release"
+                    app:layout_constraintBottom_toBottomOf="@+id/button_auto"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/button_auto"
+                    app:layout_constraintTop_toTopOf="@+id/button_auto" />
+                
                 <!-- felica -->
                 <android.support.v7.widget.AppCompatTextView
                     android:id="@+id/label_felica"
@@ -155,7 +165,6 @@
                     android:id="@+id/button_felica_open"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
                     android:layout_marginStart="8dp"
                     android:onClick="@{(view)->presenter.onFelicaOpen()}"
                     android:text="Open"
