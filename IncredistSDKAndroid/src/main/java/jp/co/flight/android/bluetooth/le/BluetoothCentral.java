@@ -71,6 +71,7 @@ public class BluetoothCentral {
 
             FLog.d(TAG, String.format(Locale.JAPANESE, "onScanFailed %d", errorCode));
             callScanFailure(errorCode);
+            stopScan();
         }
     };
 
@@ -195,12 +196,12 @@ public class BluetoothCentral {
     private void callScanResult(@NonNull final BluetoothPeripheral peripheral) {
         if (mHandler != null && mScanResultFunction != null) {
             mHandler.post(() -> {
-                OnProgressFunction<BluetoothPeripheral> handler;
+                OnProgressFunction<BluetoothPeripheral> progress;
                 synchronized (BluetoothCentral.this) {
-                    handler = mScanResultFunction;
+                    progress = mScanResultFunction;
                 }
-                if (handler != null) {
-                    handler.onProgress(peripheral);
+                if (progress != null) {
+                    progress.onProgress(peripheral);
                 }
             });
         }
@@ -214,12 +215,15 @@ public class BluetoothCentral {
     private void callScanFailure(final int errorCode) {
         if (mHandler != null && mScanFailureFunction != null) {
             mHandler.post(() -> {
-                OnFailureFunction<Void> handler;
+                OnFailureFunction<Void> failure;
                 synchronized (BluetoothCentral.this) {
-                    handler = mScanFailureFunction;
+                    failure = mScanFailureFunction;
+                    mScanSuccessFunction = null;
+                    mScanResultFunction = null;
+                    mScanFailureFunction = null;
                 }
-                if (handler != null) {
-                    handler.onFailure(errorCode, null);
+                if (failure != null) {
+                    failure.onFailure(errorCode, null);
                 }
             });
         }
