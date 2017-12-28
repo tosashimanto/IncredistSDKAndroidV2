@@ -189,10 +189,10 @@ public class IncredistManager {
          * タイムアウト処理用の Runnable を実装している
          */
         class OnConnectListener implements BluetoothGattConnection.ConnectionListener, Runnable {
-            private final BluetoothPeripheral mPeripheral;
+            private BluetoothPeripheral mPeripheral;
             private final long mTimeout;
-            private final OnSuccessFunction<Incredist> mSuccessFunction;
-            private final OnFailureFunction mFailureFunction;
+            private OnSuccessFunction<Incredist> mSuccessFunction;
+            private OnFailureFunction mFailureFunction;
 
             /**
              * タイムアウト予定時刻
@@ -217,6 +217,8 @@ public class IncredistManager {
                 mSuccessFunction = success;
                 mFailureFunction = failure;
 
+                FLog.d(TAG, "OnConnectListener constructor");
+
                 final BluetoothGattConnection connection = mCentral.connect(peripheral, IncredistConnectionListener.this);
                 if (timeout > 0) {
                     // タイムアウト処理を handler に登録
@@ -240,6 +242,9 @@ public class IncredistManager {
                             if (mFailureFunction != null) {
                                 mFailureFunction.onFailure(CONNECT_ERROR_TIMEOUT);
                             }
+                            mSuccessFunction = null;
+                            mFailureFunction = null;
+                            mPeripheral = null;
                         } else {
                             // タイムアウト時刻に達していない場合 再postする (onDiscoverService で再postする処理との競合を考慮)
                             mHandler.removeCallbacks(this);
@@ -252,6 +257,7 @@ public class IncredistManager {
             @Override
             public void onDiscoverServices(BluetoothGattConnection connection) {
                 synchronized (this) {
+                    FLog.d(TAG, "OnDiscoverServices called");
                     if (!mHasTimeout) {
                         // タイムアウトしていない場合は onDiscoverService が呼ばれたら一度 callback をキャンセルして再post
                         mTimeoutTime += mTimeout;
@@ -275,6 +281,9 @@ public class IncredistManager {
                         mHasSucceed = true;
                         mHandler.removeCallbacks(this);
                         mSuccessFunction.onSuccess(incredist);
+                        mSuccessFunction = null;
+                        mFailureFunction = null;
+                        mPeripheral = null;
                     }
 
                     if (mHasTimeout) {
@@ -295,9 +304,9 @@ public class IncredistManager {
          * setupDisconnect 時のリスナ
          */
         class OnDisconnectListener implements BluetoothGattConnection.ConnectionListener {
-            private final Incredist mIncredist;
-            private final OnSuccessFunction<Incredist> mSuccessFunction;
-            private final OnFailureFunction mFailureFunction;
+            private Incredist mIncredist;
+            private OnSuccessFunction<Incredist> mSuccessFunction;
+            private OnFailureFunction mFailureFunction;
 
             boolean mHasSucceed = false;
 
@@ -324,6 +333,9 @@ public class IncredistManager {
                 if (mSuccessFunction != null) {
                     mSuccessFunction.onSuccess(mIncredist);
                 }
+                mIncredist = null;
+                mSuccessFunction = null;
+                mFailureFunction = null;
             }
         }
     }
@@ -342,8 +354,10 @@ public class IncredistManager {
 
         // 接続中のペリフェラルの場合は直接 connectInternal を呼び出す
         List<BluetoothPeripheral> peripherals = mCentral.getConnectedPeripherals();
+        FLog.i(TAG, String.format(Locale.JAPANESE, "connected peripherals: %d", peripherals.size()));
         for (BluetoothPeripheral peripheral : peripherals) {
             if (peripheral.getDeviceName().equals(deviceName)) {
+                FLog.i(TAG, String.format("found connected %s", peripheral.getDeviceAddress()));
                 connectInternal(peripheral, connectTimeout, success, failure);
                 return;
             }
@@ -355,7 +369,9 @@ public class IncredistManager {
             public boolean isValid(String devName) {
                 boolean res = super.isValid(devName);
                 if (res && deviceName.equals(devName)) {
-                    bleStopScan();
+                    mCentral.getHandler().post(() -> {
+                        bleStopScan();
+                    });
                 }
 
                 return res;
@@ -433,5 +449,4 @@ public class IncredistManager {
     void resetConnectionListener() {
         mConnectionListener.clearListener();
     }
-
 }

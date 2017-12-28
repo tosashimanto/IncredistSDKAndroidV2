@@ -176,23 +176,23 @@ public class IncredistController {
     }
 
     /**
-     * Incredist デバイスから切断します.
-     * @param callback コールバック
+     * Incredist との接続を切断します
      */
-    public void disconnect(final Callback callback) {
-        postCommand(() -> {
-            mConnection.disconnect();
+    public void disconnect() {
+        mConnection.disconnect();
+    }
 
-            callback.onResult(new IncredistResult(IncredistResult.STATUS_SUCCESS));
-        }, callback);
+    /**
+     * Incredist との接続を close します
+     */
+    public void close() {
+        mConnection.close();
     }
 
     /**
      * Incredist デバイスとの接続を破棄します.
      */
     public boolean release() {
-        mConnection.close();
-
         HandlerThread handlerThread = mCommandHandlerThread;
         if (handlerThread != null) {
             if (handlerThread.quitSafely()) {

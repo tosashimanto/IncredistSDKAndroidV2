@@ -260,7 +260,10 @@ public class BluetoothCentral {
         if (context != null) {
             BluetoothDevice device = mAdapter.getRemoteDevice(peripheral.getDeviceAddress());
             if (device != null) {
-                return device.connectGatt(context, false, gattCallback);
+                BluetoothGatt gatt = device.connectGatt(context, false, gattCallback);
+                FLog.d(TAG, String.format(Locale.JAPANESE, "call BluetoothGatt#connectGatt for %x", System.identityHashCode(gatt)));
+
+                return gatt;
             }
         }
 
@@ -373,12 +376,13 @@ public class BluetoothCentral {
             return;
         }
         BroadcastReceiver receiver = new BroadcastReceiver() {
+            final String TAG = "BroarcastReceiver";
             boolean mDisabling = true;
 
             @Override
             public void onReceive(Context context, Intent intent) {
                 int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_DISCONNECTED);
-                FLog.i("Broadcast", String.format(Locale.JAPANESE, "onReceive action:%s state:%d", intent.getAction(), state));
+                FLog.i(TAG, String.format(Locale.JAPANESE, "onReceive action:%s state:%d", intent.getAction(), state));
 
                 if (mDisabling && state == BluetoothAdapter.STATE_OFF) {
                     mDisabling = false;
