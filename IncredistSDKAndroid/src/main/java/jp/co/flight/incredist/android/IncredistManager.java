@@ -403,6 +403,24 @@ public class IncredistManager {
     }
 
     /**
+     * Bluetooth Adapter を off -> on してリセットします
+     *
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void restartAdapter(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        mCentral.restartAdapter((succ) -> {
+            if (success != null) {
+                success.onSuccess();
+            }
+        }, (errorCode, fail) -> {
+            if (failure != null) {
+                failure.onFailure(errorCode);
+            }
+        });
+    }
+
+    /**
      * Incredist との接続を切断します
      */
     void setupDisconnect(Incredist incredist, OnSuccessFunction<Incredist> success, OnFailureFunction failure) {

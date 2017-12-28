@@ -31,6 +31,8 @@ public interface MainPresenter {
 
     void onDisconnect();
 
+    void onRestart();
+
     void onAuto();
 
     void onRelease();
@@ -119,6 +121,16 @@ public interface MainPresenter {
                 addLog("disconnected");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "disconnect failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onRestart() {
+            addLog("restart");
+            mIncredist.restart(() -> {
+                addLog("restart succeed");
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "restart failure %d", errorCode));
             });
         }
 

@@ -10,7 +10,10 @@ import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -353,4 +356,52 @@ public class BluetoothCentral {
             return new Handler(Looper.getMainLooper());
         }
     }
+
+    /**
+     * Bluetooth Adapter を off -> on してリセットします
+     *
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void restartAdapter(OnSuccessFunction<Void> success, OnFailureFunction<Void> failure) {
+        Context context = mContext.get();
+
+        if (context == null) {
+            if (failure != null) {
+                failure.onFailure(-1, null);
+            }
+            return;
+        }
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            boolean mDisabling = true;
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_DISCONNECTED);
+                FLog.i("Broadcast", String.format(Locale.JAPANESE, "onReceive action:%s state:%d", intent.getAction(), state));
+
+                if (mDisabling && state == BluetoothAdapter.STATE_OFF) {
+                    mDisabling = false;
+                    mAdapter.enable();
+                }
+
+                if (state == BluetoothAdapter.STATE_ON) {
+                    if (success != null) {
+                        success.onSuccess(null);
+                    }
+                    context.unregisterReceiver(this);
+                }
+            }
+        };
+
+        IntentFilter intentFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        context.registerReceiver(receiver, intentFilter);
+
+        if (mAdapter.getState() == BluetoothAdapter.STATE_ON) {
+            mAdapter.disable();
+        } else if (mAdapter.getState() == BluetoothAdapter.STATE_OFF) {
+            mAdapter.enable();
+        }
+    }
+
 }

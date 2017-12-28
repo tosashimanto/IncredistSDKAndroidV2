@@ -56,6 +56,8 @@ public interface IncredistModel extends Observable {
 
     void auto(OnSuccessFunction<String> success, OnFailureFunction failure);
 
+    void restart(OnSuccessVoidFunction success, OnFailureFunction failure);
+
     class Impl extends BaseObservable implements IncredistModel {
         private static final String PREFERENCE_KEY_DEVICE_NAME = "device_name";
 
@@ -210,6 +212,12 @@ public interface IncredistModel extends Observable {
                     }
                 });
             }, failure);
+        }
+
+        @Override
+        public void restart(OnSuccessVoidFunction success, OnFailureFunction failure) {
+            mIncredistManager.restartAdapter(success, failure);
+            mIncredist = null;
         }
 
         private SharedPreferences getSharedPreference() {
