@@ -207,6 +207,14 @@ public interface IncredistModel extends Observable {
                         }
                     });
                 }, (errorCode) -> {
+                    incredist.disconnect((incredist2) -> {
+                        incredist.release();
+                        mIncredist = null;
+                    }, (errorCode2) -> {
+                        incredist.release();
+                        mIncredist = null;
+                    });
+
                     if (failure != null) {
                         failure.onFailure(errorCode);
                     }
