@@ -142,6 +142,12 @@ public class BluetoothGattConnection {
             super.onServicesDiscovered(gatt, status);
 
             FLog.d(TAG, String.format(Locale.JAPANESE, "onServicesDiscovered: gatt %x status %d", System.identityHashCode(gatt), status));
+
+            List<BluetoothGattService> services = gatt.getServices();
+            if (services.size() == 0) {
+                FLog.d(TAG,"onServicesDiscovered: failed? restart");
+                gatt.discoverServices();
+            }
             final ConnectionListener listener = mListener;
             if (listener != null) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
@@ -420,6 +426,19 @@ public class BluetoothGattConnection {
                 FLog.d(TAG, String.format("call BluetoothGatt#disconnect for %x this:%x", System.identityHashCode(mGatt), System.identityHashCode(BluetoothGattConnection.this)));
 
                 mGatt.disconnect();
+            });
+        }
+    }
+
+    /**
+     * BluetoothLE デバイスが提供するサービスを取得します.
+     */
+    public void discoverService() {
+        if (mGatt != null) {
+            post(() -> {
+                FLog.d(TAG, String.format("call re- BluetoothGatt#discoverServices for %x", System.identityHashCode(mGatt)));
+
+                mGatt.discoverServices();
             });
         }
     }
