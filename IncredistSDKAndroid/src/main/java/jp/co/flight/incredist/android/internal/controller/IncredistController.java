@@ -2,6 +2,7 @@ package jp.co.flight.incredist.android.internal.controller;
 
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -30,8 +31,10 @@ public class IncredistController {
      */
     private IncredistProtocolController mProtoController;
 
-    private HandlerThread mHandlerThread = null;
-    private Handler mHandler;
+    private HandlerThread mCommandHandlerThread = null;
+    private Handler mCommandHandler;
+    private HandlerThread mCallbackHandlerThread = null;
+    private Handler mCallbackHandler;
 
     private BluetoothGattConnection mConnection;
 
@@ -58,16 +61,27 @@ public class IncredistController {
 
         // 最初は MFi のみ対応
         mProtoController = new IncredistMFiController(this, connection);
-        final CountDownLatch latch = new CountDownLatch(1);
-        mHandlerThread = new HandlerThread(String.format("%s:%s", TAG, deviceName)) {
+        final CountDownLatch latch = new CountDownLatch(2);
+        mCommandHandlerThread = new HandlerThread(String.format("%s:%s:command", TAG, deviceName)) {
             @Override
             protected void onLooperPrepared() {
                 super.onLooperPrepared();
-                mHandler = new Handler(this.getLooper());
+                mCommandHandler = new Handler(this.getLooper());
                 latch.countDown();
             }
         };
-        mHandlerThread.start();
+        mCommandHandlerThread.start();
+
+        mCallbackHandlerThread = new HandlerThread(String.format("%s:%s:callback", TAG, deviceName)) {
+            @Override
+            protected void onLooperPrepared() {
+                super.onLooperPrepared();
+                mCallbackHandler = new Handler(this.getLooper());
+                latch.countDown();
+            }
+        };
+        mCallbackHandlerThread.start();
+
         try {
             latch.await();
         } catch (InterruptedException e) {
@@ -76,22 +90,37 @@ public class IncredistController {
     }
 
     /**
-     * HandlerThread で処理を実行します. 実行できなかった場合、
+     * Command 送受信用の HandlerThread で処理を実行します. 実行できなかった場合、
      * 実行失敗(STATUS_FAILED_EXECUTION) としてコールバックを呼び出します.
      * TODO すでに他の処理が実行中の場合 STATUS_BUSY としてコールバックを呼び出します.
      *
      * @param r 処理内容の Runnable インスタンス
      */
-    void post(Runnable r, Callback callback) {
-        Handler handler = mHandler;
+    void postCommand(Runnable r, Callback callback) {
+        Handler handler = mCommandHandler;
         if (handler != null) {
             if (handler.post(r)) {
                 return;
             }
         }
         if (callback != null) {
-            callback.onResult(new IncredistResult(STATUS_FAILED_EXECUTION));
+            postCallback(() -> {
+                callback.onResult(new IncredistResult(STATUS_FAILED_EXECUTION));
+            });
         }
+    }
+
+    /**
+     * callback 用の HandlerThread で処理を実行します。
+     * @param runnable 処理内容の runnable インスタンス
+     */
+    private void postCallback(Runnable runnable) {
+        Handler handler = mCallbackHandler;
+        if (handler == null) {
+            handler = new Handler(Looper.getMainLooper());
+        }
+
+        handler.post(runnable);
     }
 
     /**
@@ -114,6 +143,7 @@ public class IncredistController {
 
     /**
      * デバイス情報を取得します.
+     *
      * @param callback コールバック
      */
     public void getDeviceInfo(Callback callback) {
@@ -146,32 +176,44 @@ public class IncredistController {
     }
 
     /**
-     * Incredist デバイスから切断します.
-     * @param callback コールバック
+     * Incredist との接続を切断します
      */
-    public void disconnect(final Callback callback) {
-        post(() -> {
-            mConnection.disconnect();
+    public void disconnect() {
+        mConnection.disconnect();
+    }
 
-            callback.onResult(new IncredistResult(IncredistResult.STATUS_SUCCESS));
-        }, callback);
+    /**
+     * Incredist との接続を close します
+     */
+    public void close() {
+        mConnection.close();
     }
 
     /**
      * Incredist デバイスとの接続を破棄します.
      */
     public boolean release() {
-        mConnection.close();
-
-        HandlerThread handlerThread = mHandlerThread;
+        HandlerThread handlerThread = mCommandHandlerThread;
         if (handlerThread != null) {
             if (handlerThread.quitSafely()) {
-                mHandlerThread = null;
-                return true;
+                mCommandHandlerThread = null;
             } else {
                 return false;
             }
         }
+
+        handlerThread = mCallbackHandlerThread;
+        if (handlerThread != null) {
+            if (handlerThread.quitSafely()) {
+                mCallbackHandlerThread = null;
+            } else {
+                return false;
+            }
+        }
+
+        mProtoController.release();
+        mConnection = null;
+        mProtoController = null;
 
         return true;
     }

@@ -21,17 +21,12 @@ public class Incredist {
     /**
      * 生成元の IncredistManager インスタンス.
      */
-    private final IncredistManager mManager;
+    private IncredistManager mManager;
 
     /**
      * IncredistController インスタンス.
      */
-    private final IncredistController mController;
-
-    /**
-     * BluetoothGattConnection インスタンス.
-     */
-    private BluetoothGattConnection mConnection;
+    private IncredistController mController;
 
     /**
      * コンストラクタ. IncredistManager によって呼び出されます.
@@ -48,16 +43,7 @@ public class Incredist {
      */
     public void disconnect(@Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction failure) {
         mManager.setupDisconnect(this, success, failure);
-        mController.disconnect(result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS) {
-                // 成功時のコールバックは IncredistManager の setupDisconnect から呼ぶため何もしない
-            } else {
-                mManager.resetConnectionListener();
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+        mController.disconnect();
     }
 
     /**
@@ -196,7 +182,11 @@ public class Incredist {
      * Incredist との接続リソースを解放します
      */
     public void release() {
+        mController.close();
         mController.release();
+
+        mController = null;
+        mManager = null;
     }
 
 }

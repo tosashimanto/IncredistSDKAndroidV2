@@ -110,15 +110,38 @@
             app:layout_constraintTop_toTopOf="@+id/button_connect" />
 
         <Button
+            android:id="@+id/button_restart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{(view)->presenter.onRestart()}"
+            android:text="Restart"
+            app:layout_constraintBottom_toTopOf="@+id/label_felica"
+            app:layout_constraintEnd_toEndOf="@+id/button_connect"
+            app:layout_constraintStart_toStartOf="@+id/button_connect"
+            app:layout_constraintTop_toBottomOf="@+id/button_connect" />
+
+        <Button
+            android:id="@+id/button_release"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{(view)->presenter.onRelease()}"
+            android:text="Release"
+            app:layout_constraintBottom_toBottomOf="@+id/button_restart"
+            app:layout_constraintEnd_toEndOf="@+id/button_device_info"
+            app:layout_constraintStart_toStartOf="@+id/button_device_info"
+            app:layout_constraintTop_toTopOf="@+id/button_restart"
+            />
+
+        <Button
             android:id="@+id/button_auto"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="@{(view)->presenter.onAuto()}"
             android:text="Auto"
-            app:layout_constraintBottom_toTopOf="@+id/label_felica"
-            app:layout_constraintEnd_toEndOf="@+id/button_device_info"
-            app:layout_constraintStart_toStartOf="@+id/button_device_info"
-            app:layout_constraintTop_toBottomOf="@+id/button_connect"
+            app:layout_constraintBottom_toBottomOf="@+id/button_restart"
+            app:layout_constraintEnd_toEndOf="@+id/button_disconnect"
+            app:layout_constraintStart_toStartOf="@+id/button_disconnect"
+            app:layout_constraintTop_toTopOf="@+id/button_restart"
             />
 
         <!-- felica -->
@@ -130,7 +153,7 @@
             android:background="@color/colorHeaderBackground"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/button_connect"
+            app:layout_constraintTop_toBottomOf="@+id/button_restart"
             app:layout_constraintBottom_toTopOf="@+id/button_felica_open" />
 
         <Button

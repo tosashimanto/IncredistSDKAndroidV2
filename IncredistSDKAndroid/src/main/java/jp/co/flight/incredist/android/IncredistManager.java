@@ -1,7 +1,9 @@
 package jp.co.flight.incredist.android;
 
+import android.bluetooth.BluetoothGatt;
 import android.content.Context;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
@@ -33,7 +35,7 @@ public class IncredistManager {
     /**
      * デバイス名によるフィルタ.
      */
-    public class DeviceFilter {
+    public static class DeviceFilter {
         /**
          * 標準の Incredist デバイスかどうかをチェックします.
          *
@@ -69,12 +71,12 @@ public class IncredistManager {
      */
     private void bleStartScanInternal(@Nullable DeviceFilter filter, long scanTime, OnSuccessFunction<Map<String, BluetoothPeripheral>> success, OnFailureFunction failure) {
         final DeviceFilter deviceFilter = filter != null ? filter : new DeviceFilter();
-        final Map<String, BluetoothPeripheral> peripheralMap = new HashMap<>();
+        Map<String, BluetoothPeripheral> peripheralMap = new HashMap<>();
 
         FLog.i(TAG, String.format(Locale.JAPANESE, "bleStartScanInternal scanTime:%d", scanTime));
         mCentral.startScan(scanTime, (successValue) -> {
             if (success != null) {
-                FLog.i(TAG, String.format(Locale.JAPANESE, "bleStartScanInternal call onSuccess peripheralMap:%d", peripheralMap.size()));
+                FLog.i(TAG, String.format(Locale.JAPANESE, "bleStartScanInternal call onSuccess mPeripheralMap:%d", peripheralMap.size()));
                 success.onSuccess(peripheralMap);
             }
         }, (errorCode, failureValue) -> {
@@ -115,16 +117,29 @@ public class IncredistManager {
     }
 
     /**
-     * connect メソッドで利用するリスナクラス.
+     * connect / disconnect メソッドで利用するリスナクラス.
+     * 処理を内部クラスに移譲
      */
-    private class IncredistConnectionListener implements BluetoothGattConnection.ConnectionListener {
+    private static class IncredistConnectionListener implements BluetoothGattConnection.ConnectionListener {
+        private final IncredistManager mManager;
         private final Handler mHandler;
 
+        /**
+         * 接続時と切断時でリスナ実体を切り替えるためのインスタンス変数
+         */
         BluetoothGattConnection.ConnectionListener mListener;
         BluetoothGattConnection mConnection;
 
-        IncredistConnectionListener(Handler handler) {
+        IncredistConnectionListener(IncredistManager manager, Handler handler) {
+            mManager = manager;
             mHandler = handler;
+        }
+
+        @Override
+        public void onDiscoverServices(BluetoothGattConnection connection) {
+            if (mListener != null) {
+                mListener.onDiscoverServices(connection);
+            }
         }
 
         @Override
@@ -141,39 +156,114 @@ public class IncredistManager {
             }
         }
 
+        /**
+         * connect 処理を開始
+         * OnConnectListener のコンストラクタで connect を呼び出し
+         *
+         * @param peripheral 接続先ペリフェラル
+         * @param timeout    タイムアウト時間(msec)
+         * @param success    接続成功時処理
+         * @param failure    接続失敗時処理
+         */
         void startConnect(BluetoothPeripheral peripheral, long timeout, OnSuccessFunction<Incredist> success, OnFailureFunction failure) {
             mListener = new OnConnectListener(peripheral, timeout, success, failure);
         }
 
+        /**
+         * disconnect 用のリスナを設定
+         *
+         * @param incredist 切断する incredist オブジェクト
+         * @param success   切断成功時処理
+         * @param failure   切断失敗時処理
+         */
         void setupDisconnect(Incredist incredist, OnSuccessFunction<Incredist> success, OnFailureFunction failure) {
             mListener = new OnDisconnectListener(incredist, success, failure);
         }
 
+        /**
+         * リスナを解放
+         */
         public void clearListener() {
             mListener = null;
         }
 
         /**
-         * connect 開始待ち処理
+         * connect 開始待ち処理用リスナ
+         * タイムアウト処理用の Runnable を実装している
          */
         class OnConnectListener implements BluetoothGattConnection.ConnectionListener, Runnable {
-            private final BluetoothPeripheral mPeripheral;
-            private final OnSuccessFunction<Incredist> mSuccessFunction;
-            private final OnFailureFunction mFailureFunction;
+            /**
+             * 接続先 Peripheral
+             */
+            private BluetoothPeripheral mPeripheral;
 
-            boolean mHasSucceed = false;
-            boolean mHasTimeout = false;
+            /**
+             * connect 処理のタイムアウト時間
+             */
+            private final long mTimeout;
 
+            /**
+             * 成功時コールバック
+             */
+            private OnSuccessFunction<Incredist> mSuccessFunction;
+
+            /**
+             * 失敗時コールバック
+             */
+            private OnFailureFunction mFailureFunction;
+
+            /**
+             * タイムアウト予定時刻
+             */
+            private long mTimeoutTime;
+
+            /**
+             * 接続成功フラグ
+             */
+            private boolean mHasSucceed = false;
+
+            /**
+             * タイムアウト時間経過フラグ
+             */
+            private boolean mHasTimeout = false;
+
+            /**
+             * discoverService 待ちフラグ
+             */
+            private boolean mHasDiscoverServices = false;
+
+            /**
+             * reconnect 呼び出しフラグ
+             */
+            private boolean mReconnect = false;
+
+            /**
+             * 接続用リスナのコンストラクタ
+             * 接続処理も実行する
+             *
+             * @param peripheral 接続先ペリフェラル
+             * @param timeout    タイムアウト時間(msec)
+             * @param success    接続成功時処理
+             * @param failure    接続失敗時処理
+             */
             public OnConnectListener(BluetoothPeripheral peripheral, long timeout, OnSuccessFunction<Incredist> success, OnFailureFunction failure) {
                 mPeripheral = peripheral;
+                mTimeout = timeout;
                 mSuccessFunction = success;
                 mFailureFunction = failure;
+                mHasSucceed = false;
+                mHasDiscoverServices = false;
+                mHasTimeout = false;
+                mReconnect = false;
 
-                final BluetoothGattConnection connection = mCentral.connect(peripheral, IncredistConnectionListener.this);
+                FLog.d(TAG, "OnConnectListener constructor");
+
+                final BluetoothGattConnection connection = mManager.mCentral.connect(peripheral, IncredistConnectionListener.this);
                 if (timeout > 0) {
                     // タイムアウト処理を handler に登録
                     mConnection = connection;
-                    mHandler.postDelayed(this, timeout);
+                    mTimeoutTime = System.currentTimeMillis() + timeout;
+                    mHandler.postDelayed(this, timeout / 5);
                 }
             }
 
@@ -184,12 +274,49 @@ public class IncredistManager {
             public void run() {
                 synchronized (this) {
                     if (!mHasSucceed) {
-                        mHasTimeout = true;
-                        mConnection.close();
-                        FLog.i(TAG, "OnConnectListener connect timeout");
-                        if (mFailureFunction != null) {
-                            mFailureFunction.onFailure(CONNECT_ERROR_TIMEOUT);
+                        if (mTimeoutTime < System.currentTimeMillis()) {
+                            mHasTimeout = true;
+                            mConnection.disconnect();
+                            mConnection.close();
+                            FLog.i(TAG, "OnConnectListener connect timeout");
+                            if (mFailureFunction != null) {
+                                mFailureFunction.onFailure(CONNECT_ERROR_TIMEOUT);
+                            }
+                            mSuccessFunction = null;
+                            mFailureFunction = null;
+                            mPeripheral = null;
+                        } else {
+                            int state = mConnection.getConnectionState();
+                            FLog.i(TAG, String.format(Locale.JAPANESE, "OnConnectListener timeout check state:%d", state));
+                            if (!mHasDiscoverServices && !mReconnect && System.currentTimeMillis() > mTimeoutTime - mTimeout / 2) {
+                                if (state == BluetoothGatt.STATE_CONNECTED) {
+                                    mConnection.discoverService();
+                                } else {
+                                    // タイムアウト時間の半分を経過してもdiscoverService 呼び出しまで到達しない場合
+                                    mConnection.reconnect();
+                                    mReconnect = true;
+                                }
+                            }
+
+                            FLog.i(TAG, "OnConnectListener timeout handler restart");
+                            // タイムアウト時刻に達していない場合 再postする (onDiscoverService で再postする処理との競合を考慮)
+                            mHandler.removeCallbacks(this);
+                            mHandler.postDelayed(this, mTimeout / 5);
                         }
+                    }
+                }
+            }
+
+            @Override
+            public void onDiscoverServices(BluetoothGattConnection connection) {
+                synchronized (this) {
+                    FLog.d(TAG, "OnDiscoverServices called");
+                    if (!mHasTimeout) {
+                        mHasDiscoverServices = true;
+                        // タイムアウトしていない場合は onDiscoverService が呼ばれたら一度 callback をキャンセルして再post
+                        mTimeoutTime += mTimeout;
+                        mHandler.removeCallbacks(this);
+                        mHandler.postDelayed(this, mTimeout / 5);
                     }
                 }
             }
@@ -204,10 +331,18 @@ public class IncredistManager {
                 synchronized (this) {
                     FLog.i(TAG, "OnConnectListener connect succeed");
                     if (!mHasSucceed && !mHasTimeout && mSuccessFunction != null) {
-                        final Incredist incredist = new Incredist(IncredistManager.this, connection, mPeripheral.getDeviceName());
+                        final Incredist incredist = new Incredist(mManager, connection, mPeripheral.getDeviceName());
                         mHasSucceed = true;
                         mHandler.removeCallbacks(this);
                         mSuccessFunction.onSuccess(incredist);
+                        mSuccessFunction = null;
+                        mFailureFunction = null;
+                        mPeripheral = null;
+                    }
+
+                    if (mHasTimeout) {
+                        // タイムアウト通知後に onConnect が呼び出された場合切断する
+                        connection.disconnect();
                     }
                 }
             }
@@ -215,7 +350,10 @@ public class IncredistManager {
             @Override
             public void onDisconnect(BluetoothGattConnection connection) {
                 FLog.i(TAG, "OnConnectListener disconnected");
-                // do nothing.
+
+                if (!mHasTimeout && !mHasSucceed && mConnection != null) {
+                    mConnection.reconnect();
+                }
             }
         }
 
@@ -223,9 +361,9 @@ public class IncredistManager {
          * setupDisconnect 時のリスナ
          */
         class OnDisconnectListener implements BluetoothGattConnection.ConnectionListener {
-            private final Incredist mIncredist;
-            private final OnSuccessFunction<Incredist> mSuccessFunction;
-            private final OnFailureFunction mFailureFunction;
+            private Incredist mIncredist;
+            private OnSuccessFunction<Incredist> mSuccessFunction;
+            private OnFailureFunction mFailureFunction;
 
             boolean mHasSucceed = false;
 
@@ -236,9 +374,14 @@ public class IncredistManager {
             }
 
             @Override
+            public void onDiscoverServices(BluetoothGattConnection connection) {
+                // 切断時は何もしない
+            }
+
+            @Override
             public void onConnect(BluetoothGattConnection connection) {
                 FLog.i(TAG, "OnDisconnectListener connected");
-                // do nothing.
+                // 切断時は何もしない
             }
 
             @Override
@@ -247,6 +390,9 @@ public class IncredistManager {
                 if (mSuccessFunction != null) {
                     mSuccessFunction.onSuccess(mIncredist);
                 }
+                mIncredist = null;
+                mSuccessFunction = null;
+                mFailureFunction = null;
             }
         }
     }
@@ -254,21 +400,48 @@ public class IncredistManager {
     /**
      * Incredistデバイスに接続します.
      *
-     * @param deviceName Incredistデバイス名
-     * @param timeout    タイムアウト時間(単位 msec)
-     * @param success    接続成功時処理
-     * @param failure    接続失敗時処理
+     * @param deviceName     Incredistデバイス名
+     * @param scanTimeout    BLEスキャン実行時のタイムアウト時間(単位
+     * @param connectTimeout 接続処理タイムアウト時間(単位 msec)
+     * @param success        接続成功時処理
+     * @param failure        接続失敗時処理
      */
-    public void connect(String deviceName, long timeout, @Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction failure) {
-        FLog.i(TAG, String.format(Locale.JAPANESE, "connect device:%s timeout:%d", deviceName, timeout));
+    public void connect(@NonNull String deviceName, long scanTimeout, long connectTimeout, @Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction failure) {
+        FLog.i(TAG, String.format(Locale.JAPANESE, "connect device:%s scanTimeout:%d connectTimeout:%d", deviceName, scanTimeout, connectTimeout));
 
-        bleStartScanInternal(null, timeout, (peripheralMap) -> {
+        // 接続中のペリフェラルの場合は直接 connectInternal を呼び出す
+        List<BluetoothPeripheral> peripherals = mCentral.getConnectedPeripherals();
+        FLog.i(TAG, String.format(Locale.JAPANESE, "connected peripherals: %d", peripherals.size()));
+        for (BluetoothPeripheral peripheral : peripherals) {
+            if (peripheral.getDeviceName().equals(deviceName)) {
+                FLog.i(TAG, String.format("found connected %s", peripheral.getDeviceAddress()));
+                connectInternal(peripheral, connectTimeout, success, failure);
+                return;
+            }
+        }
+
+        // デバイス名が一致したら停止するフィルタ
+        DeviceFilter filter = new DeviceFilter() {
+            @Override
+            public boolean isValid(String devName) {
+                boolean res = super.isValid(devName);
+                if (res && deviceName.equals(devName)) {
+                    mCentral.getHandler().post(() -> {
+                        bleStopScan();
+                    });
+                }
+
+                return res;
+            }
+        };
+
+        // BLE スキャンを実行してデバイス名が一致したら接続する
+        bleStartScanInternal(filter, scanTimeout, (peripheralMap) -> {
             BluetoothPeripheral peripheral = peripheralMap.get(deviceName);
-            Handler handler = mCentral.getHandler();
             if (peripheral != null) {
-                mConnectionListener = new IncredistConnectionListener(handler);
-                mConnectionListener.startConnect(peripheral, timeout, success, failure);
+                connectInternal(peripheral, connectTimeout, success, failure);
             } else {
+                Handler handler = mCentral.getHandler();
                 FLog.i(TAG, "connect device not found.");
                 handler.post(() -> {
                     if (failure != null) {
@@ -278,6 +451,13 @@ public class IncredistManager {
             }
         }, failure);
     }
+
+    private void connectInternal(BluetoothPeripheral peripheral, long timeout, @Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction failure) {
+        Handler handler = mCentral.getHandler();
+        mConnectionListener = new IncredistConnectionListener(this, handler);
+        mConnectionListener.startConnect(peripheral, timeout, success, failure);
+    }
+
 
     /**
      * API バージョンを取得します.
@@ -296,6 +476,24 @@ public class IncredistManager {
     }
 
     /**
+     * Bluetooth Adapter を off -> on してリセットします
+     *
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void restartAdapter(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        mCentral.restartAdapter((succ) -> {
+            if (success != null) {
+                success.onSuccess();
+            }
+        }, (errorCode, fail) -> {
+            if (failure != null) {
+                failure.onFailure(errorCode);
+            }
+        });
+    }
+
+    /**
      * Incredist との接続を切断します
      */
     void setupDisconnect(Incredist incredist, OnSuccessFunction<Incredist> success, OnFailureFunction failure) {
@@ -308,5 +506,4 @@ public class IncredistManager {
     void resetConnectionListener() {
         mConnectionListener.clearListener();
     }
-
 }

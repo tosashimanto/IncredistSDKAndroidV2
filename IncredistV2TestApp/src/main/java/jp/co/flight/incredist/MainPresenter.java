@@ -31,6 +31,10 @@ public interface MainPresenter {
 
     void onDisconnect();
 
+    void onRestart();
+
+    void onRelease();
+
     void onAuto();
 
     void onFelicaOpen();
@@ -117,6 +121,26 @@ public interface MainPresenter {
                 addLog("disconnected");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "disconnect failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onRestart() {
+            addLog("restart");
+            mIncredist.restart(() -> {
+                addLog("restart succeed");
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "restart failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onRelease() {
+            addLog("release");
+            mIncredist.release(() -> {
+                addLog("release success");
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "release failure %d", errorCode));
             });
         }
 

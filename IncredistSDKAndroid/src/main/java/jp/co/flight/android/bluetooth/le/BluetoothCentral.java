@@ -10,7 +10,10 @@ import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -18,6 +21,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import jp.co.flight.incredist.android.internal.util.FLog;
@@ -71,6 +76,7 @@ public class BluetoothCentral {
 
             FLog.d(TAG, String.format(Locale.JAPANESE, "onScanFailed %d", errorCode));
             callScanFailure(errorCode);
+            stopScan();
         }
     };
 
@@ -195,12 +201,12 @@ public class BluetoothCentral {
     private void callScanResult(@NonNull final BluetoothPeripheral peripheral) {
         if (mHandler != null && mScanResultFunction != null) {
             mHandler.post(() -> {
-                OnProgressFunction<BluetoothPeripheral> handler;
+                OnProgressFunction<BluetoothPeripheral> progress;
                 synchronized (BluetoothCentral.this) {
-                    handler = mScanResultFunction;
+                    progress = mScanResultFunction;
                 }
-                if (handler != null) {
-                    handler.onProgress(peripheral);
+                if (progress != null) {
+                    progress.onProgress(peripheral);
                 }
             });
         }
@@ -214,12 +220,15 @@ public class BluetoothCentral {
     private void callScanFailure(final int errorCode) {
         if (mHandler != null && mScanFailureFunction != null) {
             mHandler.post(() -> {
-                OnFailureFunction<Void> handler;
+                OnFailureFunction<Void> failure;
                 synchronized (BluetoothCentral.this) {
-                    handler = mScanFailureFunction;
+                    failure = mScanFailureFunction;
+                    mScanSuccessFunction = null;
+                    mScanResultFunction = null;
+                    mScanFailureFunction = null;
                 }
-                if (handler != null) {
-                    handler.onFailure(errorCode, null);
+                if (failure != null) {
+                    failure.onFailure(errorCode, null);
                 }
             });
         }
@@ -251,7 +260,10 @@ public class BluetoothCentral {
         if (context != null) {
             BluetoothDevice device = mAdapter.getRemoteDevice(peripheral.getDeviceAddress());
             if (device != null) {
-                return device.connectGatt(context, false, gattCallback);
+                BluetoothGatt gatt = device.connectGatt(context, false, gattCallback);
+                FLog.d(TAG, String.format(Locale.JAPANESE, "call BluetoothGatt#connectGatt for %x", System.identityHashCode(gatt)));
+
+                return gatt;
             }
         }
 
@@ -294,10 +306,27 @@ public class BluetoothCentral {
     /**
      * デバイスの接続状態を取得します.
      *
+     * @param peripheral Bluetoothペリフェラル
      */
     int getConnectionState(BluetoothPeripheral peripheral) {
         BluetoothDevice device = mAdapter.getRemoteDevice(peripheral.getDeviceAddress());
         return getConnectionState(device);
+    }
+
+    /**
+     * 接続中のデバイスの一覧を取得します
+     *
+     * @return BluetoothPeripheral のリスト
+     */
+    public @NonNull List<BluetoothPeripheral> getConnectedPeripherals() {
+        List<BluetoothDevice> devices = mManager.getConnectedDevices(BluetoothGatt.GATT);
+
+        List<BluetoothPeripheral> peripherals = new ArrayList<>();
+        for (BluetoothDevice device : devices) {
+            peripherals.add(new BluetoothPeripheral(device.getName(), device.getAddress()));
+        }
+
+        return peripherals;
     }
 
     /**
@@ -314,4 +343,53 @@ public class BluetoothCentral {
             return new Handler(Looper.getMainLooper());
         }
     }
+
+    /**
+     * Bluetooth Adapter を off -> on してリセットします
+     *
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void restartAdapter(OnSuccessFunction<Void> success, OnFailureFunction<Void> failure) {
+        Context context = mContext.get();
+
+        if (context == null) {
+            if (failure != null) {
+                failure.onFailure(-1, null);
+            }
+            return;
+        }
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            final String TAG = "BroarcastReceiver";
+            boolean mDisabling = true;
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_DISCONNECTED);
+                FLog.i(TAG, String.format(Locale.JAPANESE, "onReceive action:%s state:%d", intent.getAction(), state));
+
+                if (mDisabling && state == BluetoothAdapter.STATE_OFF) {
+                    mDisabling = false;
+                    mAdapter.enable();
+                }
+
+                if (state == BluetoothAdapter.STATE_ON) {
+                    if (success != null) {
+                        success.onSuccess(null);
+                    }
+                    context.unregisterReceiver(this);
+                }
+            }
+        };
+
+        IntentFilter intentFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        context.registerReceiver(receiver, intentFilter);
+
+        if (mAdapter.getState() == BluetoothAdapter.STATE_ON) {
+            mAdapter.disable();
+        } else if (mAdapter.getState() == BluetoothAdapter.STATE_OFF) {
+            mAdapter.enable();
+        }
+    }
+
 }

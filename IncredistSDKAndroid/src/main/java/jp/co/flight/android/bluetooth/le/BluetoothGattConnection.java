@@ -55,7 +55,13 @@ public class BluetoothGattConnection {
      */
     public interface ConnectionListener {
         /**
-         * 接続時に呼び出されます.
+         * connect 完了後 discoverService を呼び出す前に呼び出されます。
+         * onConnect は discoverService 完了後に呼び出されます。
+         */
+        void onDiscoverServices(BluetoothGattConnection connection);
+
+        /**
+         * 接続完了時に呼び出されます.
          *
          * @param connection 接続オブジェクト
          */
@@ -103,19 +109,22 @@ public class BluetoothGattConnection {
      * Android BluetoothGattCallback のインスタンス.
      */
     final ConnectionGattCallback mGattCallback = new ConnectionGattCallback() {
+        final String TAG = "BluetoothGattConnection.ConnectionGattCallback";
+
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
 
-            FLog.d(TAG, String.format(Locale.JAPANESE, "onConnectionStateChange: from %d status %d", status, newState));
+            FLog.d(TAG, String.format(Locale.JAPANESE, "onConnectionStateChange: gatt %x status %d state %d", System.identityHashCode(gatt), status, newState));
 
             final ConnectionListener listener = mListener;
             if (listener != null) {
                 switch (newState) {
                     case BluetoothGatt.STATE_CONNECTED:
-                        post(() -> {
+                        postDelayed(() -> {
+                            FLog.d(TAG, String.format(Locale.JAPANESE, "call BluetoothGatt#discoverServices for %x", System.identityHashCode(gatt)));
                             gatt.discoverServices();
-                        });
+                        }, 100);
                         break;
                     case BluetoothGatt.STATE_DISCONNECTED:
                         post(() -> {
@@ -132,7 +141,13 @@ public class BluetoothGattConnection {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
 
-            FLog.d(TAG, String.format(Locale.JAPANESE, "onServicesDiscovered: status %d", status));
+            FLog.d(TAG, String.format(Locale.JAPANESE, "onServicesDiscovered: gatt %x status %d", System.identityHashCode(gatt), status));
+
+            List<BluetoothGattService> services = gatt.getServices();
+            if (services.size() == 0) {
+                FLog.d(TAG,"onServicesDiscovered: failed? restart");
+                gatt.discoverServices();
+            }
             final ConnectionListener listener = mListener;
             if (listener != null) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
@@ -220,7 +235,10 @@ public class BluetoothGattConnection {
             }
         }
 
+        FLog.d(TAG, String.format("before connectGatt mGatt has %x", System.identityHashCode(mGatt)));
         mGatt = central.connectGatt(peripheral, mGattCallback);
+        FLog.d(TAG, String.format("call connectGatt return %x", System.identityHashCode(mGatt)));
+
         mCentral = central;
         mListener = listener;
         final CountDownLatch latch = new CountDownLatch(1);
@@ -404,7 +422,24 @@ public class BluetoothGattConnection {
      */
     public void disconnect() {
         if (mGatt != null) {
-            mGatt.disconnect();
+            post(() -> {
+                FLog.d(TAG, String.format("call BluetoothGatt#disconnect for %x this:%x", System.identityHashCode(mGatt), System.identityHashCode(BluetoothGattConnection.this)));
+
+                mGatt.disconnect();
+            });
+        }
+    }
+
+    /**
+     * BluetoothLE デバイスが提供するサービスを取得します.
+     */
+    public void discoverService() {
+        if (mGatt != null) {
+            post(() -> {
+                FLog.d(TAG, String.format("call re- BluetoothGatt#discoverServices for %x", System.identityHashCode(mGatt)));
+
+                mGatt.discoverServices();
+            });
         }
     }
 
@@ -413,7 +448,11 @@ public class BluetoothGattConnection {
      */
     public void reconnect() {
         if (mGatt != null) {
-            mGatt.connect();
+            post(() -> {
+                FLog.d(TAG, String.format("call re- BluetoothGatt#connect for %x", System.identityHashCode(mGatt)));
+
+                mGatt.connect();
+            });
         }
     }
 
@@ -424,8 +463,12 @@ public class BluetoothGattConnection {
         mListener = null;
 
         if (mGatt != null) {
-            mGatt.close();
-            mGatt = null;
+            post(() -> {
+                FLog.d(TAG, String.format("call BluetoothGatt#close for %x this:%x", System.identityHashCode(mGatt), System.identityHashCode(BluetoothGattConnection.this)));
+
+                mGatt.close();
+                mGatt = null;
+            });
         }
 
         mHandlerThread.quitSafely();
