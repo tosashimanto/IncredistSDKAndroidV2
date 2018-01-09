@@ -1,48 +1,46 @@
 package jp.co.flight.incredist.android.internal.util;
 
-import android.util.Log;
-
 /**
- * LogCat へそのまま出力するためのクラス
+ * Release ビルドでは LogCat へ出力しない
  */
-public class AndroidLogCat implements LogInterface {
+public class AndroidLogCatRelease implements LogInterface {
     public int d(String tag, String msg, Throwable tr) {
-        return Log.d(tag, msg, tr);
+        return 0;
     }
 
     public int d(String tag, String msg) {
-        return Log.d(tag, msg);
+        return 0;
     }
 
     public int e(String tag, String msg, Throwable tr) {
-        return Log.e(tag, msg, tr);
+        return 0;
     }
 
     public int e(String tag, String msg) {
-        return Log.e(tag, msg);
+        return 0;
     }
 
     public int i(String tag, String msg, Throwable tr) {
-        return Log.i(tag, msg, tr);
+        return 0;
     }
 
     public int i(String tag, String msg) {
-        return Log.i(tag, msg);
+        return 0;
     }
 
     public int v(String tag, String msg, Throwable tr) {
-        return Log.v(tag, msg, tr);
+        return 0;
     }
 
     public int v(String tag, String msg) {
-        return Log.v(tag, msg);
+        return 0;
     }
 
     public int w(String tag, String msg, Throwable tr) {
-        return Log.w(tag, msg, tr);
+        return 0;
     }
 
     public int w(String tag, String msg) {
-        return Log.w(tag, msg);
+        return 0;
     }
 }
