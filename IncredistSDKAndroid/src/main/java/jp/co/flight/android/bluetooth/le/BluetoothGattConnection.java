@@ -416,8 +416,11 @@ public class BluetoothGattConnection {
      */
     public void disconnect() {
         if (mGatt != null) {
-            FLog.d(TAG, String.format("call BluetoothGatt#disconnect for %x", System.identityHashCode(mGatt)));
-            mGatt.disconnect();
+            post(() -> {
+                FLog.d(TAG, String.format("call BluetoothGatt#disconnect for %x this:%x", System.identityHashCode(mGatt), System.identityHashCode(BluetoothGattConnection.this)));
+
+                mGatt.disconnect();
+            });
         }
     }
 
@@ -426,8 +429,11 @@ public class BluetoothGattConnection {
      */
     public void reconnect() {
         if (mGatt != null) {
-            FLog.d(TAG, String.format("call re- BluetoothGatt#connect for %x", System.identityHashCode(mGatt)));
-            mGatt.connect();
+            post(() -> {
+                FLog.d(TAG, String.format("call re- BluetoothGatt#connect for %x", System.identityHashCode(mGatt)));
+
+                mGatt.connect();
+            });
         }
     }
 
@@ -438,9 +444,12 @@ public class BluetoothGattConnection {
         mListener = null;
 
         if (mGatt != null) {
-            FLog.d(TAG, String.format("call BluetoothGatt#close for %x", System.identityHashCode(mGatt)));
-            mGatt.close();
-            mGatt = null;
+            post(() -> {
+                FLog.d(TAG, String.format("call BluetoothGatt#close for %x this:%x", System.identityHashCode(mGatt), System.identityHashCode(BluetoothGattConnection.this)));
+
+                mGatt.close();
+                mGatt = null;
+            });
         }
 
         mHandlerThread.quitSafely();
