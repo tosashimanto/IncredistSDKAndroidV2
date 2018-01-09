@@ -24,7 +24,7 @@ public class MFiTransport {
 
     private static final int MFI_TRANSPORT_TIMEOUT = 500;
 
-    private final BluetoothGattConnection mConnection;
+    private BluetoothGattConnection mConnection;
     private BluetoothGattCharacteristic mWriteCharacteristic = null;
     private BluetoothGattCharacteristic mNotifyCharacteristic = null;
 
@@ -169,5 +169,11 @@ public class MFiTransport {
                 }
             }
         });
+    }
+
+    public void release() {
+        mConnection = null;
+        mWriteCharacteristic = null;
+        mNotifyCharacteristic = null;
     }
 }

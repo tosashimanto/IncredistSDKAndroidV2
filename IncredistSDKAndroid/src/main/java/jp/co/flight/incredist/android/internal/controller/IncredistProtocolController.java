@@ -28,4 +28,9 @@ interface IncredistProtocolController {
      * @param callback コールバック
      */
     void felicaClose(IncredistController.Callback callback);
+
+    /**
+     * オブジェクトを解放します
+     */
+    void release();
 }

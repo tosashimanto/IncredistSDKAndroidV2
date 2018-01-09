@@ -211,6 +211,7 @@ public class IncredistController {
             }
         }
 
+        mProtoController.release();
         mConnection = null;
         mProtoController = null;
 

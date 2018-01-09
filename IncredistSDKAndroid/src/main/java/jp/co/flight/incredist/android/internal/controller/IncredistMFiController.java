@@ -16,11 +16,9 @@ import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
  */
 public class IncredistMFiController implements IncredistProtocolController {
 
-    @NonNull
-    private final IncredistController mController;
+    private IncredistController mController;
 
-    @NonNull
-    private final MFiTransport mMFiTransport;
+    private MFiTransport mMFiTransport;
 
     /**
      * コンストラクタ
@@ -85,4 +83,12 @@ public class IncredistMFiController implements IncredistProtocolController {
     public void felicaClose(IncredistController.Callback callback) {
         postMFiCommand(new MFiFelicaCloseCommand(), callback);
     }
+
+    @Override
+    public void release() {
+        mMFiTransport.release();
+        mController = null;
+        mMFiTransport = null;
+    }
+
 }
