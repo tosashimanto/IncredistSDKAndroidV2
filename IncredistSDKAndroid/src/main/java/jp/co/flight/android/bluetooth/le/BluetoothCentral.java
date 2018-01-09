@@ -271,22 +271,6 @@ public class BluetoothCentral {
     }
 
     /**
-     * 接続中だった場合に強制切断します
-     *
-     * @param peripheral 切断するペリフェラル
-     */
-    void disconnectGatt(@NonNull BluetoothPeripheral peripheral) {
-        Context context = mContext.get();
-        if (context != null) {
-            BluetoothDevice device = mAdapter.getRemoteDevice(peripheral.getDeviceAddress());
-            if (device != null) {
-                BluetoothGatt gatt = device.connectGatt(context, false, null);
-                gatt.disconnect();
-            }
-        }
-    }
-
-    /**
      * BluetoothCentral クラスの使用リソースを解放します.
      *
      * @return 解放に成功した場合 true, 失敗した場合 false.

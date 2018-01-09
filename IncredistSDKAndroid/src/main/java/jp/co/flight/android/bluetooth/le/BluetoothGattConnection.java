@@ -227,7 +227,6 @@ public class BluetoothGattConnection {
             if (mGatt != null) {
                 disconnect();
             }
-            central.disconnectGatt(peripheral);
         }
 
         FLog.d(TAG, String.format("before connectGatt mGatt has %x", System.identityHashCode(mGatt)));
