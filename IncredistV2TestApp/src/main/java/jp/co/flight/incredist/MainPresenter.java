@@ -34,9 +34,11 @@ public interface MainPresenter {
 
     void onDisconnect();
 
-    void onAuto();
+    void onRestart();
 
     void onRelease();
+
+    void onAuto();
 
     void onFelicaOpen();
 
@@ -152,12 +154,12 @@ public interface MainPresenter {
         }
 
         @Override
-        public void onAuto() {
-            addLog("auto");
-            mIncredist.auto((serialNumber) -> {
-                addLog(String.format(Locale.JAPANESE, "auto serial: %s", serialNumber));
+        public void onRestart() {
+            addLog("restart");
+            mIncredist.restart(() -> {
+                addLog("restart succeed");
             }, (errorCode) -> {
-                addLog(String.format(Locale.JAPANESE, "auto serial failure %d", errorCode));
+                addLog(String.format(Locale.JAPANESE, "restart failure %d", errorCode));
             });
         }
 
@@ -168,6 +170,16 @@ public interface MainPresenter {
                 addLog("release success");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "release failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onAuto() {
+            addLog("auto");
+            mIncredist.auto((serialNumber) -> {
+                addLog(String.format(Locale.JAPANESE, "auto serial: %s", serialNumber));
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "auto serial failure %d", errorCode));
             });
         }
 

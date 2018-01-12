@@ -37,7 +37,7 @@ public class IncredistController {
 
     private HandlerThread mCommandHandlerThread = null;
     private Handler mCommandHandler;
-    private final HandlerThread mCallbackHandlerThread;
+    private HandlerThread mCallbackHandlerThread = null;
     private Handler mCallbackHandler;
 
     private BluetoothGattConnection mConnection;
@@ -271,21 +271,35 @@ public class IncredistController {
     }
 
     /**
+     * Incredist との接続を close します
+     */
+    public void close() {
+        mConnection.close();
+    }
+
+    /**
      * Incredist デバイスとの接続を破棄します.
      */
     public boolean release() {
-        mConnection.close();
-
         HandlerThread handlerThread = mCommandHandlerThread;
         if (handlerThread != null) {
             if (handlerThread.quitSafely()) {
                 mCommandHandlerThread = null;
-                return true;
             } else {
                 return false;
             }
         }
 
+        handlerThread = mCallbackHandlerThread;
+        if (handlerThread != null) {
+            if (handlerThread.quitSafely()) {
+                mCallbackHandlerThread = null;
+            } else {
+                return false;
+            }
+        }
+
+        mProtoController.release();
         mConnection = null;
         mProtoController = null;
 
