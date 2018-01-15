@@ -105,6 +105,13 @@ interface IncredistProtocolController {
     void felicaClose(IncredistController.Callback callback);
 
     /**
+     * Incredist を停止します。
+     *
+     * @param callback コールバック
+     */
+    void stop(IncredistController.Callback callback);
+
+    /**
      * オブジェクトを解放します
      */
     void release();

@@ -34,9 +34,11 @@ public interface MainPresenter {
 
     void onDisconnect();
 
-    void onRestart();
+    void onStop();
 
     void onRelease();
+
+    void onRestart();
 
     void onAuto();
 
@@ -154,12 +156,12 @@ public interface MainPresenter {
         }
 
         @Override
-        public void onRestart() {
-            addLog("restart");
-            mIncredist.restart(() -> {
-                addLog("restart succeed");
+        public void onStop() {
+            addLog("stop");
+            mIncredist.stop(() -> {
+                addLog("stop success");
             }, (errorCode) -> {
-                addLog(String.format(Locale.JAPANESE, "restart failure %d", errorCode));
+                addLog(String.format(Locale.JAPANESE, "stop failure %d", errorCode));
             });
         }
 
@@ -170,6 +172,16 @@ public interface MainPresenter {
                 addLog("release success");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "release failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onRestart() {
+            addLog("restart");
+            mIncredist.restart(() -> {
+                addLog("restart succeed");
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "restart failure %d", errorCode));
             });
         }
 
