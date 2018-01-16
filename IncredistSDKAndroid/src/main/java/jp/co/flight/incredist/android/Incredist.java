@@ -2,12 +2,15 @@ package jp.co.flight.incredist.android;
 
 import android.support.annotation.Nullable;
 
+import java.util.Calendar;
+
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.IncredistController;
 import jp.co.flight.incredist.android.internal.controller.result.DeviceInfoResult;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.controller.result.MagCardResult;
 import jp.co.flight.incredist.android.internal.controller.result.PinEntryResult;
+import jp.co.flight.incredist.android.internal.controller.result.RtcResult;
 import jp.co.flight.incredist.android.model.DeviceInfo;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
@@ -355,6 +358,67 @@ public class Incredist {
      */
     public void felicaClose(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
         mController.felicaClose(result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                if (success != null) {
+                    success.onSuccess();
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
+     * Incredistに設定されている時刻を取得します
+     *
+     * @param success 取得成功時の処理
+     * @param failure 取得失敗時の処理
+     */
+    public void rtcGetTime(@Nullable OnSuccessFunction<Calendar> success, @Nullable OnFailureFunction failure) {
+        mController.rtcGetTime(result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof RtcResult) {
+                if (success != null) {
+                    success.onSuccess(((RtcResult) result).calendar);
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
+     * Incredist に時刻を設定します
+     *
+     * @param cal 設定時刻
+     * @param success 設定成功時処理
+     * @param failure 設定失敗時処理
+     */
+    public void rtcSetTime(Calendar cal, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        mController.rtcSetTime(cal, result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                if (success != null) {
+                    success.onSuccess();
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
+     * Incredist に現在時刻を設定します
+     *
+     * @param success 設定成功時処理
+     * @param failure 設定失敗時処理
+     */
+    public void rtcSetCurrentTime(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        mController.rtcSetCurrentTime(result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 if (success != null) {
                     success.onSuccess();

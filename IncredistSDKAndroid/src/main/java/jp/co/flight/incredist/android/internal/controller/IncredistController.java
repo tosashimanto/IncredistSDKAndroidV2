@@ -5,6 +5,7 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 
+import java.util.Calendar;
 import java.util.concurrent.CountDownLatch;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
@@ -256,6 +257,34 @@ public class IncredistController {
      */
     public void felicaClose(IncredistController.Callback callback) {
         mProtoController.felicaClose(callback);
+    }
+
+    /**
+     * Incredistに設定されている時刻を取得します
+     *
+     * @param callback コールバック
+     */
+    public void rtcGetTime(IncredistController.Callback callback) {
+        mProtoController.rtcGetTime(callback);
+    }
+
+    /**
+     * Incredist に時刻を設定します
+     *
+     * @param cal 設定時刻
+     * @param callback コールバック
+     */
+    public void rtcSetTime(Calendar cal, IncredistController.Callback callback) {
+        mProtoController.rtcSetTime(cal, callback);
+    }
+
+    /**
+     * Incredist に現在時刻を設定します
+     *
+     * @param callback コールバック
+     */
+    public void rtcSetCurrentTime(IncredistController.Callback callback) {
+        mProtoController.rtcSetCurrentTime(callback);
     }
 
     /**

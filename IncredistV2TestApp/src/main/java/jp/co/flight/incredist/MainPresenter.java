@@ -7,6 +7,7 @@ import android.text.Layout;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -76,7 +77,16 @@ public interface MainPresenter {
 
     void pinEntryD(PinEntryDParam setting);
 
+    void onRtcGetTime();
+
+    void onRtcSetTime();
+
+    void onRtcSetCurrent();
+
+    void setDateTime(Calendar cal);
+
     void addLog(String message);
+
 
     /**
      * MainActivity 用 Presenter 実体クラス.
@@ -344,6 +354,42 @@ public interface MainPresenter {
                 addLog(String.format(Locale.JAPANESE, "pind failure %d", errorCode));
             });
 
+        }
+
+        @Override
+        public void onRtcGetTime() {
+            addLog("rtcGetTime");
+            mIncredist.rtcGetTime(cal -> {
+                SimpleDateFormat sdf = new SimpleDateFormat("yy/MM/dd HH:mm:ss", Locale.JAPANESE);
+                addLog(String.format(Locale.JAPANESE, "rtcGetTime success %s", sdf.format(cal.getTime())));
+            }, errorCode -> {
+                addLog(String.format(Locale.JAPANESE, "rtcGetTime failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onRtcSetTime() {
+            mFragment.showDateTimeDialog();
+        }
+
+        @Override
+        public void onRtcSetCurrent() {
+            addLog("rtcSetCurrentTime");
+            mIncredist.rtcSetCurrentTime(() -> {
+                addLog("rtcSetCurrentTime success");
+            }, errorCode -> {
+                addLog(String.format(Locale.JAPANESE, "rtcSetCurrentTime failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void setDateTime(Calendar cal) {
+            addLog("rtcSetTime");
+            mIncredist.rtcSetTime(cal, () -> {
+                addLog("rtcSetTime success");
+            }, errorCode -> {
+                addLog(String.format(Locale.JAPANESE, "rtcSetTime failure %d", errorCode));
+            });
         }
 
         public void addLog(String message) {
