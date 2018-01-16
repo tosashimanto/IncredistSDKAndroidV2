@@ -59,6 +59,15 @@ public class MFiTransport {
     }
 
     /**
+     * 現在コマンド送受信中かどうかを取得します。
+     *
+     * @return 送受信処理中の場合 true
+     */
+    public boolean isBusy() {
+        return false;
+    }
+
+    /**
      * コマンドを送信し、レスポンスを受信して返却します.
      *
      * @param command 送信コマンド

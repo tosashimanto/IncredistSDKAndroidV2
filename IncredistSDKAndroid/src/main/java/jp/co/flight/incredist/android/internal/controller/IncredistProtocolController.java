@@ -12,6 +12,14 @@ import jp.co.flight.incredist.android.model.PinEntry;
  * Incredist MFi 版 / PCSC 版 共通インタフェース.
  */
 interface IncredistProtocolController {
+
+    /**
+     * 現在コマンドを実行中かどうかを取得
+     *
+     * @return 現在コマンドを実行中の場合 true
+     */
+    boolean isBusy();
+
     /**
      * シリアル番号を取得します.
      *
