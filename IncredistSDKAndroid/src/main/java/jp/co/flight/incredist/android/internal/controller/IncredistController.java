@@ -3,17 +3,21 @@ package jp.co.flight.incredist.android.internal.controller;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.Calendar;
 import java.util.concurrent.CountDownLatch;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
+import jp.co.flight.incredist.android.internal.controller.command.IncredistCommand;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
+import jp.co.flight.incredist.android.internal.transport.DisconnectCommand;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.PinEntry;
 
+import static jp.co.flight.incredist.android.internal.controller.result.IncredistResult.STATUS_BUSY;
 import static jp.co.flight.incredist.android.internal.controller.result.IncredistResult.STATUS_FAILED_EXECUTION;
 
 /**
@@ -97,13 +101,21 @@ public class IncredistController {
     /**
      * Command 送受信用の HandlerThread で処理を実行します. 実行できなかった場合、
      * 実行失敗(STATUS_FAILED_EXECUTION) としてコールバックを呼び出します.
-     * TODO すでに他の処理が実行中の場合 STATUS_BUSY としてコールバックを呼び出します.
+     * すでに他の処理が実行中の場合 STATUS_BUSY としてコールバックを呼び出します.
      *
      * @param r 処理内容の Runnable インスタンス
      */
-    void postCommand(Runnable r, Callback callback) {
+    void postCommand(@NonNull IncredistCommand command, Runnable r, Callback callback) {
         Handler handler = mCommandHandler;
         if (handler != null) {
+            if (mProtoController.isBusy()) {
+                // すでに他の処理が実行中の場合
+                postCallback(() -> {
+                    callback.onResult(new IncredistResult(STATUS_BUSY));
+                });
+                return;
+            }
+
             if (handler.post(r)) {
                 return;
             }
@@ -301,7 +313,7 @@ public class IncredistController {
      * @param callback コールバック
      */
     public void disconnect(final Callback callback) {
-        postCommand(() -> {
+        postCommand(new DisconnectCommand(), () -> {
             mConnection.disconnect();
 
             callback.onResult(new IncredistResult(IncredistResult.STATUS_SUCCESS));

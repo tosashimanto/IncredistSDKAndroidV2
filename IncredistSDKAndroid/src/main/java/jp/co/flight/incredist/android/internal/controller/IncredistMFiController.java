@@ -54,9 +54,14 @@ public class IncredistMFiController implements IncredistProtocolController {
      * @param callback コールバック
      */
     private void postMFiCommand(final MFiCommand command, final IncredistController.Callback callback) {
-        mController.postCommand(() -> {
+        mController.postCommand(command, () -> {
             callback.onResult(command.parseResponse(mMFiTransport.sendCommand(command)));
         }, callback);
+    }
+
+    @Override
+    public boolean isBusy() {
+        return mMFiTransport.isBusy();
     }
 
     /**
