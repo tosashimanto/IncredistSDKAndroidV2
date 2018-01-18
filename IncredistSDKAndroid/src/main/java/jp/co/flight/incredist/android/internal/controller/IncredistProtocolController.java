@@ -2,6 +2,8 @@ package jp.co.flight.incredist.android.internal.controller;
 
 import android.support.annotation.Nullable;
 
+import java.util.Calendar;
+
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.PinEntry;
@@ -103,6 +105,28 @@ interface IncredistProtocolController {
      * @param callback コールバック
      */
     void felicaClose(IncredistController.Callback callback);
+
+    /**
+     * Incredistに設定されている時刻を取得します
+     *
+     * @param callback コールバック
+     */
+    void rtcGetTime(IncredistController.Callback callback);
+
+    /**
+     * Incredist に時刻を設定します
+     *
+     * @param cal 設定時刻
+     * @param callback コールバック
+     */
+    void rtcSetTime(Calendar cal, IncredistController.Callback callback);
+
+    /**
+     * Incredist に現在時刻を設定します
+     *
+     * @param callback コールバック
+     */
+    void rtcSetCurrentTime(IncredistController.Callback callback);
 
     /**
      * Incredist を停止します。

@@ -7,6 +7,7 @@ import android.databinding.Bindable;
 import android.databinding.Observable;
 import android.preference.PreferenceManager;
 
+import java.util.Calendar;
 import java.util.List;
 
 import jp.co.flight.incredist.android.Incredist;
@@ -57,6 +58,12 @@ public interface IncredistModel extends Observable {
     void pinEntryD(PinEntryDParam setting, OnSuccessFunction<PinEntry.Result> success, OnFailureFunction failure);
 
     void setLedColor(LedColor color, boolean isOn, OnSuccessVoidFunction success, OnFailureFunction failure);
+
+    void rtcGetTime(OnSuccessFunction<Calendar> success, OnFailureFunction failure);
+
+    void rtcSetTime(Calendar cal, OnSuccessVoidFunction success, OnFailureFunction failure);
+
+    void rtcSetCurrentTime(OnSuccessVoidFunction success, OnFailureFunction failure);
 
     void stop(OnSuccessVoidFunction success, OnFailureFunction failure);
 
@@ -266,6 +273,33 @@ public interface IncredistModel extends Observable {
         public void setLedColor(LedColor color, boolean isOn, OnSuccessVoidFunction success, OnFailureFunction failure) {
             if (mIncredist != null) {
                 mIncredist.setLedColor(color, isOn, success, failure);
+            } else {
+                failure.onFailure(-1);
+            }
+        }
+
+        @Override
+        public void rtcGetTime(OnSuccessFunction<Calendar> success, OnFailureFunction failure) {
+            if (mIncredist != null) {
+                mIncredist.rtcGetTime(success, failure);
+            } else {
+                failure.onFailure(-1);
+            }
+        }
+
+        @Override
+        public void rtcSetTime(Calendar cal, OnSuccessVoidFunction success, OnFailureFunction failure) {
+            if (mIncredist != null) {
+                mIncredist.rtcSetTime(cal, success, failure);
+            } else {
+                failure.onFailure(-1);
+            }
+        }
+
+        @Override
+        public void rtcSetCurrentTime(OnSuccessVoidFunction success, OnFailureFunction failure) {
+            if (mIncredist != null) {
+                mIncredist.rtcSetCurrentTime(success, failure);
             } else {
                 failure.onFailure(-1);
             }

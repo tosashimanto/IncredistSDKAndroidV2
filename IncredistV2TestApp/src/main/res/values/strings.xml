@@ -9,4 +9,11 @@
     <string name="dialog_title_encryption_setting">暗号化設定</string>
     <string name="dialog_title_set_led_color">LED色設定</string>
     <string name="dialog_title_felica_led_color">FeliCaモードLED設定</string>
+
+    <string name="dialog_title_date_time">日時設定</string>
+    <string name="label_date">日付(yyMMdd)</string>
+    <string name="label_time">時刻(HHmmss)</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

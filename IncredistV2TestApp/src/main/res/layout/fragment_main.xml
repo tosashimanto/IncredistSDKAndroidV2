@@ -160,7 +160,6 @@
                     app:layout_constraintStart_toStartOf="@+id/button_disconnect"
                     app:layout_constraintTop_toTopOf="@+id/button_stop" />
 
-
                 <!-- auto -->
                 <android.support.v7.widget.AppCompatTextView
                     android:id="@+id/label_auto"
@@ -320,7 +319,7 @@
                     android:layout_marginStart="8dp"
                     android:onClick="@{(view)->presenter.onSdm()}"
                     android:text="SDM"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintBottom_toTopOf="@+id/label_rtc"
                     app:layout_constraintEnd_toStartOf="@+id/button_mag_mj2"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/label_mag" />
@@ -346,6 +345,53 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/button_mag_mj2"
                     app:layout_constraintTop_toTopOf="@+id/button_sdm" />
+
+                <!-- auto -->
+                <android.support.v7.widget.AppCompatTextView
+                    android:id="@+id/label_rtc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/colorHeaderBackground"
+                    android:text="RealTimeClock"
+                    app:layout_constraintBottom_toTopOf="@+id/button_rtc_get"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/button_sdm" />
+
+                <Button
+                    android:id="@+id/button_rtc_get"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:onClick="@{(view)->presenter.onRtcGetTime()}"
+                    android:text="GetTime"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/button_rtc_set"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/label_rtc" />
+
+                <Button
+                    android:id="@+id/button_rtc_set"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{(view)->presenter.onRtcSetTime()}"
+                    android:text="SetTime"
+                    app:layout_constraintBottom_toBottomOf="@+id/button_rtc_get"
+                    app:layout_constraintEnd_toStartOf="@+id/button_rtc_current"
+                    app:layout_constraintStart_toEndOf="@+id/button_rtc_get"
+                    app:layout_constraintTop_toTopOf="@+id/button_rtc_get" />
+
+                <Button
+                    android:id="@+id/button_rtc_current"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:onClick="@{(view)->presenter.onRtcSetCurrent()}"
+                    android:text="SetCurrent"
+                    app:layout_constraintBottom_toBottomOf="@+id/button_rtc_get"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/button_rtc_set"
+                    app:layout_constraintTop_toTopOf="@+id/button_rtc_get" />
 
             </android.support.constraint.ConstraintLayout>
         </ScrollView>

@@ -3,6 +3,8 @@ package jp.co.flight.incredist.android.internal.controller;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.util.Calendar;
+
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.command.MFiDeviceInfoCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiEmvDisplayMessageCommand;
@@ -11,10 +13,12 @@ import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaLedCo
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaOpenCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaOpenWithoutLedCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaSendCommand;
+import jp.co.flight.incredist.android.internal.controller.command.MFiGetRealTimeCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiPinEntryDCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiScanMagneticCard2Command;
 import jp.co.flight.incredist.android.internal.controller.command.MFiSetEncryptionModeCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiSetLedColorCommand;
+import jp.co.flight.incredist.android.internal.controller.command.MFiSetRealTimeCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiStopCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiTfpDisplayMessageCommand;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
@@ -193,6 +197,37 @@ public class IncredistMFiController implements IncredistProtocolController {
     }
 
     /**
+     * Incredistに設定されている時刻を取得します
+     *
+     * @param callback コールバック
+     */
+    @Override
+    public void rtcGetTime(IncredistController.Callback callback) {
+        postMFiCommand(new MFiGetRealTimeCommand(), callback);
+    }
+
+    /**
+     * Incredist に時刻を設定します
+     *
+     * @param cal 設定時刻
+     * @param callback コールバック
+     */
+    @Override
+    public void rtcSetTime(Calendar cal, IncredistController.Callback callback) {
+        postMFiCommand(new MFiSetRealTimeCommand(cal), callback);
+    }
+
+    /**
+     * Incredist に現在時刻を設定します
+     *
+     * @param callback コールバック
+     */
+    @Override
+    public void rtcSetCurrentTime(IncredistController.Callback callback) {
+        postMFiCommand(new MFiSetRealTimeCommand(), callback);
+    }
+
+    /**
      * Incredist を停止します。
      *
      * @param callback コールバック
@@ -202,6 +237,9 @@ public class IncredistMFiController implements IncredistProtocolController {
         postMFiCommand(new MFiStopCommand(), callback);
     }
 
+    /**
+     * オブジェクトを解放します
+     */
     @Override
     public void release() {
         mMFiTransport.release();

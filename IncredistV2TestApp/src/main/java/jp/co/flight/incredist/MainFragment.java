@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import jp.co.flight.incredist.android.IncredistV2TestApp.R;
 import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
@@ -30,7 +31,7 @@ import permissions.dispatcher.RuntimePermissions;
 public class MainFragment extends Fragment
         implements DeviceListDialogFragment.Listener, DisplayMessageDialogFragment.Listener,
         EncryptionSettingDialogFragment.Listener, PinEntryDParamDialogFragment.Listener,
-        LedColorDialogFragment.Listener {
+        LedColorDialogFragment.Listener, DateTimeDialogFragment.Listener {
 
     private static final String DIALOG_TAG_SELECT_DEVICE = "dialog_tag_select_device";
     private static final String DIALOG_TAG_EMV_MESSAGE = "dialog_tag_emv_message";
@@ -39,6 +40,7 @@ public class MainFragment extends Fragment
     private static final String DIALOG_TAG_PIN_D_PARAM = "dialog_tag_pin_d_setting";
     private static final String DIALOG_TAG_SET_LED_COLOR = "dialog_tag_set_led_color";
     private static final String DIALOG_TAG_FELICA_LED_COLOR = "dialog_tag_felica_led_color";
+    private static final String DIALOG_TAG_DATETIME = "dialog_tag_datetime";
     private static final int REQUEST_SELECT_DEVICE = 1;
     private static final int REQUEST_EMV_MESSAGE = 2;
     private static final int REQUEST_TFP_MESSAGE = 3;
@@ -46,6 +48,7 @@ public class MainFragment extends Fragment
     private static final int REQUEST_PIN_D_PARAM = 5;
     private static final int REQUEST_SET_LED_COLOR = 6;
     private static final int REQUEST_FELICA_LED_COLOR = 7;
+    private static final int REQUEST_DATETIME = 8;
 
     private OnFragmentInteractionListener mListener;
     private FragmentMainBinding mBinding;
@@ -187,6 +190,17 @@ public class MainFragment extends Fragment
         } else if (requestCode == REQUEST_FELICA_LED_COLOR) {
             mPresenter.felicaLedColor(color);
         }
+    }
+
+    public void showDateTimeDialog() {
+        DialogFragment dialog = DateTimeDialogFragment.newInstance();
+        dialog.setTargetFragment(this, REQUEST_DATETIME);
+        dialog.show(getFragmentManager(), DIALOG_TAG_DATETIME);
+    }
+
+    @Override
+    public void onSetDateTime(int requestCode, Calendar cal) {
+        mPresenter.setDateTime(cal);
     }
 
     public interface OnFragmentInteractionListener {
