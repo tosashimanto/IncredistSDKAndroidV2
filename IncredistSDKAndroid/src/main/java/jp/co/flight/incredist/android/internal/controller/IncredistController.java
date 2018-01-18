@@ -259,6 +259,15 @@ public class IncredistController {
     }
 
     /**
+     * Incredist を停止します。
+     *
+     * @param callback コールバック
+     */
+    public void stop(IncredistController.Callback callback) {
+        mProtoController.stop(callback);
+    }
+
+    /**
      * Incredist デバイスから切断します.
      * @param callback コールバック
      */

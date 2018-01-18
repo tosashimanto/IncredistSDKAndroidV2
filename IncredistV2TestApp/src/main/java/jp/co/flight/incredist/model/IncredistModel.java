@@ -58,6 +58,8 @@ public interface IncredistModel extends Observable {
 
     void setLedColor(LedColor color, boolean isOn, OnSuccessVoidFunction success, OnFailureFunction failure);
 
+    void stop(OnSuccessVoidFunction success, OnFailureFunction failure);
+
     void release(OnSuccessVoidFunction success, OnFailureFunction failure);
 
     void releaseManager();
@@ -264,6 +266,15 @@ public interface IncredistModel extends Observable {
         public void setLedColor(LedColor color, boolean isOn, OnSuccessVoidFunction success, OnFailureFunction failure) {
             if (mIncredist != null) {
                 mIncredist.setLedColor(color, isOn, success, failure);
+            } else {
+                failure.onFailure(-1);
+            }
+        }
+
+        @Override
+        public void stop(OnSuccessVoidFunction success, OnFailureFunction failure) {
+            if (mIncredist != null) {
+                mIncredist.stop(success, failure);
             } else {
                 failure.onFailure(-1);
             }

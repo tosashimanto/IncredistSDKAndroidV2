@@ -15,6 +15,7 @@ import jp.co.flight.incredist.android.internal.controller.command.MFiPinEntryDCo
 import jp.co.flight.incredist.android.internal.controller.command.MFiScanMagneticCard2Command;
 import jp.co.flight.incredist.android.internal.controller.command.MFiSetEncryptionModeCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiSetLedColorCommand;
+import jp.co.flight.incredist.android.internal.controller.command.MFiStopCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiTfpDisplayMessageCommand;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.exception.ParameterException;
@@ -189,6 +190,16 @@ public class IncredistMFiController implements IncredistProtocolController {
     @Override
     public void felicaClose(IncredistController.Callback callback) {
         postMFiCommand(new MFiFelicaCloseCommand(), callback);
+    }
+
+    /**
+     * Incredist を停止します。
+     *
+     * @param callback コールバック
+     */
+    @Override
+    public void stop(IncredistController.Callback callback) {
+        postMFiCommand(new MFiStopCommand(), callback);
     }
 
     @Override

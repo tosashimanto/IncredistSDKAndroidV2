@@ -367,6 +367,25 @@ public class Incredist {
         });
     }
 
+    /**
+     * Incredist を停止します。
+     *
+     * @param success 設定成功時の処理
+     * @param failure 設定失敗時の処理
+     */
+    public void stop(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        mController.stop(result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                if (success != null) {
+                    success.onSuccess();
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
 
     /**
      * Incredist との接続リソースを解放します
