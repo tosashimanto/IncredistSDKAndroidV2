@@ -19,8 +19,11 @@ public class IncredistResult {
     public static final int STATUS_PIN_TIMEOUT = 600;
     public static final int STATUS_PIN_CANCEL = 602;
     public static final int STATUS_PIN_SKIP = 603;
-    public static final int STATUS_CANCELED = 101;
     public static final int STATUS_MAG_TRACK_ERROR = 604;
+
+    public static final int STATUS_CANCELED = 101;
+    public static final int STATUS_CANCEL_FAILED = 102;
+    public static final int STATUS_NOT_CANCELLABLE = 103;
 
     public final int status;
     public final String message;

@@ -40,6 +40,7 @@ public class IncredistMFiController implements IncredistProtocolController {
 
     /**
      * コンストラクタ
+     *
      * @param controller IncredistController オブジェクト
      * @param connection BluetoothGattConnection オブジェクt
      */
@@ -50,12 +51,21 @@ public class IncredistMFiController implements IncredistProtocolController {
 
     /**
      * MFi コマンドを送信します
+     *
      * @param command 送信コマンド
      * @param callback コールバック
      */
     private void postMFiCommand(final MFiCommand command, final IncredistController.Callback callback) {
-        mController.postCommand(command, () -> {
-            callback.onResult(command.parseResponse(mMFiTransport.sendCommand(command)));
+        mController.postCommand(() -> {
+            final IncredistResult result = command.parseResponse(mMFiTransport.sendCommand(command));
+
+            if (result.status == IncredistResult.STATUS_CANCELED && command.cancelable()) {
+                command.onCancelled(mMFiTransport);
+            }
+
+            mController.postCallback(() -> {
+                callback.onResult(result);
+            });
         }, callback);
     }
 
@@ -66,6 +76,7 @@ public class IncredistMFiController implements IncredistProtocolController {
 
     /**
      * シリアル番号を取得します.
+     *
      * @param callback コールバック
      */
     public void getDeviceInfo(final IncredistController.Callback callback) {
@@ -144,6 +155,7 @@ public class IncredistMFiController implements IncredistProtocolController {
 
     /**
      * LED色を設定します。
+     *
      * @param color LED色
      * @param isOn true: 点灯 false: 消灯
      * @param callback コールバック
@@ -183,6 +195,7 @@ public class IncredistMFiController implements IncredistProtocolController {
 
     /**
      * felica モード時のLED色を設定します。
+     *
      * @param color LED色
      * @param callback コールバック
      */
@@ -230,6 +243,22 @@ public class IncredistMFiController implements IncredistProtocolController {
     @Override
     public void rtcSetCurrentTime(IncredistController.Callback callback) {
         postMFiCommand(new MFiSetRealTimeCommand(), callback);
+    }
+
+    /**
+     * 現在実行中のコマンドをキャンセルします
+     *
+     * @param callback コールバック
+     */
+    @Override
+    public void cancel(IncredistController.Callback callback) {
+        Thread th = new Thread(() -> {
+            final IncredistResult result = mMFiTransport.cancel();
+            mController.postCallback(() -> {
+                callback.onResult(result);
+            });
+        });
+        th.start();
     }
 
     /**

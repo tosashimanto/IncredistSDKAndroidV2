@@ -53,6 +53,8 @@ public class MFiTransport {
 
     /**
      * コンストラクタ.
+     *
+     * @param connection BluetoothGattConnection オブジェクト
      */
     public MFiTransport(BluetoothGattConnection connection) {
         mConnection = connection;
@@ -84,6 +86,11 @@ public class MFiTransport {
             // 受信用パケットを初期化
             if (command.getResponseTimeout() > 0) {
                 mResponse.clear();
+            }
+
+            if (mCancelling != null) {
+                mCancelling.countDown();
+                return new MFiInvalidResponse(IncredistResult.STATUS_CANCELED);
             }
 
             int count = command.getPacketCount();
@@ -121,8 +128,8 @@ public class MFiTransport {
                         mResponse.wait(command.getResponseTimeout());
 
                         if (mCommand.cancelable() && !mResponse.hasData() && mCancelling != null) {
-                            mCancelling.countDown();
                             mCommand = null;
+                            mCancelling.countDown();
                             return new MFiInvalidResponse(IncredistResult.STATUS_CANCELED);
                         }
                     } while (mResponse.needMoreData());
@@ -205,38 +212,58 @@ public class MFiTransport {
     /**
      * 受信待ち処理をキャンセル
      *
-     * 送信 / 受信待ち処理には、
+     * キャンセルできるかどうかは MFiCommand によって異なる
+     * キャンセルできないコマンドの場合は false を返す
+     *
+     * キャンセルできるコマンドであっても、送信 / 受信待ち処理には、
      *  - 送信前
      *  - 送信中
      *  - 受信待ち
      *  - 受信中
      *  - 受信完了後
-     * の状態がある。送信前・送信中の場合は完了まで一旦待つ
+     * の状態がある。送信前の場合は mCancelling != null をチェックし、
+     * 受信待ちの場合は mResponse の notify を受け取ってそれぞれ countdown するので
+     * キャンセル成功する。
+     *
+     * 送信中の場合はコマンド途中で停止させることはせずに送信完了まで一旦待つ
+     *
      * 受信中(すでにMFiパケットの一部を受け取っている)場合には
-     * 失敗として扱う(MFiパケットの残りを受信して通常処理を行う)
+     * フラグを立てて、MFiパケットの残りを受信した際にキャンセル済みの
+     * コマンドについてはコールバックを呼び出さない。
      *
-     * sendCommand とは別のスレッドで実行する必要がある
+     * このメソッドは sendCommand とは別のスレッドで実行する必要がある
      *
-     * @return キャンセル成功した場合は True, 失敗した場合は False を返す　
+     * @return キャンセル成功した場合は STATUS_SUCCESS, 失敗した場合はエラー結果を含む IncredistResult オブジェクト
      */
     @WorkerThread
-    public boolean cancelReceive() {
+    public IncredistResult cancel() {
         synchronized (mResponse) {
-            mCancelling = new CountDownLatch(1);
-            mResponse.notifyAll();
-
-            try {
-                mCancelling.await(1000, TimeUnit.MILLISECONDS);
-
-                return true;
-            } catch (InterruptedException e) {
-                // ignore.
+            if (mCommand == null || !mCommand.cancelable()) {
+                return new IncredistResult(IncredistResult.STATUS_NOT_CANCELLABLE);
             }
 
-            return false;
+            mCancelling = new CountDownLatch(1);
+            mResponse.notifyAll();
         }
+
+        try {
+            boolean res = mCancelling.await(3000, TimeUnit.MILLISECONDS);
+
+            if (res) {
+                return new IncredistResult(IncredistResult.STATUS_SUCCESS);
+            }
+        } catch (InterruptedException e) {
+            // ignore.
+        } finally {
+            mCancelling = null;
+        }
+
+        return new IncredistResult(IncredistResult.STATUS_CANCEL_FAILED);
     }
 
+    /**
+     * リソースを解放します
+     */
     public void release() {
         mConnection = null;
         mWriteCharacteristic = null;

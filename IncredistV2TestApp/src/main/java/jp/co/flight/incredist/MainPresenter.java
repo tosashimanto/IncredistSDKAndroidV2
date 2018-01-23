@@ -37,6 +37,8 @@ public interface MainPresenter {
 
     void onStop();
 
+    void onCancel();
+
     void onRelease();
 
     void onRestart();
@@ -172,6 +174,16 @@ public interface MainPresenter {
                 addLog("stop success");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "stop failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onCancel() {
+            addLog("cancel");
+            mIncredist.cancel(() -> {
+                addLog("cancel success");
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "cancel failure %d", errorCode));
             });
         }
 

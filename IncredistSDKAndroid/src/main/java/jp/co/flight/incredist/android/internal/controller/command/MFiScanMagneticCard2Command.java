@@ -8,6 +8,7 @@ import jp.co.flight.incredist.android.internal.controller.result.IncredistResult
 import jp.co.flight.incredist.android.internal.controller.result.MagCardResult;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiResponse;
+import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
 import jp.co.flight.incredist.android.model.MagCard;
 
 /**
@@ -37,6 +38,11 @@ public class MFiScanMagneticCard2Command extends MFiCommand {
     @Override
     public boolean cancelable() {
         return true;
+    }
+
+    @Override
+    public void onCancelled(MFiTransport transport) {
+        onCommonCancelled(transport);
     }
 
     private static boolean byteStartsWith(byte[] data, byte[] prefix) {

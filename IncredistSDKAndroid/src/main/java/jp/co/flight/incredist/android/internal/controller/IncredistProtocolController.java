@@ -137,6 +137,13 @@ interface IncredistProtocolController {
     void rtcSetCurrentTime(IncredistController.Callback callback);
 
     /**
+     * 現在実行中のコマンドをキャンセルします
+     *
+     * @param callback コールバック
+     */
+    void cancel(IncredistController.Callback callback);
+
+    /**
      * Incredist を停止します。
      *
      * @param callback コールバック
@@ -147,4 +154,5 @@ interface IncredistProtocolController {
      * オブジェクトを解放します
      */
     void release();
+
 }
