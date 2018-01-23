@@ -67,6 +67,8 @@ public interface IncredistModel extends Observable {
 
     void stop(OnSuccessVoidFunction success, OnFailureFunction failure);
 
+    void cancel(OnSuccessVoidFunction success, OnFailureFunction failure);
+
     void release(OnSuccessVoidFunction success, OnFailureFunction failure);
 
     void releaseManager();
@@ -309,6 +311,15 @@ public interface IncredistModel extends Observable {
         public void stop(OnSuccessVoidFunction success, OnFailureFunction failure) {
             if (mIncredist != null) {
                 mIncredist.stop(success, failure);
+            } else {
+                failure.onFailure(-1);
+            }
+        }
+
+        @Override
+        public void cancel(OnSuccessVoidFunction success, OnFailureFunction failure) {
+            if (mIncredist != null) {
+                mIncredist.cancel(success, failure);
             } else {
                 failure.onFailure(-1);
             }

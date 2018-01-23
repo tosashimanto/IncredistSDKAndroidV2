@@ -133,7 +133,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="@{(view)->presenter.onStop()}"
                     android:text="Stop"
-                    app:layout_constraintBottom_toTopOf="@+id/label_auto"
+                    app:layout_constraintBottom_toTopOf="@+id/button_restart"
                     app:layout_constraintEnd_toEndOf="@+id/button_connect"
                     app:layout_constraintStart_toStartOf="@+id/button_connect"
                     app:layout_constraintTop_toBottomOf="@+id/button_connect" />
@@ -150,15 +150,26 @@
                     app:layout_constraintTop_toTopOf="@+id/button_stop" />
 
                 <Button
+                    android:id="@+id/button_cancel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{(view)->presenter.onCancel()}"
+                    android:text="Cancel"
+                    app:layout_constraintBottom_toBottomOf="@+id/button_stop"
+                    app:layout_constraintEnd_toEndOf="@+id/button_disconnect"
+                    app:layout_constraintStart_toStartOf="@+id/button_disconnect"
+                    app:layout_constraintTop_toTopOf="@+id/button_stop" />
+
+                <Button
                     android:id="@+id/button_restart"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:onClick="@{(view)->presenter.onRestart()}"
                     android:text="Restart"
-                    app:layout_constraintBottom_toBottomOf="@+id/button_stop"
-                    app:layout_constraintEnd_toEndOf="@+id/button_disconnect"
-                    app:layout_constraintStart_toStartOf="@+id/button_disconnect"
-                    app:layout_constraintTop_toTopOf="@+id/button_stop" />
+                    app:layout_constraintBottom_toTopOf="@+id/label_auto"
+                    app:layout_constraintEnd_toEndOf="@+id/button_cancel"
+                    app:layout_constraintStart_toStartOf="@+id/button_cancel"
+                    app:layout_constraintTop_toBottomOf="@+id/button_stop" />
 
                 <!-- auto -->
                 <android.support.v7.widget.AppCompatTextView
@@ -170,7 +181,7 @@
                     app:layout_constraintBottom_toTopOf="@+id/button_auto"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/button_stop" />
+                    app:layout_constraintTop_toBottomOf="@+id/button_restart" />
 
                 <Button
                     android:id="@+id/button_auto"

@@ -432,6 +432,26 @@ public class Incredist {
     }
 
     /**
+     * Incredist で処理中のコマンドをキャンセルします
+     *
+     * @param success キャンセル成功時の処理
+     * @param failure キャンセル失敗時の処理
+     */
+    public void cancel(OnSuccessVoidFunction success, OnFailureFunction failure) {
+        mController.cancel(result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                if (success != null) {
+                    success.onSuccess();
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
      * Incredist を停止します。
      *
      * @param success 設定成功時の処理

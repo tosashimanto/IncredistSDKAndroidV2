@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Locale;
 
 import jp.co.flight.incredist.android.internal.controller.command.IncredistCommand;
+import jp.co.flight.incredist.android.internal.controller.command.MFiStopCommand;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.util.FLog;
 import jp.co.flight.incredist.android.internal.util.LogUtil;
@@ -87,6 +88,18 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
      */
     public boolean cancelable() {
         return false;
+    }
+
+    /**
+     * キャンセル時の処理
+     */
+    public void onCancelled(MFiTransport transport) {
+        // do nothing for default.
+    }
+
+    protected void onCommonCancelled(MFiTransport transport) {
+        MFiCommand command = new MFiStopCommand();
+        command.parseMFiResponse(transport.sendCommand(command));
     }
 
     /**

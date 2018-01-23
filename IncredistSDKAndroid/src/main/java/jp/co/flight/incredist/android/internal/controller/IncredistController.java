@@ -3,16 +3,13 @@ package jp.co.flight.incredist.android.internal.controller;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.Calendar;
 import java.util.concurrent.CountDownLatch;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
-import jp.co.flight.incredist.android.internal.controller.command.IncredistCommand;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
-import jp.co.flight.incredist.android.internal.transport.DisconnectCommand;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.PinEntry;
@@ -44,6 +41,8 @@ public class IncredistController {
     private Handler mCommandHandler;
     private HandlerThread mCallbackHandlerThread = null;
     private Handler mCallbackHandler;
+    private HandlerThread mCancelHandlerThread = null;
+    private Handler mCancelHandler;
 
     private BluetoothGattConnection mConnection;
 
@@ -70,7 +69,7 @@ public class IncredistController {
 
         // 最初は MFi のみ対応
         mProtoController = new IncredistMFiController(this, connection);
-        final CountDownLatch latch = new CountDownLatch(2);
+        final CountDownLatch latch = new CountDownLatch(3);
         mCommandHandlerThread = new HandlerThread(String.format("%s:%s:command", TAG, deviceName)) {
             @Override
             protected void onLooperPrepared() {
@@ -91,6 +90,16 @@ public class IncredistController {
         };
         mCallbackHandlerThread.start();
 
+        mCancelHandlerThread = new HandlerThread(String.format("%s:%s:cancel", TAG, deviceName)) {
+            @Override
+            protected void onLooperPrepared() {
+                super.onLooperPrepared();
+                mCancelHandler = new Handler(this.getLooper());
+                latch.countDown();
+            }
+        };
+        mCancelHandlerThread.start();
+
         try {
             latch.await();
         } catch (InterruptedException e) {
@@ -105,7 +114,7 @@ public class IncredistController {
      *
      * @param r 処理内容の Runnable インスタンス
      */
-    void postCommand(@NonNull IncredistCommand command, Runnable r, Callback callback) {
+    void postCommand(Runnable r, Callback callback) {
         Handler handler = mCommandHandler;
         if (handler != null) {
             if (mProtoController.isBusy()) {
@@ -129,6 +138,7 @@ public class IncredistController {
 
     /**
      * callback 用の HandlerThread で処理を実行します。
+     *
      * @param runnable 処理内容の runnable インスタンス
      */
     public void postCallback(Runnable runnable) {
@@ -229,6 +239,7 @@ public class IncredistController {
 
     /**
      * LED色を設定します。
+     *
      * @param color LED色
      * @param isOn true: 点灯 false: 消灯
      * @param callback コールバック
@@ -239,6 +250,7 @@ public class IncredistController {
 
     /**
      * FeliCa RF モードを開始します
+     *
      * @param callback コールバック
      */
     public void felicaOpen(boolean withLed, Callback callback) {
@@ -247,6 +259,7 @@ public class IncredistController {
 
     /**
      * felica コマンドを送信します.
+     *
      * @param command コマンド
      * @param callback コールバック
      */
@@ -256,6 +269,7 @@ public class IncredistController {
 
     /**
      * felica モード時のLED色を設定します。
+     *
      * @param color LED色
      * @param callback コールバック
      */
@@ -265,6 +279,7 @@ public class IncredistController {
 
     /**
      * felica モードを終了します。
+     *
      * @param callback コールバック
      */
     public void felicaClose(IncredistController.Callback callback) {
@@ -300,6 +315,15 @@ public class IncredistController {
     }
 
     /**
+     * 現在処理中のコマンドをキャンセルします
+     *
+     * @param callback コールバック
+     */
+    public void cancel(Callback callback) {
+        mProtoController.cancel(callback);
+    }
+
+    /**
      * Incredist を停止します。
      *
      * @param callback コールバック
@@ -310,10 +334,11 @@ public class IncredistController {
 
     /**
      * Incredist デバイスから切断します.
+     *
      * @param callback コールバック
      */
     public void disconnect(final Callback callback) {
-        postCommand(new DisconnectCommand(), () -> {
+        postCommand(() -> {
             mConnection.disconnect();
 
             callback.onResult(new IncredistResult(IncredistResult.STATUS_SUCCESS));
@@ -348,6 +373,19 @@ public class IncredistController {
                 return false;
             }
         }
+
+        handlerThread = mCancelHandlerThread;
+        if (handlerThread != null) {
+            if (handlerThread.quitSafely()) {
+                mCancelHandlerThread = null;
+            } else {
+                return false;
+            }
+        }
+
+        mCommandHandler = null;
+        mCancelHandler = null;
+        mCancelHandler = null;
 
         mProtoController.release();
         mConnection = null;
