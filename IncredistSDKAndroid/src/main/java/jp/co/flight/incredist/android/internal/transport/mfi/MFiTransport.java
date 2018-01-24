@@ -76,12 +76,14 @@ public class MFiTransport {
      * @return レスポンスの MFiパケット
      */
     @WorkerThread
-    public MFiResponse sendCommand(MFiCommand command) {
+    public IncredistResult sendCommand(MFiCommand command) {
         findCharacteristics();
 
         // 送信コマンドの途中で割り込まれないように　synchronize で同期化
         synchronized (this) {
             mCommand = command;
+
+            FLog.d(TAG, String.format("sendCommand %s", command.getClass().getSimpleName()));
 
             // 受信用パケットを初期化
             if (command.getResponseTimeout() > 0) {
@@ -90,7 +92,7 @@ public class MFiTransport {
 
             if (mCancelling != null) {
                 mCancelling.countDown();
-                return new MFiInvalidResponse(IncredistResult.STATUS_CANCELED);
+                return new IncredistResult(IncredistResult.STATUS_CANCELED);
             }
 
             int count = command.getPacketCount();
@@ -114,7 +116,7 @@ public class MFiTransport {
                 }
 
                 if (latch.mErrorCode != IncredistResult.STATUS_SUCCESS) {
-                    return new MFiInvalidResponse(latch.mErrorCode);
+                    return new IncredistResult(latch.mErrorCode);
                 }
             }
         }
@@ -130,7 +132,7 @@ public class MFiTransport {
                         if (mCommand.cancelable() && !mResponse.hasData() && mCancelling != null) {
                             mCommand = null;
                             mCancelling.countDown();
-                            return new MFiInvalidResponse(IncredistResult.STATUS_CANCELED);
+                            return new IncredistResult(IncredistResult.STATUS_CANCELED);
                         }
                     } while (mResponse.needMoreData());
 
@@ -141,8 +143,11 @@ public class MFiTransport {
                         } catch (InterruptedException ex) {
                             // ignore.
                         }
-                        mCommand = null;
-                        return mResponse.copyInstance();
+                        IncredistResult result = command.parseResponse(mResponse.copyInstance());
+                        if (result.status != IncredistResult.STATUS_CONTINUE_MULTIPLE_RESPONSE) {
+                            mCommand = null;
+                            return result;
+                        }
                     }
                 }
             } catch (InterruptedException ex) {
@@ -157,7 +162,7 @@ public class MFiTransport {
             }
 
             mCommand = null;
-            return new MFiInvalidResponse(IncredistResult.STATUS_TIMEOUT);
+            return new IncredistResult(IncredistResult.STATUS_TIMEOUT);
         }
 
         try {
@@ -167,7 +172,7 @@ public class MFiTransport {
         }
 
         mCommand = null;
-        return new MFiNoResponse();
+        return new IncredistResult(IncredistResult.STATUS_INVALID_RESPONSE);
     }
 
     /**

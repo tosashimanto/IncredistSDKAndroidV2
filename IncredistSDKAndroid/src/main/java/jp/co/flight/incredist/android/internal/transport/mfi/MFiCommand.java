@@ -97,9 +97,14 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
         // do nothing for default.
     }
 
-    protected void onCommonCancelled(MFiTransport transport) {
-        MFiCommand command = new MFiStopCommand();
-        command.parseMFiResponse(transport.sendCommand(command));
+    /**
+     * 通常のコマンドのキャンセル処理
+     * sコマンドを送信
+     *
+     * @param transport 送信する MFiTransport オブジェクト
+     */
+    protected final void onCommonCancelled(MFiTransport transport) {
+        transport.sendCommand(new MFiStopCommand());
     }
 
     /**

@@ -9,6 +9,7 @@ import jp.co.flight.incredist.android.internal.controller.result.MagCardResult;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiResponse;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
+import jp.co.flight.incredist.android.internal.util.BytesUtils;
 import jp.co.flight.incredist.android.model.MagCard;
 
 /**
@@ -45,20 +46,6 @@ public class MFiScanMagneticCard2Command extends MFiCommand {
         onCommonCancelled(transport);
     }
 
-    private static boolean byteStartsWith(byte[] data, byte[] prefix) {
-        if (data == null || prefix == null || data.length < prefix.length) {
-            return false;
-        }
-
-        for (int i = 0; i < prefix.length; i++) {
-            if (data[i] != prefix[i]) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     @NonNull
     @Override
     protected IncredistResult parseMFiResponse(MFiResponse response) {
@@ -79,21 +66,21 @@ public class MFiScanMagneticCard2Command extends MFiCommand {
                 byte[] track1 = Arrays.copyOfRange(data, start, start + track1Length);
                 start += track1Length;
 
-                if (byteStartsWith(track1, MJ2_T1X_ERROR)) {
+                if (BytesUtils.startsWith(track1, MJ2_T1X_ERROR)) {
                     return new IncredistResult(IncredistResult.STATUS_MAG_TRACK_ERROR);
                 }
 
                 byte[] track2 = Arrays.copyOfRange(data, start, start + track2Length);
                 start += track2Length;
 
-                if (byteStartsWith(track2, MJ2_T2X_ERROR)) {
+                if (BytesUtils.startsWith(track2, MJ2_T2X_ERROR)) {
                     return new IncredistResult(IncredistResult.STATUS_MAG_TRACK_ERROR);
                 }
 
                 byte[] track3 = Arrays.copyOfRange(data, start, start + track3Length);
                 start += track3Length;
 
-                if (byteStartsWith(track3, MJ2_T3X_ERROR)) {
+                if (BytesUtils.startsWith(track3, MJ2_T3X_ERROR)) {
                     return new IncredistResult(IncredistResult.STATUS_MAG_TRACK_ERROR);
                 }
 

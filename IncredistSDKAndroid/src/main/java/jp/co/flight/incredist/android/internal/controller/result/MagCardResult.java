@@ -18,4 +18,8 @@ public class MagCardResult extends IncredistResult {
     public MagCardResult() {
         super(IncredistResult.STATUS_SUCCESS);
     }
+
+    public MagCard toMagCard() {
+        return new MagCard(cardType, ksn, track1, track2, maskedCardNo, expirationDate, serviceCode, cardHolderName);
+    }
 }

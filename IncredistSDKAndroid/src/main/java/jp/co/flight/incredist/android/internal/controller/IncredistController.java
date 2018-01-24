@@ -6,10 +6,13 @@ import android.os.Looper;
 import android.support.annotation.Nullable;
 
 import java.util.Calendar;
+import java.util.EnumSet;
 import java.util.concurrent.CountDownLatch;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
+import jp.co.flight.incredist.android.model.CreditCardType;
+import jp.co.flight.incredist.android.model.EmvTagType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.PinEntry;
@@ -235,6 +238,19 @@ public class IncredistController {
      */
     public void scanMagneticCard(long timeout, Callback callback) {
         mProtoController.scanMagneticCard(timeout, callback);
+    }
+
+    /**
+     * 決済用にクレジットカード(EMV 接触・非接触 と磁気カード)を読み取ります
+     *
+     * @param cardTypeSet カード種別
+     * @param amount 決済金額
+     * @param tagType タグ種別
+     * @param timeout タイムアウト時間(msec)
+     * @param callback コールバック
+     */
+    public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout, Callback callback) {
+        mProtoController.scanCreditCard(cardTypeSet, amount, tagType, timeout, callback);
     }
 
     /**

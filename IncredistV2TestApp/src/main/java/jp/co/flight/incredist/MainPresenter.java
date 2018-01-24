@@ -9,11 +9,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 
 import jp.co.flight.incredist.android.IncredistV2TestApp.BuildConfig;
 import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
+import jp.co.flight.incredist.android.model.CreditCardType;
+import jp.co.flight.incredist.android.model.EmvTagType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.model.IncredistModel;
@@ -70,6 +73,10 @@ public interface MainPresenter {
     void setLedColor(LedColor color, boolean isOn);
 
     void onSdm();
+
+    void onCredit();
+
+    void scanCreditCard(EnumSet<CreditCardType> cardType, long amount, EmvTagType tagType);
 
     void setEncryptionMode(EncryptionMode mode);
 
@@ -326,6 +333,24 @@ public interface MainPresenter {
         public void onSdm() {
             addLog("sdm setting");
             mFragment.showEncryptSettingDialog();
+        }
+
+        @Override
+        public void onCredit() {
+            addLog("credit setting");
+            mFragment.showCreditSettingDialog();
+        }
+
+        @Override
+        public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType) {
+            addLog("credit");
+            mIncredist.scanCreditCard(cardTypeSet, amount, tagType, 20000, (result) -> {
+                addLog("credit emvsuccess");
+            }, (magResult) -> {
+                addLog("credit magsuccess");
+            }, errorCode -> {
+                addLog(String.format(Locale.JAPANESE, "credit failure %d", errorCode));
+            });
         }
 
         @Override

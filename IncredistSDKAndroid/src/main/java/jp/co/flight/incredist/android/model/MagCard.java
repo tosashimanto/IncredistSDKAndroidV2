@@ -1,9 +1,10 @@
 package jp.co.flight.incredist.android.model;
 
-import jp.co.flight.incredist.android.internal.controller.result.MagCardResult;
-
 /**
  * 磁気カード読み取りデータ
+ *
+ * JIS1 の場合は　track1 のみが有効で track2 は存在しないので null が返却されます
+ * JIS2 の場合は MaskedCardNo, ExpirationDate, ServiceCode, CardHolderName は存在しないので null が返却されます
  */
 public class MagCard {
     public enum Type {
@@ -32,15 +33,15 @@ public class MagCard {
     private String mServiceCode;
     private String mCardHolderName;
 
-    public MagCard(MagCardResult result) {
-        mCardType = result.cardType;
-        mKsn = result.ksn;
-        mTrack1 = result.track1;
-        mTrack2 = result.track2;
-        mMaskedCardNo = result.maskedCardNo;
-        mExpirationDate = result.expirationDate;
-        mServiceCode = result.serviceCode;
-        mCardHolderName = result.cardHolderName;
+    public MagCard(Type cardType, byte[] ksn, byte[] track1, byte[] track2, String maskedCardNo, String expirationDate, String serviceCode, String cardHolderName) {
+        mCardType = cardType;
+        mKsn = ksn;
+        mTrack1 = track1;
+        mTrack2 = track2;
+        mMaskedCardNo = maskedCardNo;
+        mExpirationDate = expirationDate;
+        mServiceCode = serviceCode;
+        mCardHolderName = cardHolderName;
     }
 
     protected MagCard(MagCard magCard) {

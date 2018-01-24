@@ -8,6 +8,7 @@ import android.databinding.Observable;
 import android.preference.PreferenceManager;
 
 import java.util.Calendar;
+import java.util.EnumSet;
 import java.util.List;
 
 import jp.co.flight.incredist.android.Incredist;
@@ -16,10 +17,14 @@ import jp.co.flight.incredist.android.IncredistV2TestApp.BR;
 import jp.co.flight.incredist.android.OnFailureFunction;
 import jp.co.flight.incredist.android.OnSuccessFunction;
 import jp.co.flight.incredist.android.OnSuccessVoidFunction;
+import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.DeviceInfo;
+import jp.co.flight.incredist.android.model.EmvPacket;
+import jp.co.flight.incredist.android.model.EmvTagType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
 import jp.co.flight.incredist.android.model.LedColor;
+import jp.co.flight.incredist.android.model.MagCard;
 import jp.co.flight.incredist.android.model.PinEntry;
 
 /**
@@ -58,6 +63,8 @@ public interface IncredistModel extends Observable {
     void pinEntryD(PinEntryDParam setting, OnSuccessFunction<PinEntry.Result> success, OnFailureFunction failure);
 
     void setLedColor(LedColor color, boolean isOn, OnSuccessVoidFunction success, OnFailureFunction failure);
+
+    void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout, OnSuccessFunction<EmvPacket> emvSuccess, OnSuccessFunction<MagCard> magSuccess, OnFailureFunction failure);
 
     void rtcGetTime(OnSuccessFunction<Calendar> success, OnFailureFunction failure);
 
@@ -275,6 +282,18 @@ public interface IncredistModel extends Observable {
         public void setLedColor(LedColor color, boolean isOn, OnSuccessVoidFunction success, OnFailureFunction failure) {
             if (mIncredist != null) {
                 mIncredist.setLedColor(color, isOn, success, failure);
+            } else {
+                failure.onFailure(-1);
+            }
+        }
+
+        @Override
+        public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout,
+                                   OnSuccessFunction<EmvPacket> emvSuccess,
+                                   OnSuccessFunction<MagCard> magSuccess,
+                                   OnFailureFunction failure) {
+            if (mIncredist != null) {
+                mIncredist.scanCreditCard(cardTypeSet, amount, tagType, timeout, emvSuccess, magSuccess, failure);
             } else {
                 failure.onFailure(-1);
             }
