@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.Calendar;
+import java.util.EnumSet;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.command.MFiDeviceInfoCommand;
@@ -159,15 +160,15 @@ public class IncredistMFiController implements IncredistProtocolController {
     /**
      * 決済用にクレジットカード(EMV 接触・非接触 と磁気カード)を読み取ります
      *
-     * @param cardType カード種別
+     * @param cardTypeSet カード種別
      * @param amount 決済金額
      * @param tagType タグ種別
      * @param timeout タイムアウト時間(msec)
      * @param callback コールバック
      */
     @Override
-    public void scanCreditCard(CreditCardType cardType, long amount, EmvTagType tagType, long timeout, IncredistController.Callback callback) {
-        postMFiCommand(new MFiScanCreditCardCommand(cardType, amount, tagType, timeout), callback);
+    public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout, IncredistController.Callback callback) {
+        postMFiCommand(new MFiScanCreditCardCommand(cardTypeSet, amount, tagType, timeout), callback);
     }
 
     /**

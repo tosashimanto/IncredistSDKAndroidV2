@@ -1,0 +1,120 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="jp.co.flight.incredist.CreditPaymentSettingDialogFragment">
+
+    <data>
+        <import type="jp.co.flight.incredist.android.model.EmvTagType" />
+        <import type="jp.co.flight.incredist.android.model.CreditCardType" />
+
+        <variable
+            name="viewModel"
+            type="jp.co.flight.incredist.CreditPaymentSettingDialogFragment.ViewModel" />
+        <variable
+            name="fragment"
+            type="jp.co.flight.incredist.CreditPaymentSettingDialogFragment" />
+
+    </data>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <CheckBox
+            android:id="@+id/check_card_type_msr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:text="MSR"
+            app:enumSet="@={viewModel.mCardTypeSet}"
+            android:tag="@{CreditCardType.MSR}"
+            app:layout_constraintBottom_toTopOf="@+id/check_card_type_contact_emv"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <CheckBox
+            android:id="@+id/check_card_type_contact_emv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:text="ContactEMV"
+            app:enumSet="@={viewModel.mCardTypeSet}"
+            android:tag="@{CreditCardType.ContactEMV}"
+            app:layout_constraintBottom_toTopOf="@+id/check_card_type_contactless_emv"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/check_card_type_msr" />
+
+        <CheckBox
+            android:id="@+id/check_card_type_contactless_emv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:text="ContactlessEMV"
+            app:enumSet="@={viewModel.mCardTypeSet}"
+            android:tag="@{CreditCardType.ContactlessEMV}"
+            app:layout_constraintBottom_toTopOf="@+id/label_amount"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/check_card_type_contact_emv" />
+
+        <TextView
+            android:id="@+id/label_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="Amount"
+            app:layout_constraintBottom_toTopOf="@+id/radio_group_tag_type"
+            app:layout_constraintEnd_toStartOf="@+id/edit_amount"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/check_card_type_contactless_emv" />
+
+        <EditText
+            android:id="@+id/edit_amount"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintBottom_toBottomOf="@+id/label_amount"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/label_amount"
+            app:layout_constraintTop_toTopOf="@+id/label_amount" />
+
+        <RadioGroup
+            android:id="@+id/radio_group_tag_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checkedButton="@={viewModel.mTagType}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/label_amount">
+
+            <RadioButton
+                android:id="@+id/radio_all_tag"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:text="AllTag"
+                android:tag="@{EmvTagType.AllTag}"/>
+
+            <RadioButton
+                android:id="@+id/radio_only_tag_57"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:text="OnlyTag57"
+                android:tag="@{EmvTagType.OnlyTag57}"/>
+
+        </RadioGroup>
+
+    </android.support.constraint.ConstraintLayout>
+</layout>

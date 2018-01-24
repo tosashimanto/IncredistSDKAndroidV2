@@ -3,6 +3,7 @@ package jp.co.flight.incredist.android;
 import android.support.annotation.Nullable;
 
 import java.util.Calendar;
+import java.util.EnumSet;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.IncredistController;
@@ -247,7 +248,7 @@ public class Incredist {
         mController.scanMagneticCard(timeout, result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof MagCardResult) {
                 if (success != null) {
-                    success.onSuccess(new MagCard((MagCardResult) result));
+                    success.onSuccess(((MagCardResult) result).toMagCard());
                 }
             } else {
                 if (failure != null) {
@@ -260,18 +261,28 @@ public class Incredist {
     /**
      * 決済処理を実行します
      *
-     * @param cardType カード種別
-     * @param amount 決済金額
-     * @param tagType 暗号化タグ種別
-     * @param timeout タイムアウト時間(msec)
-     * @param success 決済成功時処理
-     * @param failure 決済失敗時処理　// TODO コールバックインタフェースを専用に作る方がよいかも
+     * @param cardTypeSet カード種別
+     * @param amount   決済金額
+     * @param tagType  暗号化タグ種別(カード種別が MSR の場合は AllTag を指定する必要がある)
+     * @param timeout  タイムアウト時間(msec)
+     * @param emvSuccess  ICカード決済成功時処理
+     * @param magSuccess  磁気カード決済成功時処理
+     * @param failure  決済失敗時処理　// TODO コールバックインタフェースを専用に作る方がよいかも
      */
-    public void scanCreditCard(CreditCardType cardType, long amount, EmvTagType tagType, long timeout, @Nullable OnSuccessFunction<EmvPacket> success, @Nullable OnFailureFunction failure) {
-        mController.scanCreditCard(cardType, amount, tagType, timeout, result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof EmvResult) {
-                if (success != null) {
-                    success.onSuccess(((EmvResult) result).toEmvPacket());
+    public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout,
+                               @Nullable OnSuccessFunction<EmvPacket> emvSuccess,
+                               @Nullable OnSuccessFunction<MagCard> magSuccess,
+                               @Nullable OnFailureFunction failure) {
+        mController.scanCreditCard(cardTypeSet, amount, tagType, timeout, result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                if (result instanceof EmvResult) {
+                    if (emvSuccess != null) {
+                        emvSuccess.onSuccess(((EmvResult) result).toEmvPacket());
+                    }
+                } else if (result instanceof MagCardResult) {
+                    if (magSuccess != null) {
+                        magSuccess.onSuccess(((MagCardResult) result).toMagCard());
+                    }
                 }
             } else {
                 if (failure != null) {
@@ -421,7 +432,7 @@ public class Incredist {
     /**
      * Incredist に時刻を設定します
      *
-     * @param cal 設定時刻
+     * @param cal     設定時刻
      * @param success 設定成功時処理
      * @param failure 設定失敗時処理
      */

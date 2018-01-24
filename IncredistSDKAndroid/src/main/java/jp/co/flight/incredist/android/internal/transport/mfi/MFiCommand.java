@@ -108,27 +108,6 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
     }
 
     /**
-     * 受信データの先頭が prefix と一致するかどうかチェックする
-     *
-     * @param data 受信データ
-     * @param prefix 先頭一致でのチェックデータ
-     * @return data が prefix で始まっている場合 true, そうではない場合 false
-     */
-    protected static boolean byteStartsWith(byte[] data, byte[] prefix) {
-        if (data == null || prefix == null || data.length < prefix.length) {
-            return false;
-        }
-
-        for (int i = 0; i < prefix.length; i++) {
-            if (data[i] != prefix[i]) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
      * 処理後のウェイト時間.
      *
      * @return デフォルト値(100msec)

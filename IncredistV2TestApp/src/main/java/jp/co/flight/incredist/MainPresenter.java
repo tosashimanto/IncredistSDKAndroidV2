@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 
@@ -74,6 +75,8 @@ public interface MainPresenter {
     void onSdm();
 
     void onCredit();
+
+    void scanCreditCard(EnumSet<CreditCardType> cardType, long amount, EmvTagType tagType);
 
     void setEncryptionMode(EncryptionMode mode);
 
@@ -334,9 +337,17 @@ public interface MainPresenter {
 
         @Override
         public void onCredit() {
+            addLog("credit setting");
+            mFragment.showCreditSettingDialog();
+        }
+
+        @Override
+        public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType) {
             addLog("credit");
-            mIncredist.scanCreditCard(CreditCardType.ContactEMV, 1000, EmvTagType.OnlyTag57, 20000, (result) -> {
-                addLog("credit success");
+            mIncredist.scanCreditCard(cardTypeSet, amount, tagType, 20000, (result) -> {
+                addLog("credit emvsuccess");
+            }, (magResult) -> {
+                addLog("credit magsuccess");
             }, errorCode -> {
                 addLog(String.format(Locale.JAPANESE, "credit failure %d", errorCode));
             });

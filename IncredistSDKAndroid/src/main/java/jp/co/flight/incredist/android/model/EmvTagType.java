@@ -2,6 +2,8 @@ package jp.co.flight.incredist.android.model;
 
 /**
  * EMV カーネルに指定する暗号化 TagType
+ *
+ * scanCreditCard のパラメータに指定する際、CreditCardType.MSR を指定する場合は AllTag を指定する必要がある
  */
 public enum EmvTagType {
     // CHECKSTYLE:OFF MagicNumber

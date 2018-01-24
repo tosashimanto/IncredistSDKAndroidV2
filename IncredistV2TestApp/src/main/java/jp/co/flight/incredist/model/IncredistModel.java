@@ -8,6 +8,7 @@ import android.databinding.Observable;
 import android.preference.PreferenceManager;
 
 import java.util.Calendar;
+import java.util.EnumSet;
 import java.util.List;
 
 import jp.co.flight.incredist.android.Incredist;
@@ -23,6 +24,7 @@ import jp.co.flight.incredist.android.model.EmvTagType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
 import jp.co.flight.incredist.android.model.LedColor;
+import jp.co.flight.incredist.android.model.MagCard;
 import jp.co.flight.incredist.android.model.PinEntry;
 
 /**
@@ -62,7 +64,7 @@ public interface IncredistModel extends Observable {
 
     void setLedColor(LedColor color, boolean isOn, OnSuccessVoidFunction success, OnFailureFunction failure);
 
-    void scanCreditCard(CreditCardType cardType, long amount, EmvTagType tagType, long timeout, OnSuccessFunction<EmvPacket> success, OnFailureFunction failure);
+    void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout, OnSuccessFunction<EmvPacket> emvSuccess, OnSuccessFunction<MagCard> magSuccess, OnFailureFunction failure);
 
     void rtcGetTime(OnSuccessFunction<Calendar> success, OnFailureFunction failure);
 
@@ -286,9 +288,12 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
-        public void scanCreditCard(CreditCardType cardType, long amount, EmvTagType tagType, long timeout, OnSuccessFunction<EmvPacket> success, OnFailureFunction failure) {
+        public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout,
+                                   OnSuccessFunction<EmvPacket> emvSuccess,
+                                   OnSuccessFunction<MagCard> magSuccess,
+                                   OnFailureFunction failure) {
             if (mIncredist != null) {
-                mIncredist.scanCreditCard(cardType, amount, tagType, timeout, success, failure);
+                mIncredist.scanCreditCard(cardTypeSet, amount, tagType, timeout, emvSuccess, magSuccess, failure);
             } else {
                 failure.onFailure(-1);
             }

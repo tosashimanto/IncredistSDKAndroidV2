@@ -6,6 +6,7 @@ import android.os.Looper;
 import android.support.annotation.Nullable;
 
 import java.util.Calendar;
+import java.util.EnumSet;
 import java.util.concurrent.CountDownLatch;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
@@ -242,14 +243,14 @@ public class IncredistController {
     /**
      * 決済用にクレジットカード(EMV 接触・非接触 と磁気カード)を読み取ります
      *
-     * @param cardType カード種別
+     * @param cardTypeSet カード種別
      * @param amount 決済金額
      * @param tagType タグ種別
      * @param timeout タイムアウト時間(msec)
      * @param callback コールバック
      */
-    public void scanCreditCard(CreditCardType cardType, long amount, EmvTagType tagType, long timeout, Callback callback) {
-        mProtoController.scanCreditCard(cardType, amount, tagType, timeout, callback);
+    public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout, Callback callback) {
+        mProtoController.scanCreditCard(cardTypeSet, amount, tagType, timeout, callback);
     }
 
     /**

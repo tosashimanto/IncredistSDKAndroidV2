@@ -7,22 +7,22 @@ import android.widget.TextView;
 import java.util.Locale;
 
 /**
- * int 値を入力するための BindingAdapter
+ * long 値を入力するための BindingAdapter
  */
-public class IntegerTextViewBindingAdapter {
-    private IntegerTextViewBindingAdapter() {}
+public class LongIntegerTextViewBindingAdapter {
+    private LongIntegerTextViewBindingAdapter() {}
 
     @BindingAdapter("android:text")
-    public static void setTextByte(TextView textView, int value) {
+    public static void setTextByte(TextView textView, long value) {
         textView.setText(String.format(Locale.JAPANESE, "%d", value));
     }
 
     @InverseBindingAdapter(attribute = "android:text")
-    public static int getByte(TextView textView) {
+    public static long getLong(TextView textView) {
         try {
-            return Integer.parseInt(textView.getText().toString());
+            return Long.parseLong(textView.getText().toString());
         } catch (NumberFormatException ex) {
-            return (byte) 0;
+            return 0;
         }
     }
 }

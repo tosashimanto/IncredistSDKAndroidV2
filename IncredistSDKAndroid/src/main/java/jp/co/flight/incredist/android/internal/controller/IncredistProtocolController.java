@@ -3,6 +3,7 @@ package jp.co.flight.incredist.android.internal.controller;
 import android.support.annotation.Nullable;
 
 import java.util.Calendar;
+import java.util.EnumSet;
 
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.EmvTagType;
@@ -81,13 +82,13 @@ interface IncredistProtocolController {
     /**
      * 決済用にクレジットカード(EMV 接触・非接触 と磁気カード)を読み取ります
      *
-     * @param cardType カード種別
+     * @param cardTypeSet カード種別
      * @param amount 決済金額
      * @param tagType タグ種別
      * @param timeout タイムアウト時間(msec)
      * @param callback コールバック
      */
-    void scanCreditCard(CreditCardType cardType, long amount, EmvTagType tagType, long timeout, IncredistController.Callback callback);
+    void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout, IncredistController.Callback callback);
 
     /**
      * LED色を設定します。
