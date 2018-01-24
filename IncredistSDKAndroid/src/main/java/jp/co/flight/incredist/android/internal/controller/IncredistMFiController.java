@@ -15,6 +15,7 @@ import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaOpenW
 import jp.co.flight.incredist.android.internal.controller.command.MFiFelicaSendCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiGetRealTimeCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiPinEntryDCommand;
+import jp.co.flight.incredist.android.internal.controller.command.MFiScanCreditCardCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiScanMagneticCard2Command;
 import jp.co.flight.incredist.android.internal.controller.command.MFiSetEncryptionModeCommand;
 import jp.co.flight.incredist.android.internal.controller.command.MFiSetLedColorCommand;
@@ -25,6 +26,8 @@ import jp.co.flight.incredist.android.internal.controller.result.IncredistResult
 import jp.co.flight.incredist.android.internal.exception.ParameterException;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
+import jp.co.flight.incredist.android.model.CreditCardType;
+import jp.co.flight.incredist.android.model.EmvTagType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.PinEntry;
@@ -57,7 +60,7 @@ public class IncredistMFiController implements IncredistProtocolController {
      */
     private void postMFiCommand(final MFiCommand command, final IncredistController.Callback callback) {
         mController.postCommand(() -> {
-            final IncredistResult result = command.parseResponse(mMFiTransport.sendCommand(command));
+            final IncredistResult result = mMFiTransport.sendCommand(command);
 
             if (result.status == IncredistResult.STATUS_CANCELED && command.cancelable()) {
                 command.onCancelled(mMFiTransport);
@@ -151,6 +154,20 @@ public class IncredistMFiController implements IncredistProtocolController {
     @Override
     public void scanMagneticCard(long timeout, IncredistController.Callback callback) {
         postMFiCommand(new MFiScanMagneticCard2Command(timeout), callback);
+    }
+
+    /**
+     * 決済用にクレジットカード(EMV 接触・非接触 と磁気カード)を読み取ります
+     *
+     * @param cardType カード種別
+     * @param amount 決済金額
+     * @param tagType タグ種別
+     * @param timeout タイムアウト時間(msec)
+     * @param callback コールバック
+     */
+    @Override
+    public void scanCreditCard(CreditCardType cardType, long amount, EmvTagType tagType, long timeout, IncredistController.Callback callback) {
+        postMFiCommand(new MFiScanCreditCardCommand(cardType, amount, tagType, timeout), callback);
     }
 
     /**

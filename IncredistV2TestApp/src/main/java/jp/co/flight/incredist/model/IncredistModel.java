@@ -16,7 +16,10 @@ import jp.co.flight.incredist.android.IncredistV2TestApp.BR;
 import jp.co.flight.incredist.android.OnFailureFunction;
 import jp.co.flight.incredist.android.OnSuccessFunction;
 import jp.co.flight.incredist.android.OnSuccessVoidFunction;
+import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.DeviceInfo;
+import jp.co.flight.incredist.android.model.EmvPacket;
+import jp.co.flight.incredist.android.model.EmvTagType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
 import jp.co.flight.incredist.android.model.LedColor;
@@ -58,6 +61,8 @@ public interface IncredistModel extends Observable {
     void pinEntryD(PinEntryDParam setting, OnSuccessFunction<PinEntry.Result> success, OnFailureFunction failure);
 
     void setLedColor(LedColor color, boolean isOn, OnSuccessVoidFunction success, OnFailureFunction failure);
+
+    void scanCreditCard(CreditCardType cardType, long amount, EmvTagType tagType, long timeout, OnSuccessFunction<EmvPacket> success, OnFailureFunction failure);
 
     void rtcGetTime(OnSuccessFunction<Calendar> success, OnFailureFunction failure);
 
@@ -275,6 +280,15 @@ public interface IncredistModel extends Observable {
         public void setLedColor(LedColor color, boolean isOn, OnSuccessVoidFunction success, OnFailureFunction failure) {
             if (mIncredist != null) {
                 mIncredist.setLedColor(color, isOn, success, failure);
+            } else {
+                failure.onFailure(-1);
+            }
+        }
+
+        @Override
+        public void scanCreditCard(CreditCardType cardType, long amount, EmvTagType tagType, long timeout, OnSuccessFunction<EmvPacket> success, OnFailureFunction failure) {
+            if (mIncredist != null) {
+                mIncredist.scanCreditCard(cardType, amount, tagType, timeout, success, failure);
             } else {
                 failure.onFailure(-1);
             }

@@ -14,6 +14,8 @@ import java.util.Locale;
 
 import jp.co.flight.incredist.android.IncredistV2TestApp.BuildConfig;
 import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
+import jp.co.flight.incredist.android.model.CreditCardType;
+import jp.co.flight.incredist.android.model.EmvTagType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.model.IncredistModel;
@@ -70,6 +72,8 @@ public interface MainPresenter {
     void setLedColor(LedColor color, boolean isOn);
 
     void onSdm();
+
+    void onCredit();
 
     void setEncryptionMode(EncryptionMode mode);
 
@@ -326,6 +330,16 @@ public interface MainPresenter {
         public void onSdm() {
             addLog("sdm setting");
             mFragment.showEncryptSettingDialog();
+        }
+
+        @Override
+        public void onCredit() {
+            addLog("credit");
+            mIncredist.scanCreditCard(CreditCardType.ContactEMV, 1000, EmvTagType.OnlyTag57, 20000, (result) -> {
+                addLog("credit success");
+            }, errorCode -> {
+                addLog(String.format(Locale.JAPANESE, "credit failure %d", errorCode));
+            });
         }
 
         @Override

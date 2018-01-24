@@ -45,20 +45,6 @@ public class MFiScanMagneticCard2Command extends MFiCommand {
         onCommonCancelled(transport);
     }
 
-    private static boolean byteStartsWith(byte[] data, byte[] prefix) {
-        if (data == null || prefix == null || data.length < prefix.length) {
-            return false;
-        }
-
-        for (int i = 0; i < prefix.length; i++) {
-            if (data[i] != prefix[i]) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     @NonNull
     @Override
     protected IncredistResult parseMFiResponse(MFiResponse response) {

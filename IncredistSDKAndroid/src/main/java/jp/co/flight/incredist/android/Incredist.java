@@ -7,11 +7,15 @@ import java.util.Calendar;
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.IncredistController;
 import jp.co.flight.incredist.android.internal.controller.result.DeviceInfoResult;
+import jp.co.flight.incredist.android.internal.controller.result.EmvResult;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.controller.result.MagCardResult;
 import jp.co.flight.incredist.android.internal.controller.result.PinEntryResult;
 import jp.co.flight.incredist.android.internal.controller.result.RtcResult;
+import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.DeviceInfo;
+import jp.co.flight.incredist.android.model.EmvPacket;
+import jp.co.flight.incredist.android.model.EmvTagType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
 import jp.co.flight.incredist.android.model.LedColor;
@@ -244,6 +248,30 @@ public class Incredist {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof MagCardResult) {
                 if (success != null) {
                     success.onSuccess(new MagCard((MagCardResult) result));
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
+     * 決済処理を実行します
+     *
+     * @param cardType カード種別
+     * @param amount 決済金額
+     * @param tagType 暗号化タグ種別
+     * @param timeout タイムアウト時間(msec)
+     * @param success 決済成功時処理
+     * @param failure 決済失敗時処理　// TODO コールバックインタフェースを専用に作る方がよいかも
+     */
+    public void scanCreditCard(CreditCardType cardType, long amount, EmvTagType tagType, long timeout, @Nullable OnSuccessFunction<EmvPacket> success, @Nullable OnFailureFunction failure) {
+        mController.scanCreditCard(cardType, amount, tagType, timeout, result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof EmvResult) {
+                if (success != null) {
+                    success.onSuccess(((EmvResult) result).toEmvPacket());
                 }
             } else {
                 if (failure != null) {

@@ -284,7 +284,7 @@
                     android:layout_marginStart="8dp"
                     android:onClick="@{(view)->presenter.onEmvMessage()}"
                     android:text="EMV Msg"
-                    app:layout_constraintBottom_toTopOf="@+id/label_mag"
+                    app:layout_constraintBottom_toTopOf="@+id/label_credit"
                     app:layout_constraintEnd_toStartOf="@+id/button_tfp_message"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/label_message" />
@@ -312,6 +312,31 @@
                     app:layout_constraintStart_toEndOf="@+id/button_tfp_message"
                     app:layout_constraintTop_toTopOf="@+id/button_emv_message" />
 
+                <!-- credit -->
+                <android.support.v7.widget.AppCompatTextView
+                    android:id="@+id/label_credit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/colorHeaderBackground"
+                    android:text="Credit"
+                    app:layout_constraintBottom_toTopOf="@+id/button_credit"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/button_emv_message" />
+
+                <Button
+                    android:id="@+id/button_credit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:onClick="@{(view)->presenter.onCredit()}"
+                    android:text="Credit"
+                    app:layout_constraintBottom_toTopOf="@+id/label_mag"
+                    app:layout_constraintEnd_toStartOf="@+id/button_mag_mj2"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/label_credit" />
+
+                <!-- mag / pin -->
                 <android.support.v7.widget.AppCompatTextView
                     android:id="@+id/label_mag"
                     android:layout_width="match_parent"
@@ -321,7 +346,7 @@
                     app:layout_constraintBottom_toTopOf="@+id/button_sdm"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/button_emv_message" />
+                    app:layout_constraintTop_toBottomOf="@+id/button_credit" />
 
                 <Button
                     android:id="@+id/button_sdm"
@@ -357,7 +382,7 @@
                     app:layout_constraintStart_toEndOf="@+id/button_mag_mj2"
                     app:layout_constraintTop_toTopOf="@+id/button_sdm" />
 
-                <!-- auto -->
+                <!-- rtc -->
                 <android.support.v7.widget.AppCompatTextView
                     android:id="@+id/label_rtc"
                     android:layout_width="match_parent"

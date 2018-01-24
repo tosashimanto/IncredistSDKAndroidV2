@@ -32,6 +32,7 @@ public class MagCard {
     private String mServiceCode;
     private String mCardHolderName;
 
+    //TODO MagCardResult.toMagCard に書き直す
     public MagCard(MagCardResult result) {
         mCardType = result.cardType;
         mKsn = result.ksn;

@@ -97,9 +97,35 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
         // do nothing for default.
     }
 
-    protected void onCommonCancelled(MFiTransport transport) {
-        MFiCommand command = new MFiStopCommand();
-        command.parseMFiResponse(transport.sendCommand(command));
+    /**
+     * 通常のコマンドのキャンセル処理
+     * sコマンドを送信
+     *
+     * @param transport 送信する MFiTransport オブジェクト
+     */
+    protected final void onCommonCancelled(MFiTransport transport) {
+        transport.sendCommand(new MFiStopCommand());
+    }
+
+    /**
+     * 受信データの先頭が prefix と一致するかどうかチェックする
+     *
+     * @param data 受信データ
+     * @param prefix 先頭一致でのチェックデータ
+     * @return data が prefix で始まっている場合 true, そうではない場合 false
+     */
+    protected static boolean byteStartsWith(byte[] data, byte[] prefix) {
+        if (data == null || prefix == null || data.length < prefix.length) {
+            return false;
+        }
+
+        for (int i = 0; i < prefix.length; i++) {
+            if (data[i] != prefix[i]) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
