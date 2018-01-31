@@ -27,8 +27,8 @@ public class MFiEmvDisplayMessageCommand extends MFiCommand {
         // CHECKSTYLE:OFF MagicNumber
         byte[] payload = new byte[4 + messageByteSize];
         System.arraycopy(EM_HEADER, 0, payload, 0, EM_HEADER.length);
-        payload[2] = (byte)((type / 10) + '0');
-        payload[3] = (byte)((type % 10) + '0');
+        payload[2] = (byte) ((type / 10) + '0');
+        payload[3] = (byte) ((type % 10) + '0');
 
         if (messageByteSize > 0) {
             System.arraycopy(messageBytes, 0, payload, 4, messageByteSize);

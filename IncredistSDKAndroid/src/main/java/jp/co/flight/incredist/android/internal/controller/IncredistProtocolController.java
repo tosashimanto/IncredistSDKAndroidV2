@@ -33,8 +33,8 @@ interface IncredistProtocolController {
     /**
      * EMV メッセージを表示します
      *
-     * @param type メッセージ番号
-     * @param message メッセージ文字列
+     * @param type     メッセージ番号
+     * @param message  メッセージ文字列
      * @param callback コールバック
      */
     void emvDisplaymessage(int type, @Nullable String message, IncredistController.Callback callback);
@@ -42,8 +42,8 @@ interface IncredistProtocolController {
     /**
      * TFP メッセージを表示します
      *
-     * @param type メッセージ番号
-     * @param message メッセージ文字列
+     * @param type     メッセージ番号
+     * @param message  メッセージ文字列
      * @param callback コールバック
      */
     void tfpDisplaymessage(int type, @Nullable String message, IncredistController.Callback callback);
@@ -51,7 +51,7 @@ interface IncredistProtocolController {
     /**
      * 暗号化モードを設定します
      *
-     * @param mode 暗号化モード
+     * @param mode     暗号化モード
      * @param callback コールバック
      */
     void setEncryptionMode(EncryptionMode mode, IncredistController.Callback callback);
@@ -59,14 +59,14 @@ interface IncredistProtocolController {
     /**
      * PIN入力を行います
      *
-     * @param pinType PIN入力タイプ
-     * @param pinMode PIN暗号化モード
-     * @param mask 表示マスク
-     * @param min 最小桁数
-     * @param max 最大桁数
-     * @param align 表示左右寄せ
-     * @param line 表示行
-     * @param timeout タイムアウト時間(msec)
+     * @param pinType  PIN入力タイプ
+     * @param pinMode  PIN暗号化モード
+     * @param mask     表示マスク
+     * @param min      最小桁数
+     * @param max      最大桁数
+     * @param align    表示左右寄せ
+     * @param line     表示行
+     * @param timeout  タイムアウト時間(msec)
      * @param callback コールバック
      */
     void pinEntryD(PinEntry.Type pinType, PinEntry.Mode pinMode, PinEntry.MaskMode mask, int min, int max, PinEntry.Alignment align, int line, long timeout, IncredistController.Callback callback);
@@ -74,7 +74,7 @@ interface IncredistProtocolController {
     /**
      * 磁気カードを読み取ります
      *
-     * @param timeout タイムアウト時間(msec)
+     * @param timeout  タイムアウト時間(msec)
      * @param callback コールバック
      */
     void scanMagneticCard(long timeout, IncredistController.Callback callback);
@@ -83,17 +83,18 @@ interface IncredistProtocolController {
      * 決済用にクレジットカード(EMV 接触・非接触 と磁気カード)を読み取ります
      *
      * @param cardTypeSet カード種別
-     * @param amount 決済金額
-     * @param tagType タグ種別
-     * @param timeout タイムアウト時間(msec)
-     * @param callback コールバック
+     * @param amount      決済金額
+     * @param tagType     タグ種別
+     * @param timeout     タイムアウト時間(msec)
+     * @param callback    コールバック
      */
     void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout, IncredistController.Callback callback);
 
     /**
      * LED色を設定します。
-     * @param color LED色
-     * @param isOn true: 点灯 false: 消灯
+     *
+     * @param color    LED色
+     * @param isOn     true: 点灯 false: 消灯
      * @param callback コールバック
      */
     void setLedColor(LedColor color, boolean isOn, IncredistController.Callback callback);
@@ -101,7 +102,7 @@ interface IncredistProtocolController {
     /**
      * felica モードを開始します。
      *
-     * @param withLed LED を点灯するかどうか
+     * @param withLed  LED を点灯するかどうか
      * @param callback コールバック
      */
     void felicaOpen(boolean withLed, IncredistController.Callback callback);
@@ -109,14 +110,15 @@ interface IncredistProtocolController {
     /**
      * felica コマンドを送信します.
      *
-     * @param command FeliCaコマンドデータ
+     * @param command  FeliCaコマンドデータ
      * @param callback コールバック
      */
     void felicaSendCommand(byte[] command, IncredistController.Callback callback);
 
     /**
      * felica モード時のLED色を設定します。
-     * @param color LED色
+     *
+     * @param color    LED色
      * @param callback コールバック
      */
     void felicaLedColor(LedColor color, IncredistController.Callback callback);
@@ -138,7 +140,7 @@ interface IncredistProtocolController {
     /**
      * Incredist に時刻を設定します
      *
-     * @param cal 設定時刻
+     * @param cal      設定時刻
      * @param callback コールバック
      */
     void rtcSetTime(Calendar cal, IncredistController.Callback callback);

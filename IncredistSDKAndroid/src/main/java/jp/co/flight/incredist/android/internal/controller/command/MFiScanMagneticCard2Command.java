@@ -16,10 +16,10 @@ import jp.co.flight.incredist.android.model.MagCard;
  * 磁気カード読み取りコマンド(mj2)
  */
 public class MFiScanMagneticCard2Command extends MFiCommand {
-    private static final byte[] MJ2_HEADER = new byte[] {'m', 'j', '2'};
-    private static final byte[] MJ2_T1X_ERROR = new byte[] {'T', '1', 'x'};
-    private static final byte[] MJ2_T2X_ERROR = new byte[] {'T', '2', 'x'};
-    private static final byte[] MJ2_T3X_ERROR = new byte[] {'T', '3', 'x'};
+    private static final byte[] MJ2_HEADER = new byte[]{'m', 'j', '2'};
+    private static final byte[] MJ2_T1X_ERROR = new byte[]{'T', '1', 'x'};
+    private static final byte[] MJ2_T2X_ERROR = new byte[]{'T', '2', 'x'};
+    private static final byte[] MJ2_T3X_ERROR = new byte[]{'T', '3', 'x'};
 
     private static final byte MJ2_CARD_TYPE_JIS1 = 0x63;
     private static final byte MJ2_CARD_TYPE_JIS2 = 0x6a;

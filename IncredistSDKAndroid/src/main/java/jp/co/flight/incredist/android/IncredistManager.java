@@ -413,10 +413,12 @@ public class IncredistManager {
         List<BluetoothPeripheral> peripherals = mCentral.getConnectedPeripherals();
         FLog.i(TAG, String.format(Locale.JAPANESE, "connected peripherals: %d", peripherals.size()));
         for (BluetoothPeripheral peripheral : peripherals) {
-            if (peripheral.getDeviceName().equals(deviceName)) {
+            if (peripheral.getDeviceName() != null && peripheral.getDeviceName().equals(deviceName)) {
                 FLog.i(TAG, String.format("found connected %s", peripheral.getDeviceAddress()));
                 connectInternal(peripheral, connectTimeout, success, failure);
                 return;
+            } else {
+                FLog.i(TAG, String.format("found connected another device %s", peripheral.getDeviceAddress()));
             }
         }
 
@@ -458,6 +460,10 @@ public class IncredistManager {
         mConnectionListener.startConnect(peripheral, timeout, success, failure);
     }
 
+    public void connectToAddress(String address, long timeout, @Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction failure) {
+        BluetoothPeripheral peripheral = new BluetoothPeripheral("add", address);
+        connectInternal(peripheral, timeout, success, failure);
+    }
 
     /**
      * API バージョンを取得します.

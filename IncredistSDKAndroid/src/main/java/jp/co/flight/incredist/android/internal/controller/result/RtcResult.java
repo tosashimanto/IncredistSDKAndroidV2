@@ -11,6 +11,7 @@ public class RtcResult extends IncredistResult {
 
     /**
      * コンストラクタ.
+     *
      * @param calendar 時刻
      */
     public RtcResult(Calendar calendar) {

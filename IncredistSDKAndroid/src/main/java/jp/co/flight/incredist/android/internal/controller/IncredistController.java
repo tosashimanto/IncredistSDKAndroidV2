@@ -184,8 +184,8 @@ public class IncredistController {
     /**
      * EMV メッセージを表示します
      *
-     * @param type メッセージ番号
-     * @param message メッセージ文字列
+     * @param type     メッセージ番号
+     * @param message  メッセージ文字列
      * @param callback コールバック
      */
     public void emvDisplaymessage(int type, @Nullable String message, Callback callback) {
@@ -195,8 +195,8 @@ public class IncredistController {
     /**
      * TFP メッセージを表示します
      *
-     * @param type メッセージ番号
-     * @param message メッセージ文字列
+     * @param type     メッセージ番号
+     * @param message  メッセージ文字列
      * @param callback コールバック
      */
     public void tfpDisplaymessage(int type, @Nullable String message, Callback callback) {
@@ -206,8 +206,8 @@ public class IncredistController {
     /**
      * 暗号化モードを設定します
      *
-     * @param mode 暗号化モード
-     * @param callback コールバック　
+     * @param mode     暗号化モード
+     * @param callback コールバック
      */
     public void setEncryptionMode(EncryptionMode mode, Callback callback) {
         mProtoController.setEncryptionMode(mode, callback);
@@ -216,14 +216,14 @@ public class IncredistController {
     /**
      * PIN 入力を行います
      *
-     * @param pinType PIN入力タイプ
-     * @param pinMode PIN暗号化モード
-     * @param mask 表示マスク
-     * @param min 最小桁数
-     * @param max 最大桁数
-     * @param align 表示左右寄せ
-     * @param line 表示行
-     * @param timeout タイムアウト時間(msec)
+     * @param pinType  PIN入力タイプ
+     * @param pinMode  PIN暗号化モード
+     * @param mask     表示マスク
+     * @param min      最小桁数
+     * @param max      最大桁数
+     * @param align    表示左右寄せ
+     * @param line     表示行
+     * @param timeout  タイムアウト時間(msec)
      * @param callback コールバック
      */
     public void pinEntryD(PinEntry.Type pinType, PinEntry.Mode pinMode, PinEntry.MaskMode mask, int min, int max, PinEntry.Alignment align, int line, long timeout, Callback callback) {
@@ -233,7 +233,7 @@ public class IncredistController {
     /**
      * 磁気カードを読み取ります
      *
-     * @param timeout タイムアウト時間(msec)
+     * @param timeout  タイムアウト時間(msec)
      * @param callback コールバック
      */
     public void scanMagneticCard(long timeout, Callback callback) {
@@ -244,10 +244,10 @@ public class IncredistController {
      * 決済用にクレジットカード(EMV 接触・非接触 と磁気カード)を読み取ります
      *
      * @param cardTypeSet カード種別
-     * @param amount 決済金額
-     * @param tagType タグ種別
-     * @param timeout タイムアウト時間(msec)
-     * @param callback コールバック
+     * @param amount      決済金額
+     * @param tagType     タグ種別
+     * @param timeout     タイムアウト時間(msec)
+     * @param callback    コールバック
      */
     public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout, Callback callback) {
         mProtoController.scanCreditCard(cardTypeSet, amount, tagType, timeout, callback);
@@ -256,8 +256,8 @@ public class IncredistController {
     /**
      * LED色を設定します。
      *
-     * @param color LED色
-     * @param isOn true: 点灯 false: 消灯
+     * @param color    LED色
+     * @param isOn     true: 点灯 false: 消灯
      * @param callback コールバック
      */
     public void setLedColor(LedColor color, boolean isOn, IncredistController.Callback callback) {
@@ -276,7 +276,7 @@ public class IncredistController {
     /**
      * felica コマンドを送信します.
      *
-     * @param command コマンド
+     * @param command  コマンド
      * @param callback コールバック
      */
     public void felicaSendCommand(byte[] command, IncredistController.Callback callback) {
@@ -286,7 +286,7 @@ public class IncredistController {
     /**
      * felica モード時のLED色を設定します。
      *
-     * @param color LED色
+     * @param color    LED色
      * @param callback コールバック
      */
     public void felicaLedColor(LedColor color, IncredistController.Callback callback) {
@@ -314,7 +314,7 @@ public class IncredistController {
     /**
      * Incredist に時刻を設定します
      *
-     * @param cal 設定時刻
+     * @param cal      設定時刻
      * @param callback コールバック
      */
     public void rtcSetTime(Calendar cal, IncredistController.Callback callback) {
@@ -366,6 +366,13 @@ public class IncredistController {
      */
     public void close() {
         mConnection.close();
+    }
+
+    /**
+     * Incredist との接続を close します
+     */
+    public void refreshAndClose() {
+        mConnection.refreshAndClose();
     }
 
     /**

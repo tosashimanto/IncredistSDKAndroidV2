@@ -10,7 +10,7 @@ public class PinEntryResult extends IncredistResult {
     /**
      * コンストラクタ
      *
-     * @param ksn KSN
+     * @param ksn     KSN
      * @param pinData PIN入力データ
      */
     public PinEntryResult(byte[] ksn, byte[] pinData) {

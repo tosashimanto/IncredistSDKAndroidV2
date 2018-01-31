@@ -11,6 +11,8 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -26,12 +28,6 @@ import jp.co.flight.incredist.android.internal.util.FLog;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class BluetoothGattConnection {
     private static final String TAG = "BluetoothGattConnection";
-
-    public static final int ERROR_REGISTER_NOTIFICATION = 4797;
-    public static final int ERROR_REGISTER_NOTIFICATION_TIMEOUT = 4798;
-    public static final int ERROR_REGISTER_NOTIFICATION_INTERRUPTED = 4799;
-    public static final int ERROR_WRITE_FAILED = 4796;
-    public static final int ERROR_NO_CHARACTERISTIC = 4990;
 
     @NonNull
     private final HandlerThread mHandlerThread;
@@ -145,7 +141,7 @@ public class BluetoothGattConnection {
 
             List<BluetoothGattService> services = gatt.getServices();
             if (services.size() == 0) {
-                FLog.d(TAG,"onServicesDiscovered: failed? restart");
+                FLog.d(TAG, "onServicesDiscovered: failed? restart");
                 gatt.discoverServices();
             }
             final ConnectionListener listener = mListener;
@@ -320,7 +316,7 @@ public class BluetoothGattConnection {
     public void writeCharacteristic(BluetoothGattCharacteristic characteristic, byte[] value, OnSuccessFunction<Void> success, OnFailureFunction<Void> failure) {
         if (mGatt != null) {
             if (characteristic == null) {
-                post(() -> failure.onFailure(ERROR_NO_CHARACTERISTIC, null));
+                post(() -> failure.onFailure(BluetoothLeStatusCode.ERROR_NO_CHARACTERISTIC, null));
                 return;
             }
 
@@ -334,7 +330,7 @@ public class BluetoothGattConnection {
                     mGattCallback.mWriteFailureFunction = failure;
                 } else {
                     FLog.w(TAG, "writeCharacteristic failed");
-                    post(() -> failure.onFailure(ERROR_WRITE_FAILED, null));
+                    post(() -> failure.onFailure(BluetoothLeStatusCode.ERROR_WRITE_FAILED, null));
                 }
             }
         }
@@ -354,7 +350,7 @@ public class BluetoothGattConnection {
 
             if (characteristic == null) {
                 if (failure != null) {
-                    post(() -> failure.onFailure(ERROR_NO_CHARACTERISTIC, null));
+                    post(() -> failure.onFailure(BluetoothLeStatusCode.ERROR_NO_CHARACTERISTIC, null));
                 }
                 return;
             }
@@ -387,17 +383,17 @@ public class BluetoothGattConnection {
                         try {
                             if (latch.await(mTimeout, TimeUnit.MILLISECONDS)) {
                                 if (!successFlag[0]) {
-                                    post(() -> failure.onFailure(ERROR_REGISTER_NOTIFICATION, null));
+                                    post(() -> failure.onFailure(BluetoothLeStatusCode.ERROR_REGISTER_NOTIFICATION, null));
                                     return;
                                 }
                             } else {
                                 // timeout
-                                post(() -> failure.onFailure(ERROR_REGISTER_NOTIFICATION_TIMEOUT, null));
+                                post(() -> failure.onFailure(BluetoothLeStatusCode.ERROR_REGISTER_NOTIFICATION_TIMEOUT, null));
                                 return;
                             }
                         } catch (InterruptedException e) {
                             // ignore.
-                            post(() -> failure.onFailure(ERROR_REGISTER_NOTIFICATION_INTERRUPTED, null));
+                            post(() -> failure.onFailure(BluetoothLeStatusCode.ERROR_REGISTER_NOTIFICATION_INTERRUPTED, null));
                             return;
                         }
                     }
@@ -411,7 +407,7 @@ public class BluetoothGattConnection {
                     //登録失敗
                     FLog.w(TAG, "registerNotify failed");
                     if (failure != null) {
-                        post(() -> failure.onFailure(ERROR_REGISTER_NOTIFICATION, null));
+                        post(() -> failure.onFailure(BluetoothLeStatusCode.ERROR_REGISTER_NOTIFICATION, null));
                     }
                 }
             }
@@ -467,7 +463,48 @@ public class BluetoothGattConnection {
             post(() -> {
                 FLog.d(TAG, String.format("call BluetoothGatt#close for %x this:%x", System.identityHashCode(mGatt), System.identityHashCode(BluetoothGattConnection.this)));
 
+                mGatt.getServices().clear();
                 mGatt.close();
+
+                mGatt = null;
+            });
+        }
+
+        mHandlerThread.quitSafely();
+    }
+
+
+    /**
+     * BluetoothLE デバイスを close します.
+     */
+    public void refreshAndClose() {
+        mListener = null;
+
+        if (mGatt != null) {
+            post(() -> {
+                FLog.d(TAG, String.format("call BluetoothGatt#close for %x this:%x", System.identityHashCode(mGatt), System.identityHashCode(BluetoothGattConnection.this)));
+
+                Class<BluetoothGatt> klass = BluetoothGatt.class;
+                try {
+                    Method method = klass.getMethod("refresh");
+                    if (method != null) {
+                        Object res = method.invoke(mGatt);
+                        if (res instanceof Boolean) {
+                            FLog.d(TAG, String.format("refresh result:%s", (Boolean) res));
+                        }
+                    }
+
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+
+                mGatt.getServices().clear();
+                mGatt.close();
+
                 mGatt = null;
             });
         }

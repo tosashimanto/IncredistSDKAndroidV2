@@ -27,9 +27,9 @@ public class MFiTfpDisplayMessageCommand extends MFiCommand {
         // CHECKSTYLE:OFF MagicNumber
         byte[] payload = new byte[7 + messageByteSize];
         System.arraycopy(EM_HEADER, 0, payload, 0, EM_HEADER.length);
-        payload[4] = (byte)((type / 100 % 10) + '0');
-        payload[5] = (byte)((type / 10 % 10) + '0');
-        payload[6] = (byte)((type % 10) + '0');
+        payload[4] = (byte) ((type / 100 % 10) + '0');
+        payload[5] = (byte) ((type / 10 % 10) + '0');
+        payload[6] = (byte) ((type % 10) + '0');
 
         if (messageByteSize > 0) {
             System.arraycopy(messageBytes, 0, payload, 7, messageByteSize);

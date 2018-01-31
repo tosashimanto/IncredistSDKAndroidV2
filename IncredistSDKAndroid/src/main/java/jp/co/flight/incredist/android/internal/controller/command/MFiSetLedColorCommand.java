@@ -12,7 +12,7 @@ import jp.co.flight.incredist.android.model.LedColor;
  */
 public class MFiSetLedColorCommand extends MFiCommand {
     public MFiSetLedColorCommand(LedColor color, boolean isOn) {
-        super(new byte[] {'l', 'e', 'd', color.getValue(), (byte)(isOn ? 0x30 : 0x31)}); // SUPPRESS CHECKSTYLE MagicNumber
+        super(new byte[]{'l', 'e', 'd', color.getValue(), (byte) (isOn ? 0x30 : 0x31)}); // SUPPRESS CHECKSTYLE MagicNumber
     }
 
     @Override

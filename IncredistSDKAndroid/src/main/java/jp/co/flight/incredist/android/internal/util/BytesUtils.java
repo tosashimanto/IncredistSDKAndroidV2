@@ -15,7 +15,7 @@ public class BytesUtils {
     /**
      * byte 配列を ASCII コードとして文字列へ変換
      *
-     * @param data 入力データ
+     * @param data   入力データ
      * @param offset オフセット
      * @param length 長さ
      * @return 変換文字列
@@ -29,7 +29,7 @@ public class BytesUtils {
      * byte 配列を 16進数の列として文字列へ変換
      * BCD データを数字文字列へ変換するのにも利用できる
      *
-     * @param data 入力データ
+     * @param data   入力データ
      * @param offset オフセット
      * @param length 長さ
      * @return 変換文字列
@@ -52,7 +52,7 @@ public class BytesUtils {
     /**
      * Reduced PAN and Validity の 14byte からマスクされたカード番号を取得
      *
-     * @param data 入力データ
+     * @param data   入力データ
      * @param offset オフセット
      * @param length データの長さ
      * @return マスクされたカード番号 16文字 ######XXXXXX#### 形式
@@ -73,7 +73,7 @@ public class BytesUtils {
     /**
      * Reduced PAN and Validity の 14byte からマスクされた有効期限を取得
      *
-     * @param data 入力データ
+     * @param data   入力データ
      * @param offset オフセット
      * @param length データの長さ
      * @return 有効期限 MMYY 形式
@@ -92,7 +92,7 @@ public class BytesUtils {
     /**
      * データの先頭が prefix と一致するかどうかチェックする
      *
-     * @param data 入力データ
+     * @param data   入力データ
      * @param prefix 先頭一致でのチェックデータ
      * @return data が prefix で始まっている場合 true, そうではない場合 false
      */

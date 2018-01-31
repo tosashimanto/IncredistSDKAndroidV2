@@ -34,10 +34,6 @@ import jp.co.flight.incredist.android.internal.util.FLog;
 public class BluetoothCentral {
     private static final String TAG = "BluetoothCentral";
 
-    private static final int SCAN_ERROR_ALREADY_SCANNING = 801;
-    private static final int SCAN_ERROR_CANT_START = 802;
-    private static final int SCAN_ERROR_NO_PERMISSION = 803;
-
     private final WeakReference<Context> mContext;
     private final BluetoothManager mManager;
 
@@ -135,7 +131,7 @@ public class BluetoothCentral {
         if (mScanner != null) {
             // すでにスキャン中の場合
             FLog.d(TAG, "bleStartScan already scanning");
-            callScanFailure(SCAN_ERROR_ALREADY_SCANNING);
+            callScanFailure(BluetoothLeStatusCode.SCAN_ERROR_ALREADY_SCANNING);
             return;
         }
 
@@ -157,13 +153,13 @@ public class BluetoothCentral {
                     mHandler.postDelayed(this::stopScan, time);
                 }
             } catch (IllegalStateException ex) {
-                callScanFailure(SCAN_ERROR_CANT_START);
+                callScanFailure(BluetoothLeStatusCode.SCAN_ERROR_CANT_START);
             } catch (SecurityException ex) {
-                callScanFailure(SCAN_ERROR_NO_PERMISSION);
+                callScanFailure(BluetoothLeStatusCode.SCAN_ERROR_NO_PERMISSION);
             }
         } else {
             FLog.d(TAG, "bleStartScan can't start");
-            callScanFailure(SCAN_ERROR_CANT_START);
+            callScanFailure(BluetoothLeStatusCode.SCAN_ERROR_CANT_START);
         }
     }
 
@@ -334,7 +330,8 @@ public class BluetoothCentral {
      *
      * @return BluetoothPeripheral のリスト
      */
-    public @NonNull List<BluetoothPeripheral> getConnectedPeripherals() {
+    public @NonNull
+    List<BluetoothPeripheral> getConnectedPeripherals() {
         List<BluetoothDevice> devices = mManager.getConnectedDevices(BluetoothGatt.GATT);
 
         List<BluetoothPeripheral> peripherals = new ArrayList<>();

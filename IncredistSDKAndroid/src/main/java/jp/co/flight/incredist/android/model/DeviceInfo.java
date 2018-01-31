@@ -13,6 +13,7 @@ public class DeviceInfo {
 
     /**
      * コンストラクタ.
+     *
      * @param result デバイスからの取得結果
      */
     public DeviceInfo(DeviceInfoResult result) {
@@ -24,6 +25,7 @@ public class DeviceInfo {
 
     /**
      * デバイス名を取得します
+     *
      * @return デバイス名
      */
     public String getDeviceName() {
@@ -32,6 +34,7 @@ public class DeviceInfo {
 
     /**
      * デバイスのモデル名を取得します
+     *
      * @return モデル名
      */
     public String getDeviceModel() {
@@ -40,6 +43,7 @@ public class DeviceInfo {
 
     /**
      * ファームウェアのバージョンを取得します
+     *
      * @return バージョン名
      */
     public String getFirmwareVersion() {
@@ -48,6 +52,7 @@ public class DeviceInfo {
 
     /**
      * シリアル番号を取得します
+     *
      * @return シリアル番号
      */
     public String getSerialNumber() {

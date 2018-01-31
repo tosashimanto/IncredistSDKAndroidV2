@@ -12,7 +12,7 @@ import jp.co.flight.incredist.android.internal.transport.mfi.MFiResponse;
  * MFi 用 時刻設定コマンド (stc)
  */
 public class MFiSetRealTimeCommand extends MFiCommand {
-    private final static byte[] STC_HEADER = new byte[] {'s', 't', 'c'};
+    private final static byte[] STC_HEADER = new byte[]{'s', 't', 'c'};
 
     private static void setAsciiNum(byte[] data, int offset, int length, int value) {
         // CHECKSTYLE:OFF MagicNumber
@@ -36,8 +36,8 @@ public class MFiSetRealTimeCommand extends MFiCommand {
         setAsciiNum(payload, 5, 2, cal.get(Calendar.MONTH) + 1);
         setAsciiNum(payload, 7, 2, cal.get(Calendar.DATE));
         setAsciiNum(payload, 9, 2, cal.get(Calendar.HOUR_OF_DAY));
-        setAsciiNum(payload, 11,2, cal.get(Calendar.MINUTE));
-        setAsciiNum(payload, 13,2, cal.get(Calendar.SECOND));
+        setAsciiNum(payload, 11, 2, cal.get(Calendar.MINUTE));
+        setAsciiNum(payload, 13, 2, cal.get(Calendar.SECOND));
         // CHECKSTYLE:ON MagicNumber
 
         return payload;
