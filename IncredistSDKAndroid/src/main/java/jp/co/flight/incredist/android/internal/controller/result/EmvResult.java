@@ -27,7 +27,7 @@ public class EmvResult extends IncredistResult {
     /**
      * 受信データ処理
      *
-     * @param data 受信データ
+     * @param data   受信データ
      * @param offset オフセット
      * @param length データ長
      * @return 指定されたパケット数受信したらtrue

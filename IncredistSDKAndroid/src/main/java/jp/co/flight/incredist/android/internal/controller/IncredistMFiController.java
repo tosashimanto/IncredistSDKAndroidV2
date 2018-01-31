@@ -56,7 +56,7 @@ public class IncredistMFiController implements IncredistProtocolController {
     /**
      * MFi コマンドを送信します
      *
-     * @param command 送信コマンド
+     * @param command  送信コマンド
      * @param callback コールバック
      */
     private void postMFiCommand(final MFiCommand command, final IncredistController.Callback callback) {
@@ -90,8 +90,8 @@ public class IncredistMFiController implements IncredistProtocolController {
     /**
      * EMV メッセージを表示します
      *
-     * @param type メッセージ番号
-     * @param message メッセージ文字列
+     * @param type     メッセージ番号
+     * @param message  メッセージ文字列
      * @param callback コールバック
      */
     @Override
@@ -102,8 +102,8 @@ public class IncredistMFiController implements IncredistProtocolController {
     /**
      * TFP メッセージを表示します
      *
-     * @param type メッセージ番号
-     * @param message メッセージ文字列
+     * @param type     メッセージ番号
+     * @param message  メッセージ文字列
      * @param callback コールバック
      */
     @Override
@@ -114,7 +114,7 @@ public class IncredistMFiController implements IncredistProtocolController {
     /**
      * 暗号化モードを設定します
      *
-     * @param mode 暗号化モード
+     * @param mode     暗号化モード
      * @param callback コールバック
      */
     @Override
@@ -125,14 +125,14 @@ public class IncredistMFiController implements IncredistProtocolController {
     /**
      * PIN 入力を行います
      *
-     * @param pinType PIN入力タイプ
-     * @param pinMode PIN暗号化モード
-     * @param mask 表示マスク
-     * @param min 最小桁数
-     * @param max 最大桁数
-     * @param align 表示左右寄せ
-     * @param line 表示行
-     * @param timeout タイムアウト時間(msec)
+     * @param pinType  PIN入力タイプ
+     * @param pinMode  PIN暗号化モード
+     * @param mask     表示マスク
+     * @param min      最小桁数
+     * @param max      最大桁数
+     * @param align    表示左右寄せ
+     * @param line     表示行
+     * @param timeout  タイムアウト時間(msec)
      * @param callback コールバック
      */
     @Override
@@ -149,7 +149,7 @@ public class IncredistMFiController implements IncredistProtocolController {
     /**
      * 磁気カードを読み取ります
      *
-     * @param timeout タイムアウト時間(msec)
+     * @param timeout  タイムアウト時間(msec)
      * @param callback コールバック
      */
     @Override
@@ -161,10 +161,10 @@ public class IncredistMFiController implements IncredistProtocolController {
      * 決済用にクレジットカード(EMV 接触・非接触 と磁気カード)を読み取ります
      *
      * @param cardTypeSet カード種別
-     * @param amount 決済金額
-     * @param tagType タグ種別
-     * @param timeout タイムアウト時間(msec)
-     * @param callback コールバック
+     * @param amount      決済金額
+     * @param tagType     タグ種別
+     * @param timeout     タイムアウト時間(msec)
+     * @param callback    コールバック
      */
     @Override
     public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout, IncredistController.Callback callback) {
@@ -174,8 +174,8 @@ public class IncredistMFiController implements IncredistProtocolController {
     /**
      * LED色を設定します。
      *
-     * @param color LED色
-     * @param isOn true: 点灯 false: 消灯
+     * @param color    LED色
+     * @param isOn     true: 点灯 false: 消灯
      * @param callback コールバック
      */
     @Override
@@ -186,7 +186,7 @@ public class IncredistMFiController implements IncredistProtocolController {
     /**
      * FeliCa RF モードを開始します
      *
-     * @param withLed LED を点灯するかどうか
+     * @param withLed  LED を点灯するかどうか
      * @param callback コールバック
      */
     public void felicaOpen(boolean withLed, final IncredistController.Callback callback) {
@@ -203,7 +203,7 @@ public class IncredistMFiController implements IncredistProtocolController {
     /**
      * FeliCa コマンドを送信します
      *
-     * @param command 送信するFeliCaコマンド
+     * @param command  送信するFeliCaコマンド
      * @param callback コールバック
      */
     @Override
@@ -214,7 +214,7 @@ public class IncredistMFiController implements IncredistProtocolController {
     /**
      * felica モード時のLED色を設定します。
      *
-     * @param color LED色
+     * @param color    LED色
      * @param callback コールバック
      */
     @Override
@@ -245,7 +245,7 @@ public class IncredistMFiController implements IncredistProtocolController {
     /**
      * Incredist に時刻を設定します
      *
-     * @param cal 設定時刻
+     * @param cal      設定時刻
      * @param callback コールバック
      */
     @Override

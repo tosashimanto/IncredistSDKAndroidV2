@@ -141,7 +141,7 @@ public class BluetoothGattConnection {
 
             List<BluetoothGattService> services = gatt.getServices();
             if (services.size() == 0) {
-                FLog.d(TAG,"onServicesDiscovered: failed? restart");
+                FLog.d(TAG, "onServicesDiscovered: failed? restart");
                 gatt.discoverServices();
             }
             final ConnectionListener listener = mListener;

@@ -10,7 +10,8 @@ import java.util.Locale;
  * byte 値を入力するための BindingAdapter
  */
 public class ByteTextViewBindingAdapter {
-    private ByteTextViewBindingAdapter() {}
+    private ByteTextViewBindingAdapter() {
+    }
 
     @BindingAdapter("android:text")
     public static void setTextByte(TextView textView, byte value) {

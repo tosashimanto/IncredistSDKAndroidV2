@@ -5,7 +5,8 @@ package jp.co.flight.incredist.android.internal.controller;
  */
 public final class IncredistConstants {
 
-    private IncredistConstants() {}
+    private IncredistConstants() {
+    }
 
     //BLE SERVICE UUID
     public static final String FS_INCREDIST_SEND_SERVICE_UUID_FULL = "0000ffb0-0000-1000-8000-00805f9b34fb";

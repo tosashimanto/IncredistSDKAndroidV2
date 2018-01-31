@@ -10,7 +10,8 @@ import java.util.Locale;
  * long 値を入力するための BindingAdapter
  */
 public class LongIntegerTextViewBindingAdapter {
-    private LongIntegerTextViewBindingAdapter() {}
+    private LongIntegerTextViewBindingAdapter() {
+    }
 
     @BindingAdapter("android:text")
     public static void setTextByte(TextView textView, long value) {

@@ -84,13 +84,13 @@ public class EncryptionMode implements Parcelable {
     /**
      * コンストラクタ
      *
-     * @param keyNumber キー番号
-     * @param cipherMethod 暗号化方法
+     * @param keyNumber       キー番号
+     * @param cipherMethod    暗号化方法
      * @param blockCipherMode ブロック暗号化モード
-     * @param dsConstant キー種別
-     * @param paddingMode パディングモード
-     * @param paddingValue パディング値
-     * @param isPin 磁気入力の後PIN入力するかどうか
+     * @param dsConstant      キー種別
+     * @param paddingMode     パディングモード
+     * @param paddingValue    パディング値
+     * @param isPin           磁気入力の後PIN入力するかどうか
      */
     public EncryptionMode(byte keyNumber, CipherMethod cipherMethod, BlockCipherMode blockCipherMode,
                           DsConstant dsConstant, PaddingMode paddingMode, byte paddingValue, boolean isPin) {

@@ -262,12 +262,12 @@ public class Incredist {
      * 決済処理を実行します
      *
      * @param cardTypeSet カード種別
-     * @param amount   決済金額
-     * @param tagType  暗号化タグ種別(カード種別が MSR の場合は AllTag を指定する必要がある)
-     * @param timeout  タイムアウト時間(msec)
+     * @param amount      決済金額
+     * @param tagType     暗号化タグ種別(カード種別が MSR の場合は AllTag を指定する必要がある)
+     * @param timeout     タイムアウト時間(msec)
      * @param emvSuccess  ICカード決済成功時処理
      * @param magSuccess  磁気カード決済成功時処理
-     * @param failure  決済失敗時処理　// TODO コールバックインタフェースを専用に作る方がよいかも
+     * @param failure     決済失敗時処理　// TODO コールバックインタフェースを専用に作る方がよいかも
      */
     public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout,
                                @Nullable OnSuccessFunction<EmvPacket> emvSuccess,

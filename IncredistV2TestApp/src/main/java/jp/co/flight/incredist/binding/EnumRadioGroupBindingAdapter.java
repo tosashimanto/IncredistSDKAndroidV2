@@ -12,7 +12,8 @@ import jp.co.flight.incredist.android.model.EmvTagType;
  * RadioGroup と Enum 値を結びつける BindingAdapter
  */
 public class EnumRadioGroupBindingAdapter {
-    private EnumRadioGroupBindingAdapter() {}
+    private EnumRadioGroupBindingAdapter() {
+    }
 
     @BindingAdapter("android:checkedButton")
     public static <E extends Enum<E>> void setEnumValue(RadioGroup radioGroup, E value) {

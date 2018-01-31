@@ -12,7 +12,7 @@ import jp.co.flight.incredist.android.model.LedColor;
  */
 public class MFiFelicaLedColorCommand extends MFiCommand {
     public MFiFelicaLedColorCommand(LedColor color) {
-        super(new byte[] {'s', 'e', 't', 'c', color.getValue()});
+        super(new byte[]{'s', 'e', 't', 'c', color.getValue()});
     }
 
     @Override

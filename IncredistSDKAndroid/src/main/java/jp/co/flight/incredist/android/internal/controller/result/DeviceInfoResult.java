@@ -12,10 +12,11 @@ public class DeviceInfoResult extends IncredistResult {
 
     /**
      * コンストラクタ.
-     * @param deviceName Incredistデバイス名
-     * @param deviceModel Incredistデバイスモデル名
+     *
+     * @param deviceName      Incredistデバイス名
+     * @param deviceModel     Incredistデバイスモデル名
      * @param firmwareVersion Incredistファームウェアバージョン
-     * @param serialNumber Incredistシリアル番号
+     * @param serialNumber    Incredistシリアル番号
      */
     public DeviceInfoResult(String deviceName, String deviceModel, String firmwareVersion, String serialNumber) {
         super(IncredistResult.STATUS_SUCCESS);

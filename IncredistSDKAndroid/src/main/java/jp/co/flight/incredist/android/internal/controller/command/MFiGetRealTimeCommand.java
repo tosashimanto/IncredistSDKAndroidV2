@@ -14,7 +14,7 @@ import jp.co.flight.incredist.android.internal.transport.mfi.MFiResponse;
  */
 public class MFiGetRealTimeCommand extends MFiCommand {
     public MFiGetRealTimeCommand() {
-        super(new byte[] {'g', 't', 'c'});
+        super(new byte[]{'g', 't', 'c'});
     }
 
     @Override
@@ -51,7 +51,7 @@ public class MFiGetRealTimeCommand extends MFiCommand {
             try {
                 int year = asciiToNum(bytes, 3, 2, 0, 99);
                 int month = asciiToNum(bytes, 6, 2, 1, 12);
-                int day = asciiToNum(bytes, 9, 2, 1,31);
+                int day = asciiToNum(bytes, 9, 2, 1, 31);
                 int hour = asciiToNum(bytes, 12, 2, 0, 23);
                 int minute = asciiToNum(bytes, 15, 2, 0, 59);
                 int second = asciiToNum(bytes, 18, 2, 0, 59);

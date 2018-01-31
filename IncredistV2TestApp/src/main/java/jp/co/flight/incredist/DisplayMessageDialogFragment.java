@@ -30,8 +30,8 @@ public class DisplayMessageDialogFragment extends DialogFragment {
     /**
      * ダイアログのインスタンスを生成します.
      *
-     * @param title タイトル
-     * @param type メッセージ番号
+     * @param title   タイトル
+     * @param type    メッセージ番号
      * @param message メッセージ
      * @return DisplayMessageDialogFragment のインスタンス
      */

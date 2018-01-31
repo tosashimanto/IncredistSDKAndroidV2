@@ -330,7 +330,8 @@ public class BluetoothCentral {
      *
      * @return BluetoothPeripheral のリスト
      */
-    public @NonNull List<BluetoothPeripheral> getConnectedPeripherals() {
+    public @NonNull
+    List<BluetoothPeripheral> getConnectedPeripherals() {
         List<BluetoothDevice> devices = mManager.getConnectedDevices(BluetoothGatt.GATT);
 
         List<BluetoothPeripheral> peripherals = new ArrayList<>();
