@@ -521,4 +521,15 @@ public class Incredist {
         mManager = null;
     }
 
+    /**
+     * Incredist との接続リソースを解放します
+     */
+    public void refreshAndRelease() {
+        mController.refreshAndClose();
+        mController.release();
+
+        mController = null;
+        mManager = null;
+    }
+
 }

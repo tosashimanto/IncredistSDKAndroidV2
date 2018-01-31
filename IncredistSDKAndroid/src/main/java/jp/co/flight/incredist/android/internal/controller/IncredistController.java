@@ -369,6 +369,13 @@ public class IncredistController {
     }
 
     /**
+     * Incredist との接続を close します
+     */
+    public void refreshAndClose() {
+        mConnection.refreshAndClose();
+    }
+
+    /**
      * Incredist デバイスとの接続を破棄します.
      */
     public boolean release() {
