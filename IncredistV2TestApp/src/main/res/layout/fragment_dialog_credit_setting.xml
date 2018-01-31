@@ -4,12 +4,15 @@
     tools:context="jp.co.flight.incredist.CreditPaymentSettingDialogFragment">
 
     <data>
+
         <import type="jp.co.flight.incredist.android.model.EmvTagType" />
+
         <import type="jp.co.flight.incredist.android.model.CreditCardType" />
 
         <variable
             name="viewModel"
             type="jp.co.flight.incredist.CreditPaymentSettingDialogFragment.ViewModel" />
+
         <variable
             name="fragment"
             type="jp.co.flight.incredist.CreditPaymentSettingDialogFragment" />
@@ -81,6 +84,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
+            android:text="@={viewModel.mAmount}"
             app:layout_constraintBottom_toBottomOf="@+id/label_amount"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/label_amount"
@@ -103,7 +107,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:text="AllTag"
-                android:tag="@{EmvTagType.AllTag}"/>
+                android:tag="@{EmvTagType.AllTag}" />
 
             <RadioButton
                 android:id="@+id/radio_only_tag_57"
@@ -112,7 +116,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:text="OnlyTag57"
-                android:tag="@{EmvTagType.OnlyTag57}"/>
+                android:tag="@{EmvTagType.OnlyTag57}" />
 
         </RadioGroup>
 

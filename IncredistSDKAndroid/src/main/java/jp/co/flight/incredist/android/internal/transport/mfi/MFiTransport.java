@@ -109,13 +109,16 @@ public class MFiTransport {
 
                 try {
                     if (!latch.await(MFI_TRANSPORT_TIMEOUT, TimeUnit.MILLISECONDS)) {
+                        FLog.d(TAG, "send timeout");
                         latch.mErrorCode = IncredistResult.STATUS_TIMEOUT;
                     }
                 } catch (InterruptedException e) {
+                    FLog.d(TAG, "send interrupted");
                     latch.mErrorCode = IncredistResult.STATUS_INTERRUPTED;
                 }
 
                 if (latch.mErrorCode != IncredistResult.STATUS_SUCCESS) {
+                    FLog.d(TAG, String.format(Locale.JAPANESE, "send error %d", latch.mErrorCode));
                     return new IncredistResult(latch.mErrorCode);
                 }
             }
@@ -127,9 +130,12 @@ public class MFiTransport {
             try {
                 synchronized (mResponse) {
                     do {
-                        mResponse.wait(command.getResponseTimeout());
+                        long timeout = command.getResponseTimeout();
+                        FLog.d(TAG, String.format(Locale.JAPANESE, "recv wait %dmsec", timeout));
+                        mResponse.wait(timeout);
 
                         if (mCommand.cancelable() && !mResponse.hasData() && mCancelling != null) {
+                            FLog.d(TAG, String.format("command canceled: %s", mCommand.getClass().getSimpleName()));
                             mCommand = null;
                             mCancelling.countDown();
                             return new IncredistResult(IncredistResult.STATUS_CANCELED);
@@ -144,7 +150,10 @@ public class MFiTransport {
                             // ignore.
                         }
                         IncredistResult result = command.parseResponse(mResponse.copyInstance());
-                        if (result.status != IncredistResult.STATUS_CONTINUE_MULTIPLE_RESPONSE) {
+                        if (result.status == IncredistResult.STATUS_CONTINUE_MULTIPLE_RESPONSE) {
+                            // 継続するパケットがある場合はパケット情報をクリアして次のデータを待つ
+                            mResponse.clear();
+                        } else {
                             mCommand = null;
                             return result;
                         }
@@ -152,7 +161,6 @@ public class MFiTransport {
                 }
             } catch (InterruptedException ex) {
                 // ignore.
-                FLog.d(TAG, "exception", ex);
             }
 
             try {
@@ -162,6 +170,7 @@ public class MFiTransport {
             }
 
             mCommand = null;
+            FLog.d(TAG, "recv timeout: " + LogUtil.hexString(mResponse.getData()));
             return new IncredistResult(IncredistResult.STATUS_TIMEOUT);
         }
 
@@ -205,9 +214,15 @@ public class MFiTransport {
         }, (notify) -> {
             synchronized (mResponse) {
                 // BLE notify 受信時処理 : mResponse に append する
-                FLog.d(TAG, String.format(Locale.JAPANESE, "receive notify %d", notify.getValue().length));
+                FLog.d(TAG, String.format(Locale.JAPANESE, "receive notify %d %s", notify.getValue().length, LogUtil.hexString(notify.getValue())));
                 mResponse.appendData(notify.getValue());
                 if (!mResponse.needMoreData()) {
+                    byte[] data = mResponse.getData();
+                    if (data != null) {
+                        FLog.d(TAG, String.format(Locale.JAPANESE, "recv notify MFi packet: %d %s", data.length, LogUtil.hexString(data)));
+                    } else {
+                        FLog.d(TAG, "recv buffer error..");
+                    }
                     mResponse.notifyAll();
                 }
             }
