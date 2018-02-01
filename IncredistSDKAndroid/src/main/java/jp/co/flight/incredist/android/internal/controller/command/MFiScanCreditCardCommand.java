@@ -182,8 +182,8 @@ public class MFiScanCreditCardCommand extends MFiCommand {
     private IncredistResult parseLastEmvResponse(byte[] data) {
         // 第2パケット以降
         if (data.length > 2) {
-            int index = data[0];
-            int length = data[1];
+            int index = data[0] & 0xff;
+            int length = data[1] & 0xff;
 
             if (data.length == length + 2) {
                 if (mEmvResult.appendBytes(index, data, 2, length)) {
