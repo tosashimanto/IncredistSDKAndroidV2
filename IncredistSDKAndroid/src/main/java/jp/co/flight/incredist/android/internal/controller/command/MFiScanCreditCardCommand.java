@@ -153,18 +153,21 @@ public class MFiScanCreditCardCommand extends MFiCommand {
         int index = data[2] & 0xff;
         int totalLength = ((data[3] & 0xff) << 8) | (data[4] & 0xff);
         int length = data[5] & 0xff;
-        FLog.d(TAG, String.format(Locale.JAPANESE, "success datalen:%d count:%d total:%d length:%d", data.length, countPackets, totalLength, length));
+        FLog.d(TAG, String.format(Locale.JAPANESE, "parse1stEmvResponse datalen:%d count:%d total:%d length:%d", data.length, countPackets, totalLength, length));
 
         if (index == 1 && data.length == length + 6) {
             mEmvResult = new EmvResult(countPackets, totalLength);
             if (mEmvResult.appendBytes(index, data, 6, length)) {
                 // 1パケットで完結している場合
                 if (mEmvResult.isValidLength()) {
+                    FLog.d(TAG, "parse EmvResult Success");
                     return mEmvResult;
                 } else {
+                    FLog.d(TAG, "parse EmvResult Failed");
                     return new IncredistResult(IncredistResult.STATUS_INVALID_RESPONSE);
                 }
             } else {
+                FLog.d(TAG, "parse EmvResult continue multiple");
                 return new IncredistResult(IncredistResult.STATUS_CONTINUE_MULTIPLE_RESPONSE);
             }
         }
@@ -185,14 +188,18 @@ public class MFiScanCreditCardCommand extends MFiCommand {
             int index = data[0] & 0xff;
             int length = data[1] & 0xff;
 
+            FLog.d(TAG, String.format(Locale.JAPANESE, "parseLastEmvResponse datalen:%d count:%d length:%d", data.length, index, length));
             if (data.length == length + 2) {
                 if (mEmvResult.appendBytes(index, data, 2, length)) {
                     if (mEmvResult.isValidLength()) {
+                        FLog.d(TAG, "parse EmvResult Success");
                         return mEmvResult;
                     } else {
+                        FLog.d(TAG, "parse EmvResult Failed");
                         return new IncredistResult(IncredistResult.STATUS_INVALID_RESPONSE);
                     }
                 } else {
+                    FLog.d(TAG, "parse EmvResult continue multiple");
                     return new IncredistResult(IncredistResult.STATUS_CONTINUE_MULTIPLE_RESPONSE);
                 }
             }

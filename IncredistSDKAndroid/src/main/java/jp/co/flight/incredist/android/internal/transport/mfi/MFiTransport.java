@@ -129,35 +129,41 @@ public class MFiTransport {
 
             try {
                 synchronized (mResponse) {
+                    boolean continueReceive;
                     do {
-                        long timeout = command.getResponseTimeout();
-                        FLog.d(TAG, String.format(Locale.JAPANESE, "recv wait %dmsec", timeout));
-                        mResponse.wait(timeout);
+                        continueReceive = false;
+                        do {
+                            long timeout = command.getResponseTimeout();
+                            FLog.d(TAG, String.format(Locale.JAPANESE, "recv wait %dmsec", timeout));
+                            mResponse.wait(timeout);
 
-                        if (mCommand.cancelable() && !mResponse.hasData() && mCancelling != null) {
-                            FLog.d(TAG, String.format("command canceled: %s", mCommand.getClass().getSimpleName()));
-                            mCommand = null;
-                            mCancelling.countDown();
-                            return new IncredistResult(IncredistResult.STATUS_CANCELED);
-                        }
-                    } while (mResponse.needMoreData());
+                            if (mCommand.cancelable() && !mResponse.hasData() && mCancelling != null) {
+                                FLog.d(TAG, String.format("command canceled: %s", mCommand.getClass().getSimpleName()));
+                                mCommand = null;
+                                mCancelling.countDown();
+                                return new IncredistResult(IncredistResult.STATUS_CANCELED);
+                            }
+                        } while (mResponse.needMoreData());
 
-                    if (mResponse.isValid()) {
-                        FLog.d(TAG, "recv valid packet: " + LogUtil.hexString(mResponse.getData()));
-                        try {
-                            Thread.sleep(command.getGuardWait());
-                        } catch (InterruptedException ex) {
-                            // ignore.
+                        if (mResponse.isValid()) {
+                            FLog.d(TAG, "recv valid packet: " + LogUtil.hexString(mResponse.getData()));
+                            IncredistResult result = command.parseResponse(mResponse.copyInstance());
+                            if (result.status == IncredistResult.STATUS_CONTINUE_MULTIPLE_RESPONSE) {
+                                // 継続するパケットがある場合はパケット情報をクリアして次のデータを待つ
+                                mResponse.clear();
+                                continueReceive = true;
+                            } else {
+                                try {
+                                    Thread.sleep(command.getGuardWait());
+                                } catch (InterruptedException ex) {
+                                    // ignore.
+                                }
+
+                                mCommand = null;
+                                return result;
+                            }
                         }
-                        IncredistResult result = command.parseResponse(mResponse.copyInstance());
-                        if (result.status == IncredistResult.STATUS_CONTINUE_MULTIPLE_RESPONSE) {
-                            // 継続するパケットがある場合はパケット情報をクリアして次のデータを待つ
-                            mResponse.clear();
-                        } else {
-                            mCommand = null;
-                            return result;
-                        }
-                    }
+                    } while (continueReceive);
                 }
             } catch (InterruptedException ex) {
                 // ignore.
