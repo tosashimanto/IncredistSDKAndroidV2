@@ -66,10 +66,12 @@ public class MFiFelicaSendCommand extends MFiCommand {
         byte[] bytes = response.getData();
         if (bytes != null && bytes.length > 7) {
             int length = bytes[6] & 0xff;
-            //TODO status 内容確認 (Hidctl 通りだと逆になっている)
+
             if (bytes[0] == 'f' && bytes[1] == 's' && bytes[2] == 'o' && bytes[3] == 'c'
                     && bytes[4] == 0 && bytes[5] == 0 && bytes.length == length + 7) {
-                return new FelicaCommandResult(bytes[4] & 0xff, bytes[5] & 0xff, Arrays.copyOfRange(bytes, 7, bytes.length));
+                return new FelicaCommandResult(bytes[4] & 0xff, bytes[5] & 0xff,
+                        Arrays.copyOfRange(bytes, 8, bytes.length),
+                        Arrays.copyOfRange(bytes, 4, bytes.length));
             }
         }
         // CHECKSTYLE:ON MagicNumber
