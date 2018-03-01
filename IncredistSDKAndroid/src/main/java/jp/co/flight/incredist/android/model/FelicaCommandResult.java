@@ -7,6 +7,7 @@ public class FelicaCommandResult {
     private final int mStatus1;
     private final int mStatus2;
     private final byte[] mResultData;
+    private final byte[] mRawData;
 
     /**
      * コンストラクタ
@@ -17,6 +18,7 @@ public class FelicaCommandResult {
         mStatus1 = result.status1;
         mStatus2 = result.status2;
         mResultData = result.resultData;
+        mRawData = result.rawData;
     }
 
 
@@ -47,4 +49,12 @@ public class FelicaCommandResult {
         return mResultData;
     }
 
+    /**
+     * パケットの元データを取得します
+     *
+     * @return パケットデータ
+     */
+    public byte[] getRawData() {
+        return mRawData;
+    }
 }
