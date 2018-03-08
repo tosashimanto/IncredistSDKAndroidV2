@@ -1,4 +1,4 @@
-package jp.co.flight.incredist.android.internal.controller.command;
+package jp.co.flight.incredist.android.internal.transport.mfi;
 
 import android.support.annotation.NonNull;
 
@@ -9,9 +9,6 @@ import java.util.Locale;
 import jp.co.flight.incredist.android.internal.controller.result.EmvResult;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.controller.result.MagCardResult;
-import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
-import jp.co.flight.incredist.android.internal.transport.mfi.MFiResponse;
-import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
 import jp.co.flight.incredist.android.internal.util.BytesUtils;
 import jp.co.flight.incredist.android.internal.util.FLog;
 import jp.co.flight.incredist.android.model.CreditCardType;
@@ -184,6 +181,7 @@ public class MFiScanCreditCardCommand extends MFiCommand {
      */
     private IncredistResult parseLastEmvResponse(byte[] data) {
         // 第2パケット以降
+        // CHECKSTYLE:OFF MagicNumber
         if (data.length > 2) {
             int index = data[0] & 0xff;
             int length = data[1] & 0xff;
@@ -204,6 +202,7 @@ public class MFiScanCreditCardCommand extends MFiCommand {
                 }
             }
         }
+        // CHECKSTYLE:ON MagicNumber
 
         return null;
     }
@@ -215,8 +214,8 @@ public class MFiScanCreditCardCommand extends MFiCommand {
      * @return 解析結果の IncredistResult オブジェクト
      */
     private IncredistResult parseMJ3Response(byte[] data) {
+        // CHECKSTYLE:OFF MagicNumber
         if (data.length > 3) {
-            // CHECKSTYLE:OFF MagicNumber
             int totalLength = ((data[2] & 0xff) << 8) + (data[1] & 0xff);
             if (data.length == totalLength && totalLength > 15) {
                 int cardType = data[3] & 0xff;
@@ -275,9 +274,8 @@ public class MFiScanCreditCardCommand extends MFiCommand {
                     }
                 }
             }
-
-            // CHECKSTYLE:ON MagicNumber
         }
+        // CHECKSTYLE:ON MagicNumber
 
         return null;
     }

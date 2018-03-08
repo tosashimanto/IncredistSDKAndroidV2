@@ -1,4 +1,4 @@
-package jp.co.flight.incredist.android.internal.controller.command;
+package jp.co.flight.incredist.android.internal.transport.mfi;
 
 import android.support.annotation.NonNull;
 
@@ -7,8 +7,6 @@ import java.util.Arrays;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.controller.result.PinEntryResult;
 import jp.co.flight.incredist.android.internal.exception.ParameterException;
-import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
-import jp.co.flight.incredist.android.internal.transport.mfi.MFiResponse;
 import jp.co.flight.incredist.android.model.PinEntry;
 
 /**
