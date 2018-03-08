@@ -1,18 +1,16 @@
-package jp.co.flight.incredist.android.internal.controller.command;
+package jp.co.flight.incredist.android.internal.transport.mfi;
 
 import android.support.annotation.NonNull;
 
 import java.util.Calendar;
 
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
-import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
-import jp.co.flight.incredist.android.internal.transport.mfi.MFiResponse;
 
 /**
  * MFi 用 時刻設定コマンド (stc)
  */
 public class MFiSetRealTimeCommand extends MFiCommand {
-    private final static byte[] STC_HEADER = new byte[]{'s', 't', 'c'};
+    private static final byte[] STC_HEADER = new byte[]{'s', 't', 'c'};
 
     private static void setAsciiNum(byte[] data, int offset, int length, int value) {
         // CHECKSTYLE:OFF MagicNumber
@@ -54,26 +52,6 @@ public class MFiSetRealTimeCommand extends MFiCommand {
     @Override
     public long getResponseTimeout() {
         return 1000;  // SUPPRESS CHECKSTYLE MagicNumber
-    }
-
-    private int asciiToNum(byte[] data, int offset, int length, int min, int max) throws NumberFormatException {
-        if (offset >= 0 && offset < data.length && length >= 0 && offset + length <= data.length) {
-            int result = 0;
-            for (int i = 0; i < length; i++) {
-                byte c = data[offset + i];
-                if (c < '0' || c > '9') {
-                    throw new NumberFormatException();
-                }
-                result *= 10;  // SUPPRESS CHECKSTYLE MagicNumber
-                result += (c - '0');
-            }
-
-            if (min <= result && result <= max) {
-                return result;
-            }
-        }
-
-        throw new NumberFormatException();
     }
 
     @NonNull

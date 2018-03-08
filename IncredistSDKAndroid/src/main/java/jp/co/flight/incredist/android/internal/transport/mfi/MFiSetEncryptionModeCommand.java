@@ -1,10 +1,8 @@
-package jp.co.flight.incredist.android.internal.controller.command;
+package jp.co.flight.incredist.android.internal.transport.mfi;
 
 import android.support.annotation.NonNull;
 
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
-import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
-import jp.co.flight.incredist.android.internal.transport.mfi.MFiResponse;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 
 /**
