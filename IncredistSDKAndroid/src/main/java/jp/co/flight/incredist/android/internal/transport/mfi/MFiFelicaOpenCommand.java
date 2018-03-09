@@ -45,7 +45,7 @@ public class MFiFelicaOpenCommand extends MFiCommand {
                 return new IncredistResult(IncredistResult.STATUS_SUCCESS);
             }
         }
-        // CHECKSTYLE:N MagicNumber
+        // CHECKSTYLE:ON MagicNumber
 
         return new IncredistResult(IncredistResult.STATUS_INVALID_RESPONSE, LogUtil.hexString(bytes));
     }
