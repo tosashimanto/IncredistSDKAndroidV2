@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 
 import java.util.Calendar;
 import java.util.EnumSet;
+import java.util.List;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
@@ -12,6 +13,7 @@ import jp.co.flight.incredist.android.internal.exception.ParameterException;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiDeviceInfoCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmvDisplayMessageCommand;
+import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmvSendArc;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiFelicaCloseCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiFelicaLedColorCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiFelicaOpenCommand;
@@ -62,6 +64,34 @@ public class IncredistMFiController implements IncredistProtocolController {
     private void postMFiCommand(final MFiCommand command, final IncredistController.Callback callback) {
         mController.postCommand(() -> {
             final IncredistResult result = mMFiTransport.sendCommand(command);
+
+            if (result.status == IncredistResult.STATUS_CANCELED && command.cancelable()) {
+                command.onCancelled(mMFiTransport);
+            }
+
+            mController.postCallback(() -> {
+                callback.onResult(result);
+            });
+        }, callback);
+    }
+
+    /**
+     * 複数の MFi コマンドを送信します
+     *
+     * @param commandList 送信コマンドリスト
+     * @param callback    コールバック
+     */
+    private void postMFiCommandList(@NonNull final List<? extends MFiCommand> commandList, final IncredistController.Callback callback) {
+        mController.postCommand(() -> {
+            if (commandList.size() == 0) {
+                mController.postCallback(() -> {
+                    callback.onResult(new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND));
+                });
+                return;
+            }
+
+            MFiCommand command = commandList.get(0);
+            final IncredistResult result = mMFiTransport.sendCommand(commandList.toArray(new MFiCommand[0]));
 
             if (result.status == IncredistResult.STATUS_CANCELED && command.cancelable()) {
                 command.onCancelled(mMFiTransport);
@@ -261,6 +291,16 @@ public class IncredistMFiController implements IncredistProtocolController {
     @Override
     public void rtcSetCurrentTime(IncredistController.Callback callback) {
         postMFiCommand(new MFiSetRealTimeCommand(), callback);
+    }
+
+    /**
+     * EMV kernel に ARC データを送信します
+     *
+     * @param arcData  ARCデータ
+     * @param callback コールバック
+     */
+    public void emvSendArc(byte[] arcData, IncredistController.Callback callback) {
+        postMFiCommandList(MFiEmvSendArc.createCommandList(arcData), callback);
     }
 
     /**

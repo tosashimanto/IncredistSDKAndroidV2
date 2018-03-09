@@ -27,6 +27,12 @@ public interface StatusCode extends BluetoothLeStatusCode {
     int STATUS_BUSY = 902;
 
     /**
+     * 送信コマンドが不正であることを示します
+     * 通常発生しない内部エラーです
+     */
+    int STATUS_INVALID_COMMAND = 990;
+
+    /**
      * Java スレッドがなんらかの理由で中断されたことを示します
      */
     int STATUS_INTERRUPTED = 801;

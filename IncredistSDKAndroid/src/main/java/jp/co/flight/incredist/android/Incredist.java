@@ -471,6 +471,23 @@ public class Incredist {
     }
 
     /**
+     * EMV kernel に ARC データを送信します
+     */
+    public void emvSendArc(byte[] arcData, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        mController.emvSendArc(arcData, result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                if (success != null) {
+                    success.onSuccess();
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
      * Incredist で処理中のコマンドをキャンセルします
      *
      * @param success キャンセル成功時の処理

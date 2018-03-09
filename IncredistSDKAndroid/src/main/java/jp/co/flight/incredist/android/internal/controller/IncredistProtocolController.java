@@ -153,6 +153,14 @@ interface IncredistProtocolController {
     void rtcSetCurrentTime(IncredistController.Callback callback);
 
     /**
+     * EMV kernel に ARC データを送信します
+     *
+     * @param arcData  ARCデータ
+     * @param callback コールバック
+     */
+    void emvSendArc(byte[] arcData, IncredistController.Callback callback);
+
+    /**
      * 現在実行中のコマンドをキャンセルします
      *
      * @param callback コールバック
@@ -170,5 +178,4 @@ interface IncredistProtocolController {
      * オブジェクトを解放します
      */
     void release();
-
 }

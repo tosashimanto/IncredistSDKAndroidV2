@@ -331,6 +331,16 @@ public class IncredistController {
     }
 
     /**
+     * EMV kernel に ARC データを送信します
+     *
+     * @param arcData  ARCデータ
+     * @param callback コールバック
+     */
+    public void emvSendArc(byte[] arcData, IncredistController.Callback callback) {
+        mProtoController.emvSendArc(arcData, callback);
+    }
+
+    /**
      * 現在処理中のコマンドをキャンセルします
      *
      * @param callback コールバック

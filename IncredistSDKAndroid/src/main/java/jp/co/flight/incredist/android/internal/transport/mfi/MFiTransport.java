@@ -4,6 +4,8 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.support.annotation.WorkerThread;
 
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -72,21 +74,30 @@ public class MFiTransport {
     /**
      * コマンドを送信し、レスポンスを受信して返却します.
      *
-     * @param command 送信コマンド
+     * @param commandList 送信コマンド
      * @return レスポンスの MFiパケット
      */
     @WorkerThread
-    public IncredistResult sendCommand(MFiCommand command) {
+    public IncredistResult sendCommand(MFiCommand... commandList) {
         findCharacteristics();
+
+        if (commandList == null || commandList.length == 0) {
+            return new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND);
+        }
+
+        Iterator<MFiCommand> iterator = Arrays.asList(commandList).iterator();
+
+        // レスポンスの解析などは最初の引数のオブジェクトで実行する
+        MFiCommand firstCommand = commandList[0];
 
         // 送信コマンドの途中で割り込まれないように　synchronize で同期化
         synchronized (this) {
-            mCommand = command;
+            mCommand = firstCommand;
 
-            FLog.d(TAG, String.format("sendCommand %s", command.getClass().getSimpleName()));
+            FLog.d(TAG, String.format("sendCommand %s", firstCommand.getClass().getSimpleName()));
 
             // 受信用パケットを初期化
-            if (command.getResponseTimeout() > 0) {
+            if (firstCommand.getResponseTimeout() > 0) {
                 mResponse.clear();
             }
 
@@ -95,36 +106,39 @@ public class MFiTransport {
                 return new IncredistResult(IncredistResult.STATUS_CANCELED);
             }
 
-            int count = command.getPacketCount();
-            FLog.d(TAG, String.format(Locale.JAPANESE, "send %d packet(s)", count));
-            for (int i = 0; i < count; i++) {
-                ErrorLatch latch = new ErrorLatch();
-                mConnection.writeCharacteristic(mWriteCharacteristic, command.getValueData(i), success -> {
-                    latch.mErrorCode = IncredistResult.STATUS_SUCCESS;
-                    latch.countDown();
-                }, (errorCode, failure) -> {
-                    latch.mErrorCode = errorCode;
-                    latch.countDown();
-                });
+            do {
+                MFiCommand command = iterator.next();
+                int count = command.getPacketCount();
+                FLog.d(TAG, String.format(Locale.JAPANESE, "send %d packet(s)", count));
+                for (int i = 0; i < count; i++) {
+                    ErrorLatch latch = new ErrorLatch();
+                    mConnection.writeCharacteristic(mWriteCharacteristic, command.getValueData(i), success -> {
+                        latch.mErrorCode = IncredistResult.STATUS_SUCCESS;
+                        latch.countDown();
+                    }, (errorCode, failure) -> {
+                        latch.mErrorCode = errorCode;
+                        latch.countDown();
+                    });
 
-                try {
-                    if (!latch.await(MFI_TRANSPORT_TIMEOUT, TimeUnit.MILLISECONDS)) {
-                        FLog.d(TAG, "send timeout");
-                        latch.mErrorCode = IncredistResult.STATUS_TIMEOUT;
+                    try {
+                        if (!latch.await(MFI_TRANSPORT_TIMEOUT, TimeUnit.MILLISECONDS)) {
+                            FLog.d(TAG, "send timeout");
+                            latch.mErrorCode = IncredistResult.STATUS_TIMEOUT;
+                        }
+                    } catch (InterruptedException e) {
+                        FLog.d(TAG, "send interrupted");
+                        latch.mErrorCode = IncredistResult.STATUS_INTERRUPTED;
                     }
-                } catch (InterruptedException e) {
-                    FLog.d(TAG, "send interrupted");
-                    latch.mErrorCode = IncredistResult.STATUS_INTERRUPTED;
-                }
 
-                if (latch.mErrorCode != IncredistResult.STATUS_SUCCESS) {
-                    FLog.d(TAG, String.format(Locale.JAPANESE, "send error %d", latch.mErrorCode));
-                    return new IncredistResult(latch.mErrorCode);
+                    if (latch.mErrorCode != IncredistResult.STATUS_SUCCESS) {
+                        FLog.d(TAG, String.format(Locale.JAPANESE, "send error %d", latch.mErrorCode));
+                        return new IncredistResult(latch.mErrorCode);
+                    }
                 }
-            }
+            } while (iterator.hasNext());
         }
 
-        if (command.getResponseTimeout() > 0) {
+        if (firstCommand.getResponseTimeout() > 0) {
             FLog.d(TAG, "recv packet(s)");
 
             try {
@@ -133,7 +147,7 @@ public class MFiTransport {
                     do {
                         continueReceive = false;
                         do {
-                            long timeout = command.getResponseTimeout();
+                            long timeout = firstCommand.getResponseTimeout();
                             FLog.d(TAG, String.format(Locale.JAPANESE, "recv wait %dmsec", timeout));
                             mResponse.wait(timeout);
 
@@ -147,14 +161,14 @@ public class MFiTransport {
 
                         if (mResponse.isValid()) {
                             FLog.d(TAG, "recv valid packet: " + LogUtil.hexString(mResponse.getData()));
-                            IncredistResult result = command.parseResponse(mResponse.copyInstance());
+                            IncredistResult result = firstCommand.parseResponse(mResponse.copyInstance());
                             if (result.status == IncredistResult.STATUS_CONTINUE_MULTIPLE_RESPONSE) {
                                 // 継続するパケットがある場合はパケット情報をクリアして次のデータを待つ
                                 mResponse.clear();
                                 continueReceive = true;
                             } else {
                                 try {
-                                    Thread.sleep(command.getGuardWait());
+                                    Thread.sleep(firstCommand.getGuardWait());
                                 } catch (InterruptedException ex) {
                                     // ignore.
                                 }
@@ -170,7 +184,7 @@ public class MFiTransport {
             }
 
             try {
-                Thread.sleep(command.getGuardWait());
+                Thread.sleep(firstCommand.getGuardWait());
             } catch (InterruptedException ex) {
                 // ignore.
             }
@@ -181,7 +195,7 @@ public class MFiTransport {
         }
 
         try {
-            Thread.sleep(command.getGuardWait());
+            Thread.sleep(firstCommand.getGuardWait());
         } catch (InterruptedException ex) {
             // ignore.
         }
