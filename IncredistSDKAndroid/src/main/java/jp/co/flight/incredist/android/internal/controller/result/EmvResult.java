@@ -13,8 +13,14 @@ public class EmvResult extends IncredistResult {
     private int mCount;
     private int mLength;
 
-    ByteArrayOutputStream mByteStream = new ByteArrayOutputStream();
+    private ByteArrayOutputStream mByteStream = new ByteArrayOutputStream();
 
+    /**
+     * コンストラクタ
+     *
+     * @param countPacket 受信予定のパケット数
+     * @param dataLength  受信予定のデータ長
+     */
     public EmvResult(int countPacket, int dataLength) {
         super(IncredistResult.STATUS_SUCCESS);
 
