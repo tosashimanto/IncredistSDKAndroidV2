@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import jp.co.flight.incredist.android.internal.controller.result.EmvArcResult;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.util.LogUtil;
 
@@ -14,9 +15,7 @@ import jp.co.flight.incredist.android.internal.util.LogUtil;
  *
  * ARCデータは複数の MFi パケットで構成される場合があるのでこのクラスは1パケット分を扱う
  */
-public class MFiEmvSendArc extends MFiCommand {
-    private static final String TAG = "MFiEmvSendArc";
-
+public final class MFiEmvSendArc extends MFiCommand {
     private static final byte[] ICQ_HEADER = new byte[]{'i', 'c', 'q'};
 
     /**
@@ -80,7 +79,7 @@ public class MFiEmvSendArc extends MFiCommand {
 
     @Override
     public long getResponseTimeout() {
-        return 1000;
+        return 3000; // SUPPRESS CHECKSTYLE MagicNumber
     }
 
     @NonNull
@@ -88,9 +87,9 @@ public class MFiEmvSendArc extends MFiCommand {
     protected IncredistResult parseMFiResponse(MFiResponse response) {
         // CHECKSTYLE:OFF MagicNumber
         byte[] bytes = response.getData();
-        if (bytes != null && bytes.length == 1) {
+        if (bytes != null && bytes.length > 1) {
             if (bytes[0] == 0) {
-                return new IncredistResult(IncredistResult.STATUS_SUCCESS);
+                return new EmvArcResult(Arrays.copyOfRange(bytes, 1, bytes.length));
             } else {
                 return new IncredistResult(IncredistResult.STATUS_FAILURE);
             }
