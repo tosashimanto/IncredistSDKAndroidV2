@@ -20,6 +20,11 @@ public interface BluetoothLeStatusCode {
     int SCAN_ERROR_NO_PERMISSION = 4003;
 
     /**
+     * Bluetooth Adapter が無効になっている
+     */
+    int ERROR_ADAPTER_DISABLED = 4004;
+
+    /**
      * Notification の登録が行えなかった
      */
     int ERROR_REGISTER_NOTIFICATION = 4797;

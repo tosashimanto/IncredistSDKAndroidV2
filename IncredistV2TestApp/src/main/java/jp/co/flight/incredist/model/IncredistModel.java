@@ -11,6 +11,7 @@ import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.List;
 
+import jp.co.flight.android.bluetooth.le.BluetoothPeripheral;
 import jp.co.flight.incredist.android.Incredist;
 import jp.co.flight.incredist.android.IncredistManager;
 import jp.co.flight.incredist.android.IncredistV2TestApp.BR;
@@ -34,9 +35,9 @@ public interface IncredistModel extends Observable {
 
     void newIncredistObject();
 
-    void bleStartScan(OnSuccessFunction<List<String>> success, OnFailureFunction failure);
+    void bleStartScan(OnSuccessFunction<List<BluetoothPeripheral>> success, OnFailureFunction failure);
 
-    List<String> getDeviceList();
+    List<BluetoothPeripheral> getDeviceList();
 
     void connect(OnSuccessFunction<Incredist> success, OnFailureFunction failure);
 
@@ -112,7 +113,7 @@ public interface IncredistModel extends Observable {
         private IncredistManager mIncredistManager;
         private Incredist mIncredist;
 
-        private List<String> mDeviceList;
+        private List<BluetoothPeripheral> mDeviceList;
         private String mSelectedDevice;
         private int mEmvMessageType;
         private String mEmvMessageString;
@@ -137,7 +138,7 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
-        public void bleStartScan(OnSuccessFunction<List<String>> success, OnFailureFunction failure) {
+        public void bleStartScan(OnSuccessFunction<List<BluetoothPeripheral>> success, OnFailureFunction failure) {
             mIncredistManager.bleStartScan(null, 5000, (deviceList) -> {
                 mDeviceList = deviceList;
                 success.onSuccess(deviceList);
@@ -145,7 +146,7 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
-        public List<String> getDeviceList() {
+        public List<BluetoothPeripheral> getDeviceList() {
             return mDeviceList;
         }
 

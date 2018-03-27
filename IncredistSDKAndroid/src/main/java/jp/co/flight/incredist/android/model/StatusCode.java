@@ -122,5 +122,15 @@ public interface StatusCode extends BluetoothLeStatusCode {
      */
     int STATUS_CARD_BLOCK = 206;
 
+    /**
+     * 接続処理で指定したデバイスが見つからなかったことを示します
+     */
+    int CONNECT_ERROR_NOT_FOUND = 1798;
+
+    /**
+     * 接続処理でタイムアウトしたことを示します
+     */
+    int CONNECT_ERROR_TIMEOUT = 1799;
+
     int STATUS_CONTINUE_MULTIPLE_RESPONSE = 9; // SDK 内部でのみ使用
 }

@@ -17,6 +17,7 @@ import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.android.bluetooth.le.BluetoothPeripheral;
 import jp.co.flight.incredist.android.internal.controller.IncredistConstants;
 import jp.co.flight.incredist.android.internal.util.FLog;
+import jp.co.flight.incredist.android.model.StatusCode;
 
 /**
  * Incredist 検索と接続の管理クラス.
@@ -24,9 +25,6 @@ import jp.co.flight.incredist.android.internal.util.FLog;
 @SuppressWarnings({"WeakerAccess", "unused"}) // for public API.
 public class IncredistManager {
     private static final String TAG = "IncredistManager";
-
-    private static final int CONNECT_ERROR_NOT_FOUND = 1798;
-    private static final int CONNECT_ERROR_TIMEOUT = 1799;
 
     private final BluetoothCentral mCentral;
 
@@ -102,9 +100,9 @@ public class IncredistManager {
      * @param success  スキャン完了時処理
      * @param failure  スキャン失敗時処理
      */
-    public void bleStartScan(@Nullable DeviceFilter filter, long scanTime, OnSuccessFunction<List<String>> success, OnFailureFunction failure) {
+    public void bleStartScan(@Nullable DeviceFilter filter, long scanTime, OnSuccessFunction<List<BluetoothPeripheral>> success, OnFailureFunction failure) {
         bleStartScanInternal(filter, scanTime, (peripheralMap) -> {
-            success.onSuccess(new ArrayList<>(peripheralMap.keySet()));
+            success.onSuccess(new ArrayList<>(peripheralMap.values()));
         }, failure);
     }
 
@@ -280,7 +278,7 @@ public class IncredistManager {
                             mConnection.close();
                             FLog.i(TAG, "OnConnectListener connect timeout");
                             if (mFailureFunction != null) {
-                                mFailureFunction.onFailure(CONNECT_ERROR_TIMEOUT);
+                                mFailureFunction.onFailure(StatusCode.CONNECT_ERROR_TIMEOUT);
                             }
                             mSuccessFunction = null;
                             mFailureFunction = null;
@@ -447,7 +445,7 @@ public class IncredistManager {
                 FLog.i(TAG, "connect device not found.");
                 handler.post(() -> {
                     if (failure != null) {
-                        failure.onFailure(CONNECT_ERROR_NOT_FOUND);
+                        failure.onFailure(StatusCode.CONNECT_ERROR_NOT_FOUND);
                     }
                 });
             }

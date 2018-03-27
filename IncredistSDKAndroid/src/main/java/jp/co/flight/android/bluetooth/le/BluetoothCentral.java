@@ -1,5 +1,6 @@
 package jp.co.flight.android.bluetooth.le;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -14,11 +15,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -62,7 +65,7 @@ public class BluetoothCentral {
                     record != null ? record.toString() : ""));
 
             if (record != null && record.getDeviceName() != null) {
-                callScanResult(new BluetoothPeripheral(record.getDeviceName(), result.getDevice().getAddress()));
+                callScanResult(new BluetoothPeripheral(record.getDeviceName(), result));
             }
         }
 
@@ -136,6 +139,11 @@ public class BluetoothCentral {
         }
 
         if (mAdapter != null) {
+            if (!mAdapter.isEnabled()) {
+                callScanFailure(BluetoothLeStatusCode.ERROR_ADAPTER_DISABLED);
+                return;
+            }
+
             mScanner = mAdapter.getBluetoothLeScanner();
         } else {
             FLog.d(TAG, "adapter not found");
@@ -143,6 +151,12 @@ public class BluetoothCentral {
         }
 
         if (mScanner != null && (time <= 0 || mHandler != null)) {
+            Context context = mContext.get();
+            if (context != null && ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                callScanFailure(BluetoothLeStatusCode.SCAN_ERROR_NO_PERMISSION);
+                return;
+            }
+
             ScanSettings settings = new ScanSettings.Builder()
                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                     .build();
