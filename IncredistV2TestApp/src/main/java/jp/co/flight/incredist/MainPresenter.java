@@ -13,6 +13,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 
+import jp.co.flight.android.bluetooth.le.BluetoothPeripheral;
 import jp.co.flight.incredist.android.IncredistV2TestApp.BuildConfig;
 import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
 import jp.co.flight.incredist.android.model.CreditCardType;
@@ -120,7 +121,7 @@ public interface MainPresenter {
         @Override
         public void onStartScan() {
             addLog("bleStartScan");
-            mIncredist.bleStartScan((List<String> scanResult) -> {
+            mIncredist.bleStartScan((List<BluetoothPeripheral> scanResult) -> {
                 addLog(String.format(Locale.JAPANESE, "bleStartScan result %d", scanResult.size()));
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "bleStartScan failure %d", errorCode));
@@ -130,9 +131,13 @@ public interface MainPresenter {
         @Override
         public void onSelectDevice() {
             addLog("selectDevice");
-            List<String> devices = mIncredist.getDeviceList();
-            if (devices != null && devices.size() > 0) {
-                mFragment.showDeviceListDialog((ArrayList<String>) devices);
+            List<BluetoothPeripheral> peripherals = mIncredist.getDeviceList();
+            ArrayList<String> deviceNames = new ArrayList<>();
+            for (BluetoothPeripheral peripheral : peripherals) {
+                deviceNames.add(peripheral.getDeviceName());
+            }
+            if (peripherals.size() > 0) {
+                mFragment.showDeviceListDialog(deviceNames);
             } else {
                 addLog("not scanned result.");
             }

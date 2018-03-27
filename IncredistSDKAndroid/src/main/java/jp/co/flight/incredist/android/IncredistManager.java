@@ -102,9 +102,9 @@ public class IncredistManager {
      * @param success  スキャン完了時処理
      * @param failure  スキャン失敗時処理
      */
-    public void bleStartScan(@Nullable DeviceFilter filter, long scanTime, OnSuccessFunction<List<String>> success, OnFailureFunction failure) {
+    public void bleStartScan(@Nullable DeviceFilter filter, long scanTime, OnSuccessFunction<List<BluetoothPeripheral>> success, OnFailureFunction failure) {
         bleStartScanInternal(filter, scanTime, (peripheralMap) -> {
-            success.onSuccess(new ArrayList<>(peripheralMap.keySet()));
+            success.onSuccess(new ArrayList<>(peripheralMap.values()));
         }, failure);
     }
 

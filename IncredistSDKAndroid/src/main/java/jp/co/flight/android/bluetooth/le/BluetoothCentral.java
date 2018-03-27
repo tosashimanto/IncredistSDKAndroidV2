@@ -62,7 +62,7 @@ public class BluetoothCentral {
                     record != null ? record.toString() : ""));
 
             if (record != null && record.getDeviceName() != null) {
-                callScanResult(new BluetoothPeripheral(record.getDeviceName(), result.getDevice().getAddress()));
+                callScanResult(new BluetoothPeripheral(record.getDeviceName(), result));
             }
         }
 
