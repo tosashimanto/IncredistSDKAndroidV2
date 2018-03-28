@@ -2,6 +2,7 @@ package jp.co.flight.incredist.binding;
 
 import android.databinding.BindingAdapter;
 import android.databinding.InverseBindingAdapter;
+import android.databinding.InverseBindingListener;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -15,7 +16,7 @@ public class EnumRadioGroupBindingAdapter {
     private EnumRadioGroupBindingAdapter() {
     }
 
-    @BindingAdapter("android:checkedButton")
+    @BindingAdapter("itemValue")
     public static <E extends Enum<E>> void setEnumValue(RadioGroup radioGroup, E value) {
         for (int i = 0; i < radioGroup.getChildCount(); i++) {
             View v = radioGroup.getChildAt(i);
@@ -26,7 +27,21 @@ public class EnumRadioGroupBindingAdapter {
         }
     }
 
-    @InverseBindingAdapter(attribute = "android:checkedButton")
+    @BindingAdapter("itemValueAttrChanged")
+    public static void setItemValueAttrChanged(RadioGroup group, InverseBindingListener listener) {
+        if (listener == null) {
+            group.setOnCheckedChangeListener(null);
+        } else {
+            group.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                    listener.onChange();
+                }
+            });
+        }
+    }
+
+    @InverseBindingAdapter(attribute = "itemValue")
     public static EmvTagType getEnumValue(RadioGroup radioGroup) {
         View v = radioGroup.findViewById(radioGroup.getCheckedRadioButtonId());
         if (v instanceof RadioButton) {
