@@ -1,0 +1,51 @@
+package jp.co.flight.incredist.android.internal.transport.mfi;
+
+import android.support.annotation.NonNull;
+
+import jp.co.flight.incredist.android.internal.controller.result.BlinkResult;
+import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
+import jp.co.flight.incredist.android.internal.util.BytesUtils;
+import jp.co.flight.incredist.android.model.LedColor;
+
+/**
+ * MFi 用 電子マネー向け点滅コマンド (line)
+ */
+public class MFiEmoneyBlinkCommand extends MFiCommand {
+    private static final byte[] LINE_HEADER = new byte[]{'l', 'i', 'n', 'e'};
+
+    private static byte[] createPayload(boolean isOn, LedColor ledColor, int duration) {
+        // CHECKSTYLE:OFF MagicNumber
+        byte[] payload = new byte[LINE_HEADER.length + 3];
+
+        System.arraycopy(LINE_HEADER, 0, payload, 0, LINE_HEADER.length);
+        payload[4] = isOn ? (byte) 0x31 : (byte) 0x30;
+        payload[5] = ledColor.getValue();
+        payload[6] = (byte) duration;
+        // CHECKSTYLE:ON MagicNumber
+
+        return payload;
+    }
+
+    public MFiEmoneyBlinkCommand(boolean isOn, LedColor ledColor, int duration) {
+        super(createPayload(isOn, ledColor, duration));
+    }
+
+    @Override
+    public long getResponseTimeout() {
+        return 1000;  // SUPPRESS CHECKSTYLE MagicNumber
+    }
+
+    @NonNull
+    @Override
+    protected IncredistResult parseMFiResponse(MFiResponse response) {
+        // CHECKSTYLE:OFF MagicNumber
+        byte[] bytes = response.getData();
+        if (bytes != null && bytes.length == 5 && BytesUtils.startsWith(bytes, LINE_HEADER)
+                && (bytes[4] == 0x30 || bytes[4] == 0x31)) {
+            return new BlinkResult(bytes[4] == 0x31);
+        }
+        // CHECKSTYLE:ON MagicNumber
+
+        return new IncredistResult(IncredistResult.STATUS_INVALID_RESPONSE);
+    }
+}
