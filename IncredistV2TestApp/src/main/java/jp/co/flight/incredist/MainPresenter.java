@@ -95,6 +95,8 @@ public interface MainPresenter {
 
     void setDateTime(Calendar cal);
 
+    void onEmoneyBlink();
+
     void addLog(String message);
 
 
@@ -431,6 +433,16 @@ public interface MainPresenter {
                 addLog("rtcSetTime success");
             }, errorCode -> {
                 addLog(String.format(Locale.JAPANESE, "rtcSetTime failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onEmoneyBlink() {
+            addLog("emoneyBlink test");
+            mIncredist.emoneyBlink(true, LedColor.GREEN, 500, (isOn) -> {
+                addLog(String.format(Locale.JAPANESE, "emoneyBlink success %s", isOn));
+            }, errorCode -> {
+                addLog(String.format(Locale.JAPANESE, "emoneyBlink failure %d", errorCode));
             });
         }
 
