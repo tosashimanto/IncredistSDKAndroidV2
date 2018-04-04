@@ -25,8 +25,8 @@ public class MFiEmvCardStatusCommand extends MFiCommand {
     protected IncredistResult parseMFiResponse(MFiResponse response) {
         // CHECKSTYLE:OFF MagicNumber
         byte[] bytes = response.getData();
-        if (bytes != null && bytes.length == 1 && (bytes[0] == 0x00 || bytes[1] == (byte) 0xff)) {
-            return new CardStatusResult(bytes[4] == 0x00);
+        if (bytes != null && bytes.length == 1 && (bytes[0] == 0x00 || bytes[0] == (byte) 0xff)) {
+            return new CardStatusResult(bytes[0] == 0x00);
         }
         // CHECKSTYLE:ON MagicNumber
 
