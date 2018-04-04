@@ -22,6 +22,7 @@ import jp.co.flight.incredist.android.model.EmvPacket;
 import jp.co.flight.incredist.android.model.EmvTagType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
+import jp.co.flight.incredist.android.model.ICCardStatus;
 import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.MagCard;
 import jp.co.flight.incredist.android.model.PinEntry;
@@ -501,11 +502,11 @@ public class Incredist {
      * @param success チェック成功時処理
      * @param failure 失敗時処理
      */
-    public void emvCheckCardStatus(@Nullable OnSuccessFunction<Boolean> success, @Nullable OnFailureFunction failure) {
+    public void emvCheckCardStatus(@Nullable OnSuccessFunction<ICCardStatus> success, @Nullable OnFailureFunction failure) {
         mController.emvCheckCardStatus(result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof CardStatusResult) {
                 if (success != null) {
-                    success.onSuccess(((CardStatusResult) result).isInserted);
+                    success.onSuccess(((CardStatusResult) result).isInserted ? ICCardStatus.INSERTED : ICCardStatus.REMOVED);
                 }
             } else {
                 if (failure != null) {
