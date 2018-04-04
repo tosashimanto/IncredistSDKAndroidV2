@@ -343,12 +343,12 @@ public class IncredistController {
     /**
      * 電子マネー向けの画面・LED点滅します
      *
-     * @param isOn     画面on の場合 true, off の場合 false を指定
-     * @param ledColor LEDの点灯時の色
+     * @param isBlink  画面点滅開始の場合 true, 点滅停止の場合 false を指定
+     * @param color    LEDの点灯時の色
      * @param duration 点灯時間(msec)
      */
-    public void emoneyBlink(boolean isOn, LedColor ledColor, int duration, Callback callback) {
-        mProtoController.emoneyBlink(isOn, ledColor, duration, callback);
+    public void emoneyBlink(boolean isBlink, LedColor color, int duration, Callback callback) {
+        mProtoController.emoneyBlink(isBlink, color, duration, callback);
     }
 
     /**

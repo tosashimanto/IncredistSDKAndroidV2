@@ -13,21 +13,21 @@ import jp.co.flight.incredist.android.model.LedColor;
 public class MFiEmoneyBlinkCommand extends MFiCommand {
     private static final byte[] LINE_HEADER = new byte[]{'l', 'i', 'n', 'e'};
 
-    private static byte[] createPayload(boolean isOn, LedColor ledColor, int duration) {
+    private static byte[] createPayload(boolean isBlink, LedColor color, int duration) {
         // CHECKSTYLE:OFF MagicNumber
         byte[] payload = new byte[LINE_HEADER.length + 3];
 
         System.arraycopy(LINE_HEADER, 0, payload, 0, LINE_HEADER.length);
-        payload[4] = isOn ? (byte) 0x31 : (byte) 0x30;
-        payload[5] = ledColor.getValue();
+        payload[4] = isBlink ? (byte) 0x31 : (byte) 0x30;
+        payload[5] = color.getValue();
         payload[6] = (byte) duration;
         // CHECKSTYLE:ON MagicNumber
 
         return payload;
     }
 
-    public MFiEmoneyBlinkCommand(boolean isOn, LedColor ledColor, int duration) {
-        super(createPayload(isOn, ledColor, duration));
+    public MFiEmoneyBlinkCommand(boolean isBlink, LedColor color, int duration) {
+        super(createPayload(isBlink, color, duration));
     }
 
     @Override
