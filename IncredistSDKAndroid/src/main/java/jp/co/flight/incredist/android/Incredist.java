@@ -8,6 +8,7 @@ import java.util.EnumSet;
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.IncredistController;
 import jp.co.flight.incredist.android.internal.controller.result.BlinkResult;
+import jp.co.flight.incredist.android.internal.controller.result.CardStatusResult;
 import jp.co.flight.incredist.android.internal.controller.result.DeviceInfoResult;
 import jp.co.flight.incredist.android.internal.controller.result.EmvArcResult;
 import jp.co.flight.incredist.android.internal.controller.result.EmvResult;
@@ -484,6 +485,27 @@ public class Incredist {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof EmvArcResult) {
                 if (success != null) {
                     success.onSuccess(((EmvArcResult) result).toEmvPacket());
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
+     * icカードが挿入されているかどうかチェックします。
+     * 挿入されている場合 success に指定したメソッドに true が返されます。
+     *
+     * @param success チェック成功時処理
+     * @param failure 失敗時処理
+     */
+    public void emvCheckCardStatus(@Nullable OnSuccessFunction<Boolean> success, @Nullable OnFailureFunction failure) {
+        mController.emvCheckCardStatus(result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof CardStatusResult) {
+                if (success != null) {
+                    success.onSuccess(((CardStatusResult) result).isInserted);
                 }
             } else {
                 if (failure != null) {

@@ -2,32 +2,17 @@ package jp.co.flight.incredist.android.internal.transport.mfi;
 
 import android.support.annotation.NonNull;
 
-import jp.co.flight.incredist.android.internal.controller.result.BlinkResult;
+import jp.co.flight.incredist.android.internal.controller.result.CardStatusResult;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
-import jp.co.flight.incredist.android.internal.util.BytesUtils;
-import jp.co.flight.incredist.android.model.LedColor;
 
 /**
- * MFi 用 電子マネー向け点滅コマンド (line)
+ * MFi 用 icカード挿入チェックコマンド(icw)
  */
-public class MFiEmoneyBlinkCommand extends MFiCommand {
-    private static final byte[] LINE_HEADER = new byte[]{'l', 'i', 'n', 'e'};
+public class MFiEmvCardStatusCommand extends MFiCommand {
+    private static final byte[] ICW_HEADER = new byte[]{'i', 'c', 'w'};
 
-    private static byte[] createPayload(boolean isBlink, LedColor color, int duration) {
-        // CHECKSTYLE:OFF MagicNumber
-        byte[] payload = new byte[LINE_HEADER.length + 3];
-
-        System.arraycopy(LINE_HEADER, 0, payload, 0, LINE_HEADER.length);
-        payload[4] = isBlink ? (byte) 0x31 : (byte) 0x30;
-        payload[5] = color.getValue();
-        payload[6] = (byte) duration;
-        // CHECKSTYLE:ON MagicNumber
-
-        return payload;
-    }
-
-    public MFiEmoneyBlinkCommand(boolean isBlink, LedColor color, int duration) {
-        super(createPayload(isBlink, color, duration));
+    public MFiEmvCardStatusCommand() {
+        super(ICW_HEADER);
     }
 
     @Override
@@ -40,9 +25,8 @@ public class MFiEmoneyBlinkCommand extends MFiCommand {
     protected IncredistResult parseMFiResponse(MFiResponse response) {
         // CHECKSTYLE:OFF MagicNumber
         byte[] bytes = response.getData();
-        if (bytes != null && bytes.length == 5 && BytesUtils.startsWith(bytes, LINE_HEADER)
-                && (bytes[4] == 0x30 || bytes[4] == 0x31)) {
-            return new BlinkResult(bytes[4] == 0x31);
+        if (bytes != null && bytes.length == 1 && (bytes[0] == 0x00 || bytes[1] == (byte) 0xff)) {
+            return new CardStatusResult(bytes[4] == 0x00);
         }
         // CHECKSTYLE:ON MagicNumber
 

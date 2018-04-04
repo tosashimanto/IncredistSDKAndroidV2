@@ -1,15 +1,15 @@
 package jp.co.flight.incredist.android.internal.controller.result;
 
 /**
- * 点滅処理結果クラス.
+ * カード挿入チェック結果クラス.
  */
 @SuppressWarnings("WeakerAccess")
-public class BlinkResult extends IncredistResult {
-    public final boolean isOn;
+public class CardStatusResult extends IncredistResult {
+    public final boolean isInserted;
 
-    public BlinkResult(boolean isOn) {
+    public CardStatusResult(boolean isInserted) {
         super(IncredistResult.STATUS_SUCCESS);
 
-        this.isOn = isOn;
+        this.isInserted = isInserted;
     }
 }
