@@ -75,9 +75,9 @@ public class Incredist {
     }
 
     /**
-     * Bluetooth の接続状態を取得します.
+     * Bluetooth の接続状態を取得します。
      *
-     * @return 接続状態(BluetoothGatt クラスの定数)
+     * @return 接続状態(接続中 BluetoothGatt.STATE_CONNECTED, 切断時 BluetoothGatt.STATE_DISCONNECTED)
      */
     public int getConnectionState() {
         return mController.getConnectionState();
