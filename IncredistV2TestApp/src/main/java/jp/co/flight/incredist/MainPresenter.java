@@ -97,6 +97,8 @@ public interface MainPresenter {
 
     void onEmoneyBlink();
 
+    void emoneyBlink(boolean isBlink, LedColor color, int duration);
+
     void addLog(String message);
 
 
@@ -438,8 +440,13 @@ public interface MainPresenter {
 
         @Override
         public void onEmoneyBlink() {
-            addLog("emoneyBlink test");
-            mIncredist.emoneyBlink(true, LedColor.GREEN, 500, (isOn) -> {
+            mFragment.showEmoneyBlinkDialog();
+        }
+
+        @Override
+        public void emoneyBlink(boolean isBlink, LedColor color, int duration) {
+            addLog("emoneyBlink");
+            mIncredist.emoneyBlink(isBlink, color, duration, (isOn) -> {
                 addLog(String.format(Locale.JAPANESE, "emoneyBlink success %s", isOn));
             }, errorCode -> {
                 addLog(String.format(Locale.JAPANESE, "emoneyBlink failure %d", errorCode));

@@ -35,7 +35,7 @@ public class MainFragment extends Fragment
         implements DeviceListDialogFragment.Listener, DisplayMessageDialogFragment.Listener,
         EncryptionSettingDialogFragment.Listener, PinEntryDParamDialogFragment.Listener,
         LedColorDialogFragment.Listener, DateTimeDialogFragment.Listener,
-        CreditPaymentSettingDialogFragment.Listener {
+        CreditPaymentSettingDialogFragment.Listener, EmoneyBlinkDialogFragment.Listener {
 
     private static final String DIALOG_TAG_SELECT_DEVICE = "dialog_tag_select_device";
     private static final String DIALOG_TAG_EMV_MESSAGE = "dialog_tag_emv_message";
@@ -46,6 +46,8 @@ public class MainFragment extends Fragment
     private static final String DIALOG_TAG_FELICA_LED_COLOR = "dialog_tag_felica_led_color";
     private static final String DIALOG_TAG_DATETIME = "dialog_tag_datetime";
     private static final String DIALOG_TAG_CREDIT_SETTING = "dialog_tag_credit_setting";
+    private static final String DIALOG_TAG_EMONEY_BLINK = "dialog_tag_emoney_blink";
+
     private static final int REQUEST_SELECT_DEVICE = 1;
     private static final int REQUEST_EMV_MESSAGE = 2;
     private static final int REQUEST_TFP_MESSAGE = 3;
@@ -55,6 +57,7 @@ public class MainFragment extends Fragment
     private static final int REQUEST_FELICA_LED_COLOR = 7;
     private static final int REQUEST_DATETIME = 8;
     private static final int REQUEST_CREDIT_SETTING = 9;
+    private static final int REQUEST_EMONEY_BLINK = 10;
 
     private OnFragmentInteractionListener mListener;
     private FragmentMainBinding mBinding;
@@ -218,6 +221,17 @@ public class MainFragment extends Fragment
     @Override
     public void onSetCreditPaymentSetting(int requestCode, EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType) {
         mPresenter.scanCreditCard(cardTypeSet, amount, tagType);
+    }
+
+    public void showEmoneyBlinkDialog() {
+        DialogFragment dialog = EmoneyBlinkDialogFragment.newInstance();
+        dialog.setTargetFragment(this, REQUEST_EMONEY_BLINK);
+        dialog.show(getFragmentManager(), DIALOG_TAG_EMONEY_BLINK);
+    }
+
+    @Override
+    public void onSetEmoneyBlink(int requestCode, boolean isBlink, LedColor color, int duration) {
+        mPresenter.emoneyBlink(isBlink, color, duration);
     }
 
     public interface OnFragmentInteractionListener {

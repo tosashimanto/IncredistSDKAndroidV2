@@ -73,7 +73,7 @@ public interface IncredistModel extends Observable {
 
     void rtcSetCurrentTime(OnSuccessVoidFunction success, OnFailureFunction failure);
 
-    void emoneyBlink(boolean isOn, LedColor color, int duration, OnSuccessFunction<Boolean> success, OnFailureFunction failure);
+    void emoneyBlink(boolean isBlink, LedColor color, int duration, OnSuccessFunction<Boolean> success, OnFailureFunction failure);
 
     void stop(OnSuccessVoidFunction success, OnFailureFunction failure);
 
@@ -330,9 +330,9 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
-        public void emoneyBlink(boolean isOn, LedColor color, int duration, OnSuccessFunction<Boolean> success, OnFailureFunction failure) {
+        public void emoneyBlink(boolean isBlink, LedColor color, int duration, OnSuccessFunction<Boolean> success, OnFailureFunction failure) {
             if (mIncredist != null) {
-                mIncredist.emoneyBlink(isOn, color, duration, success, failure);
+                mIncredist.emoneyBlink(isBlink, color, duration, success, failure);
             } else {
                 failure.onFailure(-1);
             }
