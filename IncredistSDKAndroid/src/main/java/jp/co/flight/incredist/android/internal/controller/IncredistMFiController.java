@@ -13,6 +13,7 @@ import jp.co.flight.incredist.android.internal.exception.ParameterException;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiDeviceInfoCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmoneyBlinkCommand;
+import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmvCardStatusCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmvDisplayMessageCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmvSendArc;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiFelicaCloseCommand;
@@ -302,6 +303,15 @@ public class IncredistMFiController implements IncredistProtocolController {
      */
     public void emvSendArc(byte[] arcData, IncredistController.Callback callback) {
         postMFiCommandList(MFiEmvSendArc.createCommandList(arcData), callback);
+    }
+
+    /**
+     * icカードの挿入状態をチェックします
+     *
+     * @param callback コールバック
+     */
+    public void emvCheckCardStatus(IncredistController.Callback callback) {
+        postMFiCommand(new MFiEmvCardStatusCommand(), callback);
     }
 
     /**

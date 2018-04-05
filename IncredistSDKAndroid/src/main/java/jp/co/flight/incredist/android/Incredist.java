@@ -8,6 +8,7 @@ import java.util.EnumSet;
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.IncredistController;
 import jp.co.flight.incredist.android.internal.controller.result.BlinkResult;
+import jp.co.flight.incredist.android.internal.controller.result.CardStatusResult;
 import jp.co.flight.incredist.android.internal.controller.result.DeviceInfoResult;
 import jp.co.flight.incredist.android.internal.controller.result.EmvArcResult;
 import jp.co.flight.incredist.android.internal.controller.result.EmvResult;
@@ -21,6 +22,7 @@ import jp.co.flight.incredist.android.model.EmvPacket;
 import jp.co.flight.incredist.android.model.EmvTagType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
+import jp.co.flight.incredist.android.model.ICCardStatus;
 import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.MagCard;
 import jp.co.flight.incredist.android.model.PinEntry;
@@ -75,9 +77,9 @@ public class Incredist {
     }
 
     /**
-     * Bluetooth の接続状態を取得します.
+     * Bluetooth の接続状態を取得します。
      *
-     * @return 接続状態(BluetoothGatt クラスの定数)
+     * @return 接続状態(接続中 BluetoothGatt.STATE_CONNECTED, 切断時 BluetoothGatt.STATE_DISCONNECTED)
      */
     public int getConnectionState() {
         return mController.getConnectionState();
@@ -484,6 +486,27 @@ public class Incredist {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof EmvArcResult) {
                 if (success != null) {
                     success.onSuccess(((EmvArcResult) result).toEmvPacket());
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
+     * icカードが挿入されているかどうかチェックします。
+     * 挿入されている場合 success に指定したメソッドに true が返されます。
+     *
+     * @param success チェック成功時処理
+     * @param failure 失敗時処理
+     */
+    public void emvCheckCardStatus(@Nullable OnSuccessFunction<ICCardStatus> success, @Nullable OnFailureFunction failure) {
+        mController.emvCheckCardStatus(result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof CardStatusResult) {
+                if (success != null) {
+                    success.onSuccess(((CardStatusResult) result).isInserted ? ICCardStatus.INSERTED : ICCardStatus.REMOVED);
                 }
             } else {
                 if (failure != null) {

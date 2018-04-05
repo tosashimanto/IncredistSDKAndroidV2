@@ -341,6 +341,16 @@ public class IncredistController {
     }
 
     /**
+     * icカードの挿入状態をチェックします
+     *
+     * @param callback コールバック
+     */
+    public void emvCheckCardStatus(Callback callback) {
+        mProtoController.emvCheckCardStatus(callback);
+    }
+
+
+    /**
      * 電子マネー向けの画面・LED点滅します
      *
      * @param isBlink  画面点滅開始の場合 true, 点滅停止の場合 false を指定

@@ -79,6 +79,8 @@ public interface MainPresenter {
 
     void scanCreditCard(EnumSet<CreditCardType> cardType, long amount, EmvTagType tagType);
 
+    void onCheckCardStatus();
+
     void setEncryptionMode(EncryptionMode mode);
 
     void onMj2();
@@ -357,6 +359,16 @@ public interface MainPresenter {
                 addLog("credit emvsuccess");
             }, (magResult) -> {
                 addLog("credit magsuccess");
+            }, errorCode -> {
+                addLog(String.format(Locale.JAPANESE, "credit failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onCheckCardStatus() {
+            addLog("checkCardStatus");
+            mIncredist.checkCardStatus((inserted) -> {
+                addLog(String.format(Locale.JAPANESE, "checkCardStatus %s", inserted.name()));
             }, errorCode -> {
                 addLog(String.format(Locale.JAPANESE, "credit failure %d", errorCode));
             });
