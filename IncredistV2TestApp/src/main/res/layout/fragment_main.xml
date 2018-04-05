@@ -250,9 +250,20 @@
                     android:onClick="@{(view)->presenter.onFelicaSend()}"
                     android:text="Send"
                     app:layout_constraintBottom_toTopOf="@+id/label_message"
-                    app:layout_constraintEnd_toStartOf="@+id/button_felica_close"
+                    app:layout_constraintEnd_toStartOf="@+id/button_emoney_blink"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/button_felica_open" />
+
+                <Button
+                    android:id="@+id/button_emoney_blink"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{(view)->presenter.onEmoneyBlink()}"
+                    android:text="Blink"
+                    app:layout_constraintBottom_toBottomOf="@+id/button_felica_send"
+                    app:layout_constraintEnd_toStartOf="@+id/button_felica_close"
+                    app:layout_constraintStart_toEndOf="@+id/button_felica_send"
+                    app:layout_constraintTop_toTopOf="@+id/button_felica_send" />
 
                 <Button
                     android:id="@+id/button_felica_close"
@@ -263,7 +274,7 @@
                     android:text="Close"
                     app:layout_constraintBottom_toBottomOf="@+id/button_felica_send"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/button_felica_send"
+                    app:layout_constraintStart_toEndOf="@+id/button_emoney_blink"
                     app:layout_constraintTop_toTopOf="@+id/button_felica_send" />
 
                 <android.support.v7.widget.AppCompatTextView

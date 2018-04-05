@@ -161,6 +161,15 @@ interface IncredistProtocolController {
     void emvSendArc(byte[] arcData, IncredistController.Callback callback);
 
     /**
+     * 電子マネー向けの画面・LED点滅します
+     *
+     * @param isBlink  画面点滅開始の場合 true, 点滅停止の場合 false を指定
+     * @param color    LEDの点灯時の色
+     * @param duration 点灯時間(msec)
+     */
+    void emoneyBlink(boolean isBlink, LedColor color, int duration, IncredistController.Callback callback);
+
+    /**
      * 現在実行中のコマンドをキャンセルします
      *
      * @param callback コールバック

@@ -7,6 +7,7 @@ import java.util.EnumSet;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.IncredistController;
+import jp.co.flight.incredist.android.internal.controller.result.BlinkResult;
 import jp.co.flight.incredist.android.internal.controller.result.DeviceInfoResult;
 import jp.co.flight.incredist.android.internal.controller.result.EmvArcResult;
 import jp.co.flight.incredist.android.internal.controller.result.EmvResult;
@@ -473,12 +474,37 @@ public class Incredist {
 
     /**
      * EMV kernel に ARC データを送信します
+     *
+     * @param arcData カードへの送信データ
+     * @param success 送信成功時処理
+     * @param failure 失敗時処理
      */
     public void emvSendArc(byte[] arcData, @Nullable OnSuccessFunction<EmvPacket> success, @Nullable OnFailureFunction failure) {
         mController.emvSendArc(arcData, result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof EmvArcResult) {
                 if (success != null) {
                     success.onSuccess(((EmvArcResult) result).toEmvPacket());
+                }
+            } else {
+                if (failure != null) {
+                    failure.onFailure(result.status);
+                }
+            }
+        });
+    }
+
+    /**
+     * 電子マネー向けの画面・LED点滅します
+     *
+     * @param isBlink  画面点滅開始の場合 true, 点滅停止の場合 false を指定
+     * @param color    LEDの点灯時の色
+     * @param duration 点灯時間(msec)
+     */
+    public void emoneyBlink(boolean isBlink, LedColor color, int duration, OnSuccessFunction<Boolean> success, OnFailureFunction failure) {
+        mController.emoneyBlink(isBlink, color, duration, result -> {
+            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof BlinkResult) {
+                if (success != null) {
+                    success.onSuccess(((BlinkResult) result).isOn);
                 }
             } else {
                 if (failure != null) {

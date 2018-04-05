@@ -12,6 +12,7 @@ import jp.co.flight.incredist.android.internal.controller.result.IncredistResult
 import jp.co.flight.incredist.android.internal.exception.ParameterException;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiDeviceInfoCommand;
+import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmoneyBlinkCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmvDisplayMessageCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmvSendArc;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiFelicaCloseCommand;
@@ -301,6 +302,17 @@ public class IncredistMFiController implements IncredistProtocolController {
      */
     public void emvSendArc(byte[] arcData, IncredistController.Callback callback) {
         postMFiCommandList(MFiEmvSendArc.createCommandList(arcData), callback);
+    }
+
+    /**
+     * 電子マネー向けの画面・LED点滅します
+     *
+     * @param isBlink  画面on の場合 true, off の場合 false を指定
+     * @param color    LEDの点灯時の色
+     * @param duration 点灯時間(msec)
+     */
+    public void emoneyBlink(boolean isBlink, LedColor color, int duration, IncredistController.Callback callback) {
+        postMFiCommand(new MFiEmoneyBlinkCommand(isBlink, color, duration), callback);
     }
 
     /**
