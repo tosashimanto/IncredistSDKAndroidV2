@@ -22,6 +22,7 @@ import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.DeviceInfo;
 import jp.co.flight.incredist.android.model.EmvPacket;
 import jp.co.flight.incredist.android.model.EmvTagType;
+import jp.co.flight.incredist.android.model.EmvTransactionType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
 import jp.co.flight.incredist.android.model.ICCardStatus;
@@ -66,7 +67,7 @@ public interface IncredistModel extends Observable {
 
     void setLedColor(LedColor color, boolean isOn, OnSuccessVoidFunction success, OnFailureFunction failure);
 
-    void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout, OnSuccessFunction<EmvPacket> emvSuccess, OnSuccessFunction<MagCard> magSuccess, OnFailureFunction failure);
+    void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, int aidSetting, EmvTransactionType transactionType, boolean fallback, long timeout, OnSuccessFunction<EmvPacket> emvSuccess, OnSuccessFunction<MagCard> magSuccess, OnFailureFunction failure);
 
     void checkCardStatus(OnSuccessFunction<ICCardStatus> success, OnFailureFunction failure);
 
@@ -294,12 +295,13 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
-        public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout,
+        public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType,
+                                   int aidSetting, EmvTransactionType transactionType, boolean fallback, long timeout,
                                    OnSuccessFunction<EmvPacket> emvSuccess,
                                    OnSuccessFunction<MagCard> magSuccess,
                                    OnFailureFunction failure) {
             if (mIncredist != null) {
-                mIncredist.scanCreditCard(cardTypeSet, amount, tagType, timeout, emvSuccess, magSuccess, failure);
+                mIncredist.scanCreditCard(cardTypeSet, amount, tagType, aidSetting, transactionType, fallback, timeout, emvSuccess, magSuccess, failure);
             } else {
                 failure.onFailure(-1);
             }

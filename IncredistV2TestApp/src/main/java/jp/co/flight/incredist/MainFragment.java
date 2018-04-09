@@ -20,6 +20,7 @@ import jp.co.flight.incredist.android.IncredistV2TestApp.R;
 import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.EmvTagType;
+import jp.co.flight.incredist.android.model.EmvTransactionType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.model.IncredistModel;
@@ -219,8 +220,8 @@ public class MainFragment extends Fragment
     }
 
     @Override
-    public void onSetCreditPaymentSetting(int requestCode, EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType) {
-        mPresenter.scanCreditCard(cardTypeSet, amount, tagType);
+    public void onSetCreditPaymentSetting(int requestCode, EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, int aidSetting, EmvTransactionType transactionType, boolean fallback, long timeout) {
+        mPresenter.scanCreditCard(cardTypeSet, amount, tagType, aidSetting, transactionType, fallback, timeout);
     }
 
     public void showEmoneyBlinkDialog() {

@@ -8,6 +8,7 @@ import android.widget.AdapterView;
 import android.widget.Spinner;
 
 import jp.co.flight.incredist.EnumSpinnerAdapter;
+import jp.co.flight.incredist.android.model.EmvTransactionType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.LedColor;
 
@@ -69,5 +70,10 @@ public class EnumSpinnerBindingAdapter {
     @InverseBindingAdapter(attribute = "itemValue")
     public static LedColor getLedColor(Spinner spinner) {
         return LedColor.values()[spinner.getSelectedItemPosition()];
+    }
+
+    @InverseBindingAdapter(attribute = "itemValue")
+    public static EmvTransactionType getTransactionType(Spinner spinner) {
+        return EmvTransactionType.values()[spinner.getSelectedItemPosition()];
     }
 }
