@@ -6,6 +6,7 @@ import android.databinding.BaseObservable;
 import android.databinding.DataBindingUtil;
 import android.databinding.ObservableBoolean;
 import android.databinding.ObservableField;
+import android.databinding.ObservableInt;
 import android.databinding.ObservableLong;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -21,6 +22,7 @@ import jp.co.flight.incredist.android.IncredistV2TestApp.R;
 import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentDialogCreditSettingBinding;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.EmvTagType;
+import jp.co.flight.incredist.android.model.EmvTransactionType;
 
 /**
  * クレジット決済設定ダイアログ
@@ -54,7 +56,7 @@ public class CreditPaymentSettingDialogFragment extends DialogFragment {
             int requestCode = getTargetRequestCode();
 
             if (target != null && target instanceof Listener) {
-                ((Listener) target).onSetCreditPaymentSetting(requestCode, mData.mCardTypeSet.get(), mData.mAmount.get(), mData.mTagType.get());
+                ((Listener) target).onSetCreditPaymentSetting(requestCode, mData.mCardTypeSet.get(), mData.mAmount.get(), mData.mTagType.get(), mData.mAidSetting.get(), mData.mTransactionType.get(), mData.mFallback.get(), mData.mTimeout.get());
             }
         });
 
@@ -93,6 +95,10 @@ public class CreditPaymentSettingDialogFragment extends DialogFragment {
         public final ObservableField<EnumSet<CreditCardType>> mCardTypeSet = new ObservableField<>();
         public final ObservableLong mAmount = new ObservableLong();
         public final ObservableField<EmvTagType> mTagType = new ObservableField<>();
+        public final ObservableInt mAidSetting = new ObservableInt();
+        public final ObservableField<EmvTransactionType> mTransactionType = new ObservableField<>();
+        public final ObservableBoolean mFallback = new ObservableBoolean();
+        public final ObservableLong mTimeout = new ObservableLong();
 
         public final ObservableBoolean mMsrChecked = new ObservableBoolean();
         public final ObservableBoolean mContactEmvChecked = new ObservableBoolean();
@@ -103,10 +109,15 @@ public class CreditPaymentSettingDialogFragment extends DialogFragment {
             mCardTypeSet.set(EnumSet.allOf(CreditCardType.class));
             mAmount.set(10000);
             mTagType.set(EmvTagType.AllTag);
+            mAidSetting.set(0);
+            mTransactionType.set(EmvTransactionType.Purchase);
+            mFallback.set(true);
+            mTimeout.set(20000);
         }
     }
 
     public interface Listener {
-        void onSetCreditPaymentSetting(int requestCode, EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType);
+        void onSetCreditPaymentSetting(int requestCode, EnumSet<CreditCardType> cardTypeSet, long amount,
+                                       EmvTagType tagType, int aidSetting, EmvTransactionType transactionType, boolean fallback, long timeout);
     }
 }

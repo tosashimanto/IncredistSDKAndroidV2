@@ -13,6 +13,7 @@ import jp.co.flight.incredist.android.internal.util.BytesUtils;
 import jp.co.flight.incredist.android.internal.util.FLog;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.EmvTagType;
+import jp.co.flight.incredist.android.model.EmvTransactionType;
 import jp.co.flight.incredist.android.model.MagCard;
 
 /**
@@ -25,6 +26,7 @@ public class MFiScanCreditCardCommand extends MFiCommand {
 
     private static final byte RESPONSE_SUCCESS = (byte) 0x00;
     private static final byte RESPONSE_MAG = (byte) 0x02;
+    private static final byte RESPONSE_DECLINE = (byte) 0x07;
     private static final byte RESPONSE_CANCEL_BUTTON_PUSHED = (byte) 0x10;
     private static final byte RESPONSE_EMV_FALLBACK = (byte) 0x20;
     private static final byte RESPONSE_ERROR = (byte) 0xff;
@@ -34,9 +36,9 @@ public class MFiScanCreditCardCommand extends MFiCommand {
     private EmvResult mEmvResult = null;
     private final long mTimeout;
 
-    private static byte[] createPayload(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType) {
+    private static byte[] createPayload(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, int aidSetting, EmvTransactionType transactionType, boolean fallback) {
         // CHECKSTYLE:OFF MagicNumber
-        byte[] payload = new byte[10];
+        byte[] payload = new byte[13];
 
         System.arraycopy(PT_HEADER, 0, payload, 0, PT_HEADER.length);
 
@@ -47,6 +49,9 @@ public class MFiScanCreditCardCommand extends MFiCommand {
 
         payload[2] = cardType;
         payload[3] = tagType.getValue();
+        payload[4] = (byte) (aidSetting & 0xff);
+        payload[5] = transactionType.getValue();
+        payload[6] = fallback ? (byte) 0x00 : (byte) 0x01;
 
         long value = amount;
         // BCD 12桁を下から詰める
@@ -56,15 +61,15 @@ public class MFiScanCreditCardCommand extends MFiCommand {
             b |= (byte) (((value % 10) & 0x0f) << 4);
             value = (value - value % 10) / 10;
 
-            payload[4 + i] = b;
+            payload[7 + i] = b;
         }
         // CHECKSTYLE:ON MagicNumber
 
         return payload;
     }
 
-    public MFiScanCreditCardCommand(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout) {
-        super(createPayload(cardTypeSet, amount, tagType));
+    public MFiScanCreditCardCommand(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, int aidSetting, EmvTransactionType transactionType, boolean fallback, long timeout) {
+        super(createPayload(cardTypeSet, amount, tagType, aidSetting, transactionType, fallback));
         mTimeout = timeout;
     }
 
@@ -89,7 +94,7 @@ public class MFiScanCreditCardCommand extends MFiCommand {
         byte[] data = response.getData();
         IncredistResult result;
 
-        if (data != null && data.length > 1) {
+        if (data != null && data.length >= 1) {
             if (mEmvResult == null) {
                 // 第1パケット
                 switch (data[0]) {
@@ -100,6 +105,9 @@ public class MFiScanCreditCardCommand extends MFiCommand {
                             return result;
                         }
                         break;
+
+                    case RESPONSE_DECLINE:
+                        return new IncredistResult(IncredistResult.STATUS_DECLINE);
 
                     case RESPONSE_CANCEL_BUTTON_PUSHED:
                         return new IncredistResult(IncredistResult.STATUS_INPUT_CANCEL_BUTTON);

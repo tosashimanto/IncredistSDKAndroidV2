@@ -98,6 +98,11 @@ public interface StatusCode extends BluetoothLeStatusCode {
     int STATUS_NOT_CANCELLABLE = 103;
 
     /**
+     * 決済処理でカードが拒否されたことを示します
+     */
+    int STATUS_DECLINE = 201;
+
+    /**
      * 決済処理でキャンセルボタンが押されたことを示します
      */
     int STATUS_INPUT_CANCEL_BUTTON = 202;

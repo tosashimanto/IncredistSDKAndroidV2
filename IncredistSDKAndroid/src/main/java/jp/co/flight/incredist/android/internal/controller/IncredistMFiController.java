@@ -33,6 +33,7 @@ import jp.co.flight.incredist.android.internal.transport.mfi.MFiTfpDisplayMessag
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.EmvTagType;
+import jp.co.flight.incredist.android.model.EmvTransactionType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.PinEntry;
@@ -192,15 +193,18 @@ public class IncredistMFiController implements IncredistProtocolController {
     /**
      * 決済用にクレジットカード(EMV 接触・非接触 と磁気カード)を読み取ります
      *
-     * @param cardTypeSet カード種別
-     * @param amount      決済金額
-     * @param tagType     タグ種別
-     * @param timeout     タイムアウト時間(msec)
-     * @param callback    コールバック
+     * @param cardTypeSet     カード種別
+     * @param amount          決済金額
+     * @param tagType         タグ種別
+     * @param aidSetting      AID設定
+     * @param transactionType トランザクション種別
+     * @param fallback        フォールバック処理を実行するかどうか
+     * @param timeout         タイムアウト時間(msec)
+     * @param callback        コールバック
      */
     @Override
-    public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout, IncredistController.Callback callback) {
-        postMFiCommand(new MFiScanCreditCardCommand(cardTypeSet, amount, tagType, timeout), callback);
+    public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, int aidSetting, EmvTransactionType transactionType, boolean fallback, long timeout, IncredistController.Callback callback) {
+        postMFiCommand(new MFiScanCreditCardCommand(cardTypeSet, amount, tagType, aidSetting, transactionType, fallback, timeout), callback);
     }
 
     /**

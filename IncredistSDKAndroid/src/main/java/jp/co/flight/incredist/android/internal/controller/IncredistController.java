@@ -13,6 +13,7 @@ import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.EmvTagType;
+import jp.co.flight.incredist.android.model.EmvTransactionType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.PinEntry;
@@ -243,14 +244,17 @@ public class IncredistController {
     /**
      * 決済用にクレジットカード(EMV 接触・非接触 と磁気カード)を読み取ります
      *
-     * @param cardTypeSet カード種別
-     * @param amount      決済金額
-     * @param tagType     タグ種別
-     * @param timeout     タイムアウト時間(msec)
-     * @param callback    コールバック
+     * @param cardTypeSet     カード種別
+     * @param amount          決済金額
+     * @param tagType         タグ種別
+     * @param aidSetting      AID設定
+     * @param transactionType トランザクション種別
+     * @param fallback        フォールバック処理を実行するかどうか
+     * @param timeout         タイムアウト時間(msec)
+     * @param callback        コールバック
      */
-    public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout, Callback callback) {
-        mProtoController.scanCreditCard(cardTypeSet, amount, tagType, timeout, callback);
+    public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, int aidSetting, EmvTransactionType transactionType, boolean fallback, long timeout, Callback callback) {
+        mProtoController.scanCreditCard(cardTypeSet, amount, tagType, aidSetting, transactionType, fallback, timeout, callback);
     }
 
     /**

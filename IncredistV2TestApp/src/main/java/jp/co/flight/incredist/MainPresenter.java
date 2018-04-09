@@ -18,6 +18,7 @@ import jp.co.flight.incredist.android.IncredistV2TestApp.BuildConfig;
 import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.EmvTagType;
+import jp.co.flight.incredist.android.model.EmvTransactionType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.model.IncredistModel;
@@ -77,7 +78,7 @@ public interface MainPresenter {
 
     void onCredit();
 
-    void scanCreditCard(EnumSet<CreditCardType> cardType, long amount, EmvTagType tagType);
+    void scanCreditCard(EnumSet<CreditCardType> cardType, long amount, EmvTagType tagType, int aidSetting, EmvTransactionType transactionType, boolean fallback, long timeout);
 
     void onCheckCardStatus();
 
@@ -138,6 +139,12 @@ public interface MainPresenter {
         public void onSelectDevice() {
             addLog("selectDevice");
             List<BluetoothPeripheral> peripherals = mIncredist.getDeviceList();
+
+            if (peripherals == null) {
+                addLog("no device list");
+                return;
+            }
+            
             ArrayList<String> deviceNames = new ArrayList<>();
             for (BluetoothPeripheral peripheral : peripherals) {
                 deviceNames.add(peripheral.getDeviceName());
@@ -353,9 +360,9 @@ public interface MainPresenter {
         }
 
         @Override
-        public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType) {
+        public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, int aidSetting, EmvTransactionType transactionType, boolean fallback, long timeout) {
             addLog("credit");
-            mIncredist.scanCreditCard(cardTypeSet, amount, tagType, 20000, (result) -> {
+            mIncredist.scanCreditCard(cardTypeSet, amount, tagType, aidSetting, transactionType, fallback, timeout, (result) -> {
                 addLog("credit emvsuccess");
             }, (magResult) -> {
                 addLog("credit magsuccess");

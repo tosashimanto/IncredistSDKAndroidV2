@@ -20,6 +20,7 @@ import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.DeviceInfo;
 import jp.co.flight.incredist.android.model.EmvPacket;
 import jp.co.flight.incredist.android.model.EmvTagType;
+import jp.co.flight.incredist.android.model.EmvTransactionType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.FelicaCommandResult;
 import jp.co.flight.incredist.android.model.ICCardStatus;
@@ -265,19 +266,23 @@ public class Incredist {
     /**
      * 決済処理を実行します
      *
-     * @param cardTypeSet カード種別
-     * @param amount      決済金額
-     * @param tagType     暗号化タグ種別(カード種別が MSR の場合は AllTag を指定する必要がある)
-     * @param timeout     タイムアウト時間(msec)
-     * @param emvSuccess  ICカード決済成功時処理
-     * @param magSuccess  磁気カード決済成功時処理
-     * @param failure     決済失敗時処理　// TODO コールバックインタフェースを専用に作る方がよいかも
+     * @param cardTypeSet     カード種別
+     * @param amount          決済金額
+     * @param tagType         暗号化タグ種別(カード種別が MSR の場合は AllTag を指定する必要がある)
+     * @param aidSetting      AID設定
+     * @param transactionType トランザクション種別
+     * @param fallback        フォールバック処理を実行するかどうか
+     * @param timeout         タイムアウト時間(msec)
+     * @param emvSuccess      ICカード決済成功時処理
+     * @param magSuccess      磁気カード決済成功時処理
+     * @param failure         決済失敗時処理　// TODO コールバックインタフェースを専用に作る方がよいかも
      */
-    public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, long timeout,
+    public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType,
+                               int aidSetting, EmvTransactionType transactionType, boolean fallback, long timeout,
                                @Nullable OnSuccessFunction<EmvPacket> emvSuccess,
                                @Nullable OnSuccessFunction<MagCard> magSuccess,
                                @Nullable OnFailureFunction failure) {
-        mController.scanCreditCard(cardTypeSet, amount, tagType, timeout, result -> {
+        mController.scanCreditCard(cardTypeSet, amount, tagType, aidSetting, transactionType, fallback, timeout, result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 if (result instanceof EmvResult) {
                     if (emvSuccess != null) {
