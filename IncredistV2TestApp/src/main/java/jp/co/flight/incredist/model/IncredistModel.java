@@ -29,6 +29,7 @@ import jp.co.flight.incredist.android.model.ICCardStatus;
 import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.MagCard;
 import jp.co.flight.incredist.android.model.PinEntry;
+import jp.co.flight.incredist.android.model.ProductInfo;
 
 /**
  * Incredist テストプログラム用モデル.
@@ -46,6 +47,8 @@ public interface IncredistModel extends Observable {
     void disconnect(OnSuccessFunction<Incredist> success, OnFailureFunction failure);
 
     void getDeviceInfo(OnSuccessFunction<DeviceInfo> success, OnFailureFunction failure);
+
+    void getProductInfo(OnSuccessFunction<ProductInfo> success, OnFailureFunction failure);
 
     void felicaOpen(boolean withLed, OnSuccessVoidFunction success, OnFailureFunction failure);
 
@@ -177,6 +180,15 @@ public interface IncredistModel extends Observable {
         public void getDeviceInfo(OnSuccessFunction<DeviceInfo> success, OnFailureFunction failure) {
             if (mIncredist != null) {
                 mIncredist.getDeviceInfo(success, failure);
+            } else {
+                failure.onFailure(-1);
+            }
+        }
+
+        @Override
+        public void getProductInfo(OnSuccessFunction<ProductInfo> success, OnFailureFunction failure) {
+            if (mIncredist != null) {
+                mIncredist.getProductInfo(success, failure);
             } else {
                 failure.onFailure(-1);
             }

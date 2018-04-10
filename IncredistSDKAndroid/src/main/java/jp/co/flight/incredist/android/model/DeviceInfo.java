@@ -1,7 +1,5 @@
 package jp.co.flight.incredist.android.model;
 
-import jp.co.flight.incredist.android.internal.controller.result.DeviceInfoResult;
-
 /**
  * デバイス情報取得結果
  */
@@ -10,17 +8,23 @@ public class DeviceInfo {
     private final String mDeviceModel;
     private final String mFirmwareVersion;
     private final String mSerialNumber;
+    private final String mHardwareVersion;
 
     /**
      * コンストラクタ.
      *
-     * @param result デバイスからの取得結果
+     * @param deviceName      デバイス名
+     * @param deviceModel     モデル名
+     * @param firmwareVersion ファームウェアのバージョン
+     * @param serialNumber    シリアル番号
+     * @param hardwareVersion ハードウェアのバージョン
      */
-    public DeviceInfo(DeviceInfoResult result) {
-        this.mDeviceName = result.deviceName;
-        this.mDeviceModel = result.deviceModel;
-        this.mFirmwareVersion = result.firmwareVersion;
-        this.mSerialNumber = result.serialNumber;
+    public DeviceInfo(String deviceName, String deviceModel, String firmwareVersion, String serialNumber, String hardwareVersion) {
+        mDeviceName = deviceName;
+        mDeviceModel = deviceModel;
+        mFirmwareVersion = firmwareVersion;
+        mSerialNumber = serialNumber;
+        mHardwareVersion = hardwareVersion;
     }
 
     /**
@@ -57,5 +61,14 @@ public class DeviceInfo {
      */
     public String getSerialNumber() {
         return mSerialNumber;
+    }
+
+    /**
+     * ハードウェアのバージョンを取得します
+     *
+     * @return バージョン名
+     */
+    public String getHardwareVersion() {
+        return mHardwareVersion;
     }
 }

@@ -38,7 +38,7 @@ public class MFiDeviceInfoCommand extends MFiCommand {
             String[] values = str.split("\n");
 
             if (values.length >= 4) {
-                return new DeviceInfoResult(values[0], values[1], values[2], values[3]);
+                return new DeviceInfoResult(values[0], values[1], values[2], values[3], values.length > 4 ? values[4] : null);
             }
         }
         // CHECKSTYLE:ON MagicNumber
