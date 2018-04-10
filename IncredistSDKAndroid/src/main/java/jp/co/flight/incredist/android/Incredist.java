@@ -27,6 +27,7 @@ import jp.co.flight.incredist.android.model.ICCardStatus;
 import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.MagCard;
 import jp.co.flight.incredist.android.model.PinEntry;
+import jp.co.flight.incredist.android.model.ProductInfo;
 
 /**
  * Incredist API クラス.
@@ -116,7 +117,7 @@ public class Incredist {
         mController.getDeviceInfo(result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof DeviceInfoResult) {
                 if (success != null) {
-                    success.onSuccess(new DeviceInfo((DeviceInfoResult) result));
+                    success.onSuccess(((DeviceInfoResult) result).toDeviceInfo());
                 }
             } else {
                 if (failure != null) {
@@ -124,6 +125,20 @@ public class Incredist {
                 }
             }
         });
+    }
+
+    /**
+     * プロダクト情報を取得します
+     *
+     * @param success 取得成功時の処理
+     * @param failure 取得失敗時の処理
+     */
+    public void getProductInfo(@Nullable OnSuccessFunction<ProductInfo> success, @Nullable OnFailureFunction failure) {
+        getDeviceInfo((deviceInfo) -> {
+            if (success != null) {
+                success.onSuccess(new ProductInfo(deviceInfo));
+            }
+        }, failure);
     }
 
     /**

@@ -38,6 +38,8 @@ public interface MainPresenter {
 
     void onGetDeviceInfo();
 
+    void onGetProductInfo();
+
     void onDisconnect();
 
     void onStop();
@@ -144,7 +146,7 @@ public interface MainPresenter {
                 addLog("no device list");
                 return;
             }
-            
+
             ArrayList<String> deviceNames = new ArrayList<>();
             for (BluetoothPeripheral peripheral : peripherals) {
                 deviceNames.add(peripheral.getDeviceName());
@@ -179,6 +181,16 @@ public interface MainPresenter {
                 addLog(String.format(Locale.JAPANESE, "serial: %s firm: %s", serial.getSerialNumber(), serial.getFirmwareVersion()));
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "getDeviceInfo failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onGetProductInfo() {
+            addLog("getProductInfo");
+            mIncredist.getProductInfo(product -> {
+                addLog(String.format(Locale.JAPANESE, "serial: %s firm: %s type: %s", product.getSerialNumber(), product.getFirmwareVersion(), product.getProductType().name()));
+            }, (errorCode) -> {
+                addLog(String.format(Locale.JAPANESE, "getProductInfo failure %d", errorCode));
             });
         }
 
