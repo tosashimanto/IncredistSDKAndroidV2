@@ -87,7 +87,7 @@ public final class MFiEmvSendArc extends MFiCommand {
     protected IncredistResult parseMFiResponse(MFiResponse response) {
         // CHECKSTYLE:OFF MagicNumber
         byte[] bytes = response.getData();
-        if (bytes != null && bytes.length > 1) {
+        if (bytes != null && bytes.length >= 1) {
             if (bytes[0] == 0) {
                 return new EmvArcResult(Arrays.copyOfRange(bytes, 1, bytes.length));
             } else {
