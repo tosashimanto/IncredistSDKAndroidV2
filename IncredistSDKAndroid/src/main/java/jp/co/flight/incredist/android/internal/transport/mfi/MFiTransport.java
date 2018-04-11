@@ -201,7 +201,7 @@ public class MFiTransport {
         }
 
         mCommand = null;
-        return new IncredistResult(IncredistResult.STATUS_INVALID_RESPONSE);
+        return firstCommand.parseResponse(new MFiNoResponse());
     }
 
     /**
