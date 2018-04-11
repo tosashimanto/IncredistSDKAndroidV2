@@ -17,7 +17,7 @@ public class MFiEmvDisplayMessageCommand extends MFiCommand {
         byte[] messageBytes = null;
         int messageByteSize = 0;
         if (message != null) {
-            messageBytes = message.replaceAll("¥", "\\").getBytes(Charset.forName("US-ASCII"));
+            messageBytes = message.replaceAll("¥", "\\\\").getBytes(Charset.forName("US-ASCII"));
             messageByteSize = messageBytes.length;
         }
 
