@@ -387,7 +387,7 @@ public class BluetoothCentral {
             return;
         }
         BroadcastReceiver receiver = new BroadcastReceiver() {
-            final String TAG = "BroarcastReceiver";
+            final String TAG = "BroadcastReceiver";
             boolean mDisabling = true;
 
             @Override

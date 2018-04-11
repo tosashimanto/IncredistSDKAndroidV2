@@ -150,7 +150,7 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void emvDisplayMessage(int type, @Nullable String message, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
-        mController.emvDisplaymessage(type, message, result -> {
+        mController.emvDisplayMessage(type, message, result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 if (success != null) {
                     success.onSuccess();
@@ -183,7 +183,7 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void tfpDisplayMessage(int type, @Nullable String message, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
-        mController.tfpDisplaymessage(type, message, result -> {
+        mController.tfpDisplayMessage(type, message, result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 if (success != null) {
                     success.onSuccess();
@@ -377,7 +377,7 @@ public class Incredist {
      * @param success 成功時処理
      * @param failure 失敗時処理
      */
-    public void feliaLedColor(LedColor color, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+    public void felicaLedColor(LedColor color, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
         mController.felicaLedColor(color, result -> {
             if (result.status == IncredistResult.STATUS_SUCCESS) {
                 if (success != null) {

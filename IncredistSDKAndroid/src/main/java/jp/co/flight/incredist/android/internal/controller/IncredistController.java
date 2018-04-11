@@ -189,8 +189,8 @@ public class IncredistController {
      * @param message  メッセージ文字列
      * @param callback コールバック
      */
-    public void emvDisplaymessage(int type, @Nullable String message, Callback callback) {
-        mProtoController.emvDisplaymessage(type, message, callback);
+    public void emvDisplayMessage(int type, @Nullable String message, Callback callback) {
+        mProtoController.emvDisplayMessage(type, message, callback);
     }
 
     /**
@@ -200,8 +200,8 @@ public class IncredistController {
      * @param message  メッセージ文字列
      * @param callback コールバック
      */
-    public void tfpDisplaymessage(int type, @Nullable String message, Callback callback) {
-        mProtoController.tfpDisplaymessage(type, message, callback);
+    public void tfpDisplayMessage(int type, @Nullable String message, Callback callback) {
+        mProtoController.tfpDisplayMessage(type, message, callback);
     }
 
     /**
