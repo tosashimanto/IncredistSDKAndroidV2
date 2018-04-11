@@ -128,7 +128,7 @@ public class IncredistMFiController implements IncredistProtocolController {
      * @param callback コールバック
      */
     @Override
-    public void emvDisplaymessage(int type, @Nullable String message, IncredistController.Callback callback) {
+    public void emvDisplayMessage(int type, @Nullable String message, IncredistController.Callback callback) {
         postMFiCommand(new MFiEmvDisplayMessageCommand(type, message), callback);
     }
 
@@ -140,7 +140,7 @@ public class IncredistMFiController implements IncredistProtocolController {
      * @param callback コールバック
      */
     @Override
-    public void tfpDisplaymessage(int type, @Nullable String message, IncredistController.Callback callback) {
+    public void tfpDisplayMessage(int type, @Nullable String message, IncredistController.Callback callback) {
         postMFiCommand(new MFiTfpDisplayMessageCommand(type, message), callback);
     }
 

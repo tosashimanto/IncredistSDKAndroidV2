@@ -38,7 +38,7 @@ interface IncredistProtocolController {
      * @param message  メッセージ文字列
      * @param callback コールバック
      */
-    void emvDisplaymessage(int type, @Nullable String message, IncredistController.Callback callback);
+    void emvDisplayMessage(int type, @Nullable String message, IncredistController.Callback callback);
 
     /**
      * TFP メッセージを表示します
@@ -47,7 +47,7 @@ interface IncredistProtocolController {
      * @param message  メッセージ文字列
      * @param callback コールバック
      */
-    void tfpDisplaymessage(int type, @Nullable String message, IncredistController.Callback callback);
+    void tfpDisplayMessage(int type, @Nullable String message, IncredistController.Callback callback);
 
     /**
      * 暗号化モードを設定します

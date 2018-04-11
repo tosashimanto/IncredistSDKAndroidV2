@@ -206,7 +206,7 @@ public interface IncredistModel extends Observable {
         @Override
         public void felicaLedColor(LedColor color, OnSuccessVoidFunction success, OnFailureFunction failure) {
             if (mIncredist != null) {
-                mIncredist.feliaLedColor(color, success, failure);
+                mIncredist.felicaLedColor(color, success, failure);
             } else {
                 failure.onFailure(-1);
             }
