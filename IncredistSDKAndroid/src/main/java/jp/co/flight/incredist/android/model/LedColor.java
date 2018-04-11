@@ -8,7 +8,8 @@ public enum LedColor {
     YELLOW(0x32),
     GREEN(0x33),
     RED(0x34),
-    ALL(0x35);
+    ALL(0x35),
+    NONE(0x36);
 
     private final int mValue;
 
