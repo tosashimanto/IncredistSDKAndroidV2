@@ -50,9 +50,10 @@ public class MFiFelicaSendCommand extends MFiCommand {
     }
 
     /**
-     * 通信後の
+     * 通信後のウェイト時間
+     * FeliCa 通信処理では 0 とする
      *
-     * @return
+     * @return 0msec
      */
     @Override
     public long getGuardWait() {

@@ -3,6 +3,7 @@ package jp.co.flight.incredist.android.model;
 /**
  * FeliCa コマンド処理結果
  */
+@SuppressWarnings("unused")
 public class FelicaCommandResult {
     private final int mStatus1;
     private final int mStatus2;

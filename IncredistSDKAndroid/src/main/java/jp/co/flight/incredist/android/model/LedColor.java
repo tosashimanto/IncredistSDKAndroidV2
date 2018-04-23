@@ -3,6 +3,7 @@ package jp.co.flight.incredist.android.model;
 /**
  * LED色定義
  */
+@SuppressWarnings("unused")
 public enum LedColor {
     BLUE(0x31),
     YELLOW(0x32),

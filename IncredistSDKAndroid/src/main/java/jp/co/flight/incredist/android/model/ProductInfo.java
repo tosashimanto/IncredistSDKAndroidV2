@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 /**
  * プロダクト情報取得結果
  */
+@SuppressWarnings("unused")
 public class ProductInfo {
     public enum ProductType {
         Incredist("B"),
@@ -99,10 +100,12 @@ public class ProductInfo {
         this.mSerialNumber = deviceInfo.getSerialNumber();
         this.mHardwareVersion = deviceInfo.getHardwareVersion();
 
+        // CHECKSTYLE:OFF MagicNumber
         String product = mSerialNumber.substring(2, 3);
         String osVersion = mSerialNumber.substring(3, 4);
         String color = mSerialNumber.substring(4, 5);
         String countryCode = mSerialNumber.substring(5, 7);
+        // CHECKSTYLE:ON MagicNumber
 
         mProductType = ProductType.findProductType(product);
         mSupportOs = ProductSupportOs.findProductSupportOs(osVersion);

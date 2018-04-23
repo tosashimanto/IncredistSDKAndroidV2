@@ -3,6 +3,7 @@ package jp.co.flight.incredist.android.model;
 /**
  * デバイス情報取得結果
  */
+@SuppressWarnings("unused")
 public class DeviceInfo {
     private final String mDeviceName;
     private final String mDeviceModel;

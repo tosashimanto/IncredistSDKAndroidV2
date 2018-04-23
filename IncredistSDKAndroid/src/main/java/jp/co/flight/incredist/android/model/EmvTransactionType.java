@@ -3,6 +3,7 @@ package jp.co.flight.incredist.android.model;
 /**
  * EMV カーネルに指定する TransactionType
  */
+@SuppressWarnings("unused")
 public enum EmvTransactionType {
     // CHECKSTYLE:OFF MagicNumber
     Purchase(0),

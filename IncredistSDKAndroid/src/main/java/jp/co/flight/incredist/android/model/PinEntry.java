@@ -5,6 +5,7 @@ import jp.co.flight.incredist.android.internal.controller.result.PinEntryResult;
 /**
  * PIN入力パラメータと結果
  */
+@SuppressWarnings("unused")
 public class PinEntry {
     public enum Type {
         PlainText(0),
