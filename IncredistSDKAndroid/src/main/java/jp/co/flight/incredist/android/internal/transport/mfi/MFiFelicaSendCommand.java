@@ -46,7 +46,17 @@ public class MFiFelicaSendCommand extends MFiCommand {
      */
     @Override
     public long getResponseTimeout() {
-        return 5000;  // SUPPRESS CHECKSTYLE MagicNumber
+        return 1000;  // SUPPRESS CHECKSTYLE MagicNumber
+    }
+
+    /**
+     * 通信後の
+     *
+     * @return
+     */
+    @Override
+    public long getGuardWait() {
+        return 0;
     }
 
     /**
