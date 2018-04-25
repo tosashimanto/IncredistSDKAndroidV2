@@ -1,8 +1,10 @@
 package jp.co.flight.incredist.android.internal.controller;
 
+import android.bluetooth.BluetoothGatt;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.Calendar;
@@ -39,15 +41,17 @@ public class IncredistController {
     /**
      * 移譲先 IncredistController
      */
+    @NonNull
     private IncredistProtocolController mProtoController;
 
-    private HandlerThread mCommandHandlerThread = null;
+    private HandlerThread mCommandHandlerThread;
     private Handler mCommandHandler;
-    private HandlerThread mCallbackHandlerThread = null;
+    private HandlerThread mCallbackHandlerThread;
     private Handler mCallbackHandler;
-    private HandlerThread mCancelHandlerThread = null;
+    private HandlerThread mCancelHandlerThread;
     private Handler mCancelHandler;
 
+    @Nullable
     private BluetoothGattConnection mConnection;
 
     /**
@@ -67,7 +71,7 @@ public class IncredistController {
      *
      * @param connection Bluetooth ペリフェラルとの接続オブジェクト
      */
-    public IncredistController(BluetoothGattConnection connection, String deviceName) {
+    public IncredistController(@NonNull BluetoothGattConnection connection, String deviceName) {
         mConnection = connection;
         mDeviceName = deviceName;
 
@@ -155,6 +159,20 @@ public class IncredistController {
     }
 
     /**
+     * cancel 用の HandlerThread で処理を実行します。
+     *
+     * @param runnable 処理内容の runnable インスタンス
+     */
+    public void postCancel(Runnable runnable) {
+        Handler handler = mCancelHandler;
+        if (handler == null) {
+            handler = new Handler(Looper.getMainLooper());
+        }
+
+        handler.post(runnable);
+    }
+
+    /**
      * 接続中のデバイス名を取得します.
      *
      * @return デバイス名
@@ -169,7 +187,11 @@ public class IncredistController {
      * @return 接続中: BluetoothGatt.STATE_CONNECTED(2), 切断中: BluetoothGatt.STATE_DISCONNECTED(0)
      */
     public int getConnectionState() {
-        return mConnection.getConnectionState();
+        if (mConnection != null) {
+            return mConnection.getConnectionState();
+        } else {
+            return BluetoothGatt.STATE_DISCONNECTED;
+        }
     }
 
     /**
@@ -390,9 +412,11 @@ public class IncredistController {
      */
     public void disconnect(final Callback callback) {
         postCommand(() -> {
-            mConnection.disconnect();
+            if (mConnection != null) {
+                mConnection.disconnect();
 
-            callback.onResult(new IncredistResult(IncredistResult.STATUS_SUCCESS));
+                callback.onResult(new IncredistResult(IncredistResult.STATUS_SUCCESS));
+            }
         }, callback);
     }
 
@@ -400,14 +424,18 @@ public class IncredistController {
      * Incredist との接続を close します
      */
     public void close() {
-        mConnection.close();
+        if (mConnection != null) {
+            mConnection.close();
+        }
     }
 
     /**
      * Incredist との接続を close します
      */
     public void refreshAndClose() {
-        mConnection.refreshAndClose();
+        if (mConnection != null) {
+            mConnection.refreshAndClose();
+        }
     }
 
     /**
@@ -447,7 +475,6 @@ public class IncredistController {
 
         mProtoController.release();
         mConnection = null;
-        mProtoController = null;
 
         return true;
     }

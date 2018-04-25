@@ -6,6 +6,7 @@ package jp.co.flight.incredist.android.model;
  * JIS1 の場合は　track1 のみが有効で track2 は存在しないので null が返却されます
  * JIS2 の場合は MaskedCardNo, ExpirationDate, ServiceCode, CardHolderName は存在しないので null が返却されます
  */
+@SuppressWarnings("unused")
 public class MagCard {
     public enum Type {
         None(0),

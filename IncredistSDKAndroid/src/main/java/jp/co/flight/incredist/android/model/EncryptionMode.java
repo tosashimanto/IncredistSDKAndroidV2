@@ -6,6 +6,7 @@ import android.os.Parcelable;
 /**
  * 暗号化モード設定パラメータクラス
  */
+@SuppressWarnings("unused")
 public class EncryptionMode implements Parcelable {
     public enum CipherMethod {
         DUKTPTDES(1),            // DUKTP TDES

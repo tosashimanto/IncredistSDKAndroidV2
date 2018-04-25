@@ -5,6 +5,7 @@ package jp.co.flight.incredist.android.model;
  *
  * scanCreditCard のパラメータに指定する際、CreditCardType.MSR を指定する場合は AllTag を指定する必要がある
  */
+@SuppressWarnings("unused")
 public enum EmvTagType {
     // CHECKSTYLE:OFF MagicNumber
     AllTag(0),

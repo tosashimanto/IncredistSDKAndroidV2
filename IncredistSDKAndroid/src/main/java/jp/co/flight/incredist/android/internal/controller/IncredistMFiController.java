@@ -43,8 +43,10 @@ import jp.co.flight.incredist.android.model.PinEntry;
  */
 public class IncredistMFiController implements IncredistProtocolController {
 
+    @Nullable
     private IncredistController mController;
 
+    @Nullable
     private MFiTransport mMFiTransport;
 
     /**
@@ -65,17 +67,21 @@ public class IncredistMFiController implements IncredistProtocolController {
      * @param callback コールバック
      */
     private void postMFiCommand(final MFiCommand command, final IncredistController.Callback callback) {
-        mController.postCommand(() -> {
-            final IncredistResult result = mMFiTransport.sendCommand(command);
+        if (mController != null) {
+            mController.postCommand(() -> {
+                if (mController != null && mMFiTransport != null) {
+                    final IncredistResult result = mMFiTransport.sendCommand(command);
 
-            if (result.status == IncredistResult.STATUS_CANCELED && command.cancelable()) {
-                command.onCancelled(mMFiTransport);
-            }
+                    if (result.status == IncredistResult.STATUS_CANCELED && command.cancelable()) {
+                        command.onCancelled(mMFiTransport);
+                    }
 
-            mController.postCallback(() -> {
-                callback.onResult(result);
-            });
-        }, callback);
+                    mController.postCallback(() -> {
+                        callback.onResult(result);
+                    });
+                }
+            }, callback);
+        }
     }
 
     /**
@@ -85,30 +91,43 @@ public class IncredistMFiController implements IncredistProtocolController {
      * @param callback    コールバック
      */
     private void postMFiCommandList(@NonNull final List<? extends MFiCommand> commandList, final IncredistController.Callback callback) {
-        mController.postCommand(() -> {
-            if (commandList.size() == 0) {
-                mController.postCallback(() -> {
-                    callback.onResult(new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND));
-                });
-                return;
-            }
+        if (mController != null) {
+            mController.postCommand(() -> {
+                if (mController != null && mMFiTransport != null) {
+                    if (commandList.size() == 0) {
+                        mController.postCallback(() -> {
+                            callback.onResult(new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND));
+                        });
+                        return;
+                    }
 
-            MFiCommand command = commandList.get(0);
-            final IncredistResult result = mMFiTransport.sendCommand(commandList.toArray(new MFiCommand[0]));
+                    MFiCommand command = commandList.get(0);
+                    final IncredistResult result = mMFiTransport.sendCommand(commandList.toArray(new MFiCommand[0]));
 
-            if (result.status == IncredistResult.STATUS_CANCELED && command.cancelable()) {
-                command.onCancelled(mMFiTransport);
-            }
+                    if (result.status == IncredistResult.STATUS_CANCELED && command.cancelable()) {
+                        command.onCancelled(mMFiTransport);
+                    }
 
-            mController.postCallback(() -> {
-                callback.onResult(result);
-            });
-        }, callback);
+                    mController.postCallback(() -> {
+                        callback.onResult(result);
+                    });
+                }
+            }, callback);
+        }
     }
 
+    /**
+     * コマンド処理中かどうかを返します
+     *
+     * @return 処理中の場合 true
+     */
     @Override
     public boolean isBusy() {
-        return mMFiTransport.isBusy();
+        if (mMFiTransport != null) {
+            return mMFiTransport.isBusy();
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -173,9 +192,11 @@ public class IncredistMFiController implements IncredistProtocolController {
         try {
             postMFiCommand(new MFiPinEntryDCommand(pinType, pinMode, mask, min, max, align, line, timeout), callback);
         } catch (ParameterException ex) {
-            mController.postCallback(() -> {
-                callback.onResult(new IncredistResult(IncredistResult.STATUS_PARAMETER_ERROR));
-            });
+            if (mController != null) {
+                mController.postCallback(() -> {
+                    callback.onResult(new IncredistResult(IncredistResult.STATUS_PARAMETER_ERROR));
+                });
+            }
         }
     }
 
@@ -336,13 +357,16 @@ public class IncredistMFiController implements IncredistProtocolController {
      */
     @Override
     public void cancel(IncredistController.Callback callback) {
-        Thread th = new Thread(() -> {
-            final IncredistResult result = mMFiTransport.cancel();
-            mController.postCallback(() -> {
-                callback.onResult(result);
+        if (mController != null) {
+            mController.postCancel(() -> {
+                if (mController != null && mMFiTransport != null) {
+                    final IncredistResult result = mMFiTransport.cancel();
+                    mController.postCallback(() -> {
+                        callback.onResult(result);
+                    });
+                }
             });
-        });
-        th.start();
+        }
     }
 
     /**
@@ -360,7 +384,9 @@ public class IncredistMFiController implements IncredistProtocolController {
      */
     @Override
     public void release() {
-        mMFiTransport.release();
+        if (mMFiTransport != null) {
+            mMFiTransport.release();
+        }
         mController = null;
         mMFiTransport = null;
     }

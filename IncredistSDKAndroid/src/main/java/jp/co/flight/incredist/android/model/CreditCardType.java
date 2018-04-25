@@ -3,6 +3,7 @@ package jp.co.flight.incredist.android.model;
 /**
  * 決済時のクレジットカード種別
  */
+@SuppressWarnings("unused")
 public enum CreditCardType {
     // CHECKSTYLE:OFF MagicNumber
     MSR(1 << 7),
