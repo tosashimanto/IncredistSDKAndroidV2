@@ -15,6 +15,11 @@ public class MFiFelicaCloseCommand extends MFiCommand {
         super(new byte[]{'f', 'i', 's', 0x00});
     }
 
+    @Override
+    public long getGuardWait() {
+        return 0;
+    }
+
     /**
      * 最大応答待ち時間.
      *

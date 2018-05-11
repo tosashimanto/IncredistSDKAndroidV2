@@ -53,6 +53,11 @@ public class MFiTfpDisplayMessageCommand extends MFiCommand {
         return -1;
     }
 
+    @Override
+    public long getGuardWait() {
+        return 0;
+    }
+
     @NonNull
     @Override
     protected IncredistResult parseMFiResponse(MFiResponse response) {

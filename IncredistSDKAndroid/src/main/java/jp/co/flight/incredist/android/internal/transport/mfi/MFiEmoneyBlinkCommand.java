@@ -35,6 +35,11 @@ public class MFiEmoneyBlinkCommand extends MFiCommand {
         return 1000;  // SUPPRESS CHECKSTYLE MagicNumber
     }
 
+    @Override
+    public long getGuardWait() {
+        return 0;
+    }
+
     @NonNull
     @Override
     protected IncredistResult parseMFiResponse(MFiResponse response) {
