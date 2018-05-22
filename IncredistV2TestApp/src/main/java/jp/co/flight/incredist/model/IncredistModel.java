@@ -42,9 +42,9 @@ public interface IncredistModel extends Observable {
 
     List<BluetoothPeripheral> getDeviceList();
 
-    void connect(OnSuccessFunction<Incredist> success, OnFailureFunction failure);
+    void connect(IncredistManager.IncredistConnectionListener listener);
 
-    void disconnect(OnSuccessFunction<Incredist> success, OnFailureFunction failure);
+    void disconnect();
 
     void getDeviceInfo(OnSuccessFunction<DeviceInfo> success, OnFailureFunction failure);
 
@@ -160,19 +160,38 @@ public interface IncredistModel extends Observable {
         }
 
         @Override
-        public void connect(OnSuccessFunction<Incredist> success, OnFailureFunction failure) {
-            mIncredistManager.connect(mSelectedDevice, 3000, 5000, (incredist) -> {
-                mIncredist = incredist;
-                success.onSuccess(incredist);
-            }, failure);
+        public void connect(IncredistManager.IncredistConnectionListener listener) {
+            mIncredistManager.connect(mSelectedDevice, 3000, 5000, new IncredistManager.IncredistConnectionListener() {
+                @Override
+                public void onConnectIncredist(Incredist incredist) {
+                    mIncredist = incredist;
+                    if (listener != null) {
+                        listener.onConnectIncredist(incredist);
+                    }
+                }
+
+                @Override
+                public void onConnectFailure(int errorCode) {
+                    mIncredist = null;
+                    if (listener != null) {
+                        listener.onConnectFailure(errorCode);
+                    }
+                }
+
+                @Override
+                public void onDisconnectIncredist(Incredist incredist) {
+                    mIncredist = null;
+                    if (listener != null) {
+                        listener.onDisconnectIncredist(incredist);
+                    }
+                }
+            });
         }
 
         @Override
-        public void disconnect(OnSuccessFunction<Incredist> success, OnFailureFunction failure) {
+        public void disconnect() {
             if (mIncredist != null) {
-                mIncredist.disconnect(success, failure);
-            } else {
-                failure.onFailure(-1);
+                mIncredist.disconnect();
             }
         }
 

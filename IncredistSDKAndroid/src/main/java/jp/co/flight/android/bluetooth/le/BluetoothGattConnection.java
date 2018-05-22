@@ -54,7 +54,7 @@ public class BluetoothGattConnection {
          * connect 完了後 discoverService を呼び出す前に呼び出されます。
          * onConnect は discoverService 完了後に呼び出されます。
          */
-        void onDiscoverServices(BluetoothGattConnection connection);
+        void onDiscoveringServices(BluetoothGattConnection connection);
 
         /**
          * 接続完了時に呼び出されます.
