@@ -29,7 +29,7 @@ public class IncredistManager {
     private final BluetoothCentral mCentral;
 
     InternalConnectionListenerV1 mConnectionListenerV1;
-    InternalConnectionListener mConnectionListener;
+    private IncredistConnectionListener mListener = null;
 
     /**
      * デバイス名によるフィルタ.
@@ -472,13 +472,10 @@ public class IncredistManager {
         mConnectionListenerV1.startConnect(peripheral, timeout, success, failure);
     }
 
-    private IncredistConnectionListener mListener = null;
-
     enum State {
         CONNECTING, WAIT, DISCOVERING, REDISCOVERING, CONNECTED, DISCONNECTING, DISCONNECTED
     }
 
-    //TODO この構造だと InternalConnectionListener が Incredist を保持していて 1台しか管理できない
     private class InternalConnectionListener implements BluetoothGattConnection.ConnectionListener {
         private State mState = State.CONNECTING;
 
@@ -681,8 +678,8 @@ public class IncredistManager {
 
     private void connectInternal(BluetoothPeripheral peripheral, long timeout) {
         Handler handler = mCentral.getHandler();
-        mConnectionListener = new InternalConnectionListener(handler);
-        mConnectionListener.startConnect(peripheral, timeout);
+        InternalConnectionListener internalListener = new InternalConnectionListener(handler);
+        internalListener.startConnect(peripheral, timeout);
     }
 
     public void connectToAddress(String address, long timeout) {
