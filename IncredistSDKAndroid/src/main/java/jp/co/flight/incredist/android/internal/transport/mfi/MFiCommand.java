@@ -116,7 +116,7 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
      */
     @Override
     public long getResponseTimeout() {
-        return 100; // SUPPRESS CHECKSTYLE MagicNumber
+        return 200; // SUPPRESS CHECKSTYLE MagicNumber
     }
 
     /**

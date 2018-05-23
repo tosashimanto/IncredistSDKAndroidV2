@@ -46,11 +46,11 @@ public class MFiTfpDisplayMessageCommand extends MFiCommand {
     /**
      * 最大応答待ち時間.
      *
-     * @return 応答パケットがないので -1 を返す
+     * @return 応答パケットがないので 0 を返す
      */
     @Override
     public long getResponseTimeout() {
-        return -1;
+        return 0;
     }
 
     @Override
