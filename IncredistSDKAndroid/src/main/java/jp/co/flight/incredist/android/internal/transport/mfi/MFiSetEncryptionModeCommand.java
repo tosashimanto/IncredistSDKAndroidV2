@@ -32,11 +32,6 @@ public class MFiSetEncryptionModeCommand extends MFiCommand {
         super(createPayload(mode));
     }
 
-    @Override
-    public long getResponseTimeout() {
-        return 1000;   // SUPPRESS CHECKSTYLE MagicNumber
-    }
-
     @NonNull
     @Override
     protected IncredistResult parseMFiResponse(MFiResponse response) {

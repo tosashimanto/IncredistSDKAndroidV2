@@ -15,11 +15,6 @@ public class MFiEmvCardStatusCommand extends MFiCommand {
         super(ICW_HEADER);
     }
 
-    @Override
-    public long getResponseTimeout() {
-        return 1000;  // SUPPRESS CHECKSTYLE MagicNumber
-    }
-
     @NonNull
     @Override
     protected IncredistResult parseMFiResponse(MFiResponse response) {

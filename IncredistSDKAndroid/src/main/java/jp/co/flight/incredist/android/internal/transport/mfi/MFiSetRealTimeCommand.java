@@ -49,11 +49,6 @@ public class MFiSetRealTimeCommand extends MFiCommand {
         this(Calendar.getInstance());
     }
 
-    @Override
-    public long getResponseTimeout() {
-        return 1000;  // SUPPRESS CHECKSTYLE MagicNumber
-    }
-
     @NonNull
     @Override
     protected IncredistResult parseMFiResponse(MFiResponse response) {
