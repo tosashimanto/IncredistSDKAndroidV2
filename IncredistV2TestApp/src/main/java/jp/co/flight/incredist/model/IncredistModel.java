@@ -128,6 +128,7 @@ public interface IncredistModel extends Observable {
         private String mEmvMessageString;
         private int mTfpMessageType;
         private String mTfpMessageString;
+        private String mSerialNumber;
 
         public Impl(Context context) {
             mContext = context;
@@ -465,35 +466,37 @@ public interface IncredistModel extends Observable {
 
         @Override
         public void auto(OnSuccessFunction<String> success, OnFailureFunction failure) {
-            mIncredistManager.connect(mSelectedDevice, 3000, 5000, (incredist) -> {
-                incredist.getSerialNumber((serialNumber) -> {
-                    incredist.disconnect((incredist1) -> {
-                        incredist.release();
-                        mIncredist = null;
-                        if (success != null) {
-                            success.onSuccess(serialNumber);
-                        }
+            mIncredistManager.connect(mSelectedDevice, 3000, 5000, new IncredistManager.IncredistConnectionListener() {
+                @Override
+                public void onConnectIncredist(Incredist incredist) {
+                    incredist.getSerialNumber((serialNumberResult) -> {
+                        mSerialNumber = serialNumberResult;
+                        incredist.disconnect();
                     }, (errorCode) -> {
-                        incredist.release();
-                        mIncredist = null;
+                        incredist.disconnect();
+
                         if (failure != null) {
                             failure.onFailure(errorCode);
                         }
                     });
-                }, (errorCode) -> {
-                    incredist.disconnect((incredist2) -> {
-                        incredist.release();
-                        mIncredist = null;
-                    }, (errorCode2) -> {
-                        incredist.release();
-                        mIncredist = null;
-                    });
+                }
 
+                @Override
+                public void onConnectFailure(int errorCode) {
                     if (failure != null) {
                         failure.onFailure(errorCode);
                     }
-                });
-            }, failure);
+                }
+
+                @Override
+                public void onDisconnectIncredist(Incredist incredist) {
+                    incredist.release();
+                    mIncredist = null;
+                    if (success != null) {
+                        success.onSuccess(mSerialNumber);
+                    }
+                }
+            });
         }
 
         @Override
