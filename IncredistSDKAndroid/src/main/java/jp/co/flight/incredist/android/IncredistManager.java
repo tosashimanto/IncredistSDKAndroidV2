@@ -488,7 +488,13 @@ public class IncredistManager {
     }
 
     enum State {
-        CONNECTING, WAIT, DISCOVERING, REDISCOVERING, CONNECTED, DISCONNECTING, DISCONNECTED
+        CONNECTING,         // 接続開始
+        DISCOVERING,        // discoverService 開始
+        REDISCOVERING,      // discoverService の応答がない場合に再実行
+        SEND_S_COMMAND,     // sコマンド送信
+        CONNECTED,          // 接続完了
+        DISCONNECTING,      // 切断開始
+        DISCONNECTED        // 切断完了
     }
 
     private class InternalConnectionListener implements BluetoothGattConnection.ConnectionListener {
@@ -574,7 +580,7 @@ public class IncredistManager {
             FLog.d(TAG, "onConnect called");
             if (mState != State.CONNECTED) {
                 updateState(State.CONNECTED);
-                callOnConnected();
+                afterOnConnect();
             }
         }
 
@@ -605,7 +611,7 @@ public class IncredistManager {
 
             // すでに接続済みかどうかをチェック
             if (mConnection != null && mConnection.getConnectionState() == BluetoothGatt.STATE_CONNECTED) {
-                callOnConnected();
+                afterOnConnect();
             } else {
                 mConnection = IncredistManager.this.mCentral.connect(peripheral, this);
                 // 未接続の場合 接続処理を実行
@@ -621,9 +627,19 @@ public class IncredistManager {
             }
         }
 
+        private void afterOnConnect() {
+            // 接続確立後の処理
+            mIncredist = new Incredist(IncredistManager.this, mConnection, mPeripheral.getDeviceName());
+            // まず sコマンドを送信する
+            mIncredist.stop(() -> {
+                callOnConnected();
+            }, (errorCode) -> {
+                callOnConnectionFailure(errorCode);
+            });
+        }
+
         private void callOnConnected() {
             FLog.d(TAG, "call onConnected");
-            mIncredist = new Incredist(IncredistManager.this, mConnection, mPeripheral.getDeviceName());
             if (mListener != null) {
                 mListener.onConnectIncredist(mIncredist);
             }

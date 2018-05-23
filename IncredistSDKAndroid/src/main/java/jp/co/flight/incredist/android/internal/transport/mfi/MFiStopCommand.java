@@ -27,6 +27,11 @@ public class MFiStopCommand extends MFiCommand {
         return 0;
     }
 
+    @Override
+    public long getGuardWait() {
+        return 400; // SUPPRESS CHECKSTYLE MagicNumber
+    }
+
     @NonNull
     @Override
     protected IncredistResult parseMFiResponse(MFiResponse response) {
