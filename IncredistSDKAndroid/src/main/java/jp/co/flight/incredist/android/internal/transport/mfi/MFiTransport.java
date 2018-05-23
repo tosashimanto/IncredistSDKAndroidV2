@@ -90,11 +90,13 @@ public class MFiTransport {
         // レスポンスの解析などは最初の引数のオブジェクトで実行する
         MFiCommand firstCommand = commandList[0];
 
+        FLog.d(TAG, String.format("sendCommand %s", firstCommand.getClass().getSimpleName()));
+
         // 送信コマンドの途中で割り込まれないように　synchronize で同期化
         synchronized (this) {
             mCommand = firstCommand;
 
-            FLog.d(TAG, String.format("sendCommand %s", firstCommand.getClass().getSimpleName()));
+            FLog.d(TAG, String.format("sendCommand start %s", firstCommand.getClass().getSimpleName()));
 
             // 受信用パケットを初期化
             if (firstCommand.getResponseTimeout() > 0) {
@@ -122,16 +124,16 @@ public class MFiTransport {
 
                     try {
                         if (!latch.await(MFI_TRANSPORT_TIMEOUT, TimeUnit.MILLISECONDS)) {
-                            FLog.d(TAG, "send timeout");
+                            FLog.w(TAG, "send timeout");
                             latch.mErrorCode = IncredistResult.STATUS_TIMEOUT;
                         }
                     } catch (InterruptedException e) {
-                        FLog.d(TAG, "send interrupted");
+                        FLog.w(TAG, "send interrupted");
                         latch.mErrorCode = IncredistResult.STATUS_INTERRUPTED;
                     }
 
                     if (latch.mErrorCode != IncredistResult.STATUS_SUCCESS) {
-                        FLog.d(TAG, String.format(Locale.JAPANESE, "send error %d", latch.mErrorCode));
+                        FLog.w(TAG, String.format(Locale.JAPANESE, "send error %d", latch.mErrorCode));
                         return new IncredistResult(latch.mErrorCode);
                     }
                 }
@@ -205,7 +207,7 @@ public class MFiTransport {
             }
 
             mCommand = null;
-            FLog.d(TAG, "recv timeout: " + LogUtil.hexString(mResponse.getData()));
+            FLog.w(TAG, "recv timeout: " + LogUtil.hexString(mResponse.getData()));
             return new IncredistResult(IncredistResult.STATUS_TIMEOUT);
         }
     }
