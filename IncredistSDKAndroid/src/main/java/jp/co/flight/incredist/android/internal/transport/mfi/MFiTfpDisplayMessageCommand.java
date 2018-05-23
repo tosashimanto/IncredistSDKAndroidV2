@@ -55,7 +55,7 @@ public class MFiTfpDisplayMessageCommand extends MFiCommand {
 
     @Override
     public long getGuardWait() {
-        return 0;
+        return 60;
     }
 
     @NonNull
