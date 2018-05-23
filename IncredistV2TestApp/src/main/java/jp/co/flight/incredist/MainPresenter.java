@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Locale;
 
 import jp.co.flight.android.bluetooth.le.BluetoothPeripheral;
+import jp.co.flight.incredist.android.Incredist;
+import jp.co.flight.incredist.android.IncredistManager;
 import jp.co.flight.incredist.android.IncredistV2TestApp.BuildConfig;
 import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
 import jp.co.flight.incredist.android.model.CreditCardType;
@@ -116,6 +118,23 @@ public interface MainPresenter {
         private final IncredistModel mIncredist;
         private final Handler mMainThreadHandler;
 
+        IncredistManager.IncredistConnectionListener mConnectionListener = new IncredistManager.IncredistConnectionListener() {
+            @Override
+            public void onConnectIncredist(Incredist incredist) {
+                addLog(String.format(Locale.JAPANESE, "connected: %s", incredist.getDeviceName()));
+            }
+
+            @Override
+            public void onConnectFailure(int errorCode) {
+                addLog(String.format(Locale.JAPANESE, "connect failure %d", errorCode));
+            }
+
+            @Override
+            public void onDisconnectIncredist(Incredist incredist) {
+                addLog(String.format(Locale.JAPANESE, "disconnected: %s", incredist.getDeviceName()));
+            }
+        };
+
         Impl(MainFragment fragment, FragmentMainBinding binding, IncredistModel model) {
             mFragment = fragment;
             mBinding = binding;
@@ -167,11 +186,7 @@ public interface MainPresenter {
         @Override
         public void onConnect() {
             addLog("connect");
-            mIncredist.connect((incredist) -> {
-                addLog(String.format(Locale.JAPANESE, "connected: %s", incredist.getDeviceName()));
-            }, (errorCode) -> {
-                addLog(String.format(Locale.JAPANESE, "connect failure %d", errorCode));
-            });
+            mIncredist.connect(mConnectionListener);
         }
 
         @Override
@@ -197,11 +212,7 @@ public interface MainPresenter {
         @Override
         public void onDisconnect() {
             addLog("disconnect");
-            mIncredist.disconnect(incredist -> {
-                addLog("disconnected");
-            }, (errorCode) -> {
-                addLog(String.format(Locale.JAPANESE, "disconnect failure %d", errorCode));
-            });
+            mIncredist.disconnect();
         }
 
         @Override

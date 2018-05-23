@@ -54,7 +54,7 @@ public class BluetoothGattConnection {
          * connect 完了後 discoverService を呼び出す前に呼び出されます。
          * onConnect は discoverService 完了後に呼び出されます。
          */
-        void onDiscoverServices(BluetoothGattConnection connection);
+        void onDiscoveringServices(BluetoothGattConnection connection);
 
         /**
          * 接続完了時に呼び出されます.
@@ -64,11 +64,18 @@ public class BluetoothGattConnection {
         void onConnect(BluetoothGattConnection connection);
 
         /**
-         * 切断時に呼び出されます.
+         * 切断完了時に呼び出されます.
          *
          * @param connection 接続オブジェクト
          */
         void onDisconnect(BluetoothGattConnection connection);
+
+        /**
+         * APIによる切断処理開始時に呼び出されます
+         *
+         * @param connection 接続オブジェクト
+         */
+        void onStartDisconnect(BluetoothGattConnection connection);
     }
 
     /**
@@ -421,6 +428,10 @@ public class BluetoothGattConnection {
         if (mGatt != null) {
             post(() -> {
                 FLog.d(TAG, String.format("call BluetoothGatt#disconnect for %x this:%x", System.identityHashCode(mGatt), System.identityHashCode(BluetoothGattConnection.this)));
+                final ConnectionListener listener = mListener;
+                if (listener != null) {
+                    listener.onStartDisconnect(this);
+                }
 
                 mGatt.disconnect();
             });

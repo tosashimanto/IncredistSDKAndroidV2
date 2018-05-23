@@ -93,7 +93,7 @@ public interface StatusCode extends BluetoothLeStatusCode {
     int STATUS_CANCEL_FAILED = 102;
 
     /**
-     * 現在実行中の処理はキャンセルできないことを示します
+     * 現在キャンセルできる処理が存在しないことを示します
      */
     int STATUS_NOT_CANCELLABLE = 103;
 

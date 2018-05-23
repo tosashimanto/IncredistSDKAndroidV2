@@ -58,14 +58,26 @@ public class Incredist {
     /**
      * Incredistとの接続を切断します.
      */
+    @Deprecated
     public void disconnect(@Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction failure) {
-        mManager.setupDisconnect(this, success, failure);
+        mManager.setupDisconnectV1(this, success, failure);
         mController.disconnect(result -> {
             if (result.status != IncredistResult.STATUS_SUCCESS) {
                 if (failure != null) {
                     failure.onFailure(result.status);
                 }
             }
+        });
+    }
+
+    /**
+     * Incredistとの接続を切断します.
+     */
+    public void disconnect() {
+        mController.cancel(result -> {
+            mController.disconnect(result2 -> {
+                // コールバックでは特に処理不要
+            });
         });
     }
 
