@@ -22,16 +22,6 @@ public class MFiFelicaOpenCommand extends MFiCommand {
     }
 
     /**
-     * 最大応答待ち時間.
-     *
-     * @return 1000msec
-     */
-    @Override
-    public long getResponseTimeout() {
-        return 1000; // SUPPRESS CHECKSTYLE MagicNumber
-    }
-
-    /**
      * レスポンス解析処理。
      *
      * 'f' 'i' status1 status2 が返却される

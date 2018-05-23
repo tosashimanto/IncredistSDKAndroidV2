@@ -18,16 +18,6 @@ public class MFiDeviceInfoCommand extends MFiCommand {
         super(new byte[]{'d', 0x00});
     }
 
-    /**
-     * 最大応答待ち時間.
-     *
-     * @return 1000msec
-     */
-    @Override
-    public long getResponseTimeout() {
-        return 1000; // SUPPRESS CHECKSTYLE MagicNumber
-    }
-
     @NonNull
     @Override
     protected IncredistResult parseMFiResponse(MFiResponse response) {

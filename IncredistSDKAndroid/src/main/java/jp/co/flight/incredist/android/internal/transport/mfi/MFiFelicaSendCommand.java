@@ -46,7 +46,7 @@ public class MFiFelicaSendCommand extends MFiCommand {
      */
     @Override
     public long getResponseTimeout() {
-        return 1000;  // SUPPRESS CHECKSTYLE MagicNumber
+        return 400;  // SUPPRESS CHECKSTYLE MagicNumber
     }
 
     /**

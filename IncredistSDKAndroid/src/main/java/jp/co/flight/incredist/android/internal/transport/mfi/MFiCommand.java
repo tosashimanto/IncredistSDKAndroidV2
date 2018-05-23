@@ -107,9 +107,19 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
     }
 
     /**
-     * 処理後のウェイト時間.
+     * デフォルトの応答待ち時間
      *
      * @return デフォルト値(100msec)
+     */
+    @Override
+    public long getResponseTimeout() {
+        return 100; // SUPPRESS CHECKSTYLE MagicNumber
+    }
+
+    /**
+     * 処理後のウェイト時間.
+     *
+     * @return デフォルト値(応答のないコマンドの場合 100msec, 応答があるコマンドの場合 0)
      */
     @Override
     public long getGuardWait() {

@@ -14,11 +14,6 @@ public class MFiSetLedColorCommand extends MFiCommand {
     }
 
     @Override
-    public long getResponseTimeout() {
-        return 1000;  // SUPPRESS CHECKSTYLE MagicNumber
-    }
-
-    @Override
     public long getGuardWait() {
         return 0;
     }

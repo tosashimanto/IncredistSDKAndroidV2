@@ -15,11 +15,6 @@ public class MFiGetRealTimeCommand extends MFiCommand {
         super(new byte[]{'g', 't', 'c'});
     }
 
-    @Override
-    public long getResponseTimeout() {
-        return 1000;  // SUPPRESS CHECKSTYLE MagicNumber
-    }
-
     private int asciiToNum(byte[] data, int offset, int length, int min, int max) throws NumberFormatException {
         if (offset >= 0 && offset < data.length && length >= 0 && offset + length <= data.length) {
             int result = 0;
