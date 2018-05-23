@@ -107,7 +107,10 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
     }
 
     /**
-     * デフォルトの応答待ち時間
+     * 応答待ち時間
+     *
+     * 応答がなくて応答待ちをしてはいけないコマンドの場合は 0
+     * 応答待ちのタイムアウト処理が必要ない(無限に待つ)場合は -1 を返すようにオーバーライドする
      *
      * @return デフォルト値(100msec)
      */
