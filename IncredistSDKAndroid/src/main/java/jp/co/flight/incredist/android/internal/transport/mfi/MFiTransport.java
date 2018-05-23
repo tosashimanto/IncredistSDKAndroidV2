@@ -138,7 +138,17 @@ public class MFiTransport {
             } while (iterator.hasNext());
         }
 
-        if (firstCommand.getResponseTimeout() > 0) {
+        if (firstCommand.getResponseTimeout() == 0) {
+            // 応答パケットがない場合は guardWait だけ待機して、 MFiNoResponse を結果とする
+            try {
+                Thread.sleep(firstCommand.getGuardWait());
+            } catch (InterruptedException ex) {
+                // ignore.
+            }
+
+            mCommand = null;
+            return firstCommand.parseResponse(new MFiNoResponse());
+        } else {
             FLog.d(TAG, "recv packet(s)");
 
             try {
@@ -149,7 +159,12 @@ public class MFiTransport {
                         do {
                             long timeout = firstCommand.getResponseTimeout();
                             FLog.d(TAG, String.format(Locale.JAPANESE, "recv wait %dmsec", timeout));
-                            mResponse.wait(timeout);
+
+                            if (timeout < 0) {
+                                mResponse.wait(); // タイムアウト指定なし
+                            } else {
+                                mResponse.wait(timeout);
+                            }
 
                             if (mCommand.cancelable() && !mResponse.hasData() && mCancelling != null) {
                                 FLog.d(TAG, String.format("command canceled: %s", mCommand.getClass().getSimpleName()));
@@ -193,15 +208,6 @@ public class MFiTransport {
             FLog.d(TAG, "recv timeout: " + LogUtil.hexString(mResponse.getData()));
             return new IncredistResult(IncredistResult.STATUS_TIMEOUT);
         }
-
-        try {
-            Thread.sleep(firstCommand.getGuardWait());
-        } catch (InterruptedException ex) {
-            // ignore.
-        }
-
-        mCommand = null;
-        return firstCommand.parseResponse(new MFiNoResponse());
     }
 
     /**
