@@ -18,7 +18,7 @@ import jp.co.flight.incredist.android.internal.util.LogUtil;
 public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
     private static final String TAG = "MFiCommand";
 
-    private static final int DEFAULT_GUARD_WAIT_WITH_RESPONSE = 100;
+    private static final int DEFAULT_GUARD_WAIT_WITH_RESPONSE = 0;
     private static final int DEFAULT_GUARD_WAIT_WITHOUT_RESPONSE = 200;
 
     private static final int CHARACTERISTIC_VALUE_LENGTH = 20;
