@@ -661,6 +661,8 @@ public class IncredistManager {
             FLog.d(TAG, "call onDisconnected");
             if (mListener != null && mIncredist != null) {
                 mListener.onDisconnectIncredist(mIncredist);
+            } else {
+                FLog.w(TAG, String.format("don't call onDisconnected, mListener=%x mIncredist=%x", System.identityHashCode(mListener), System.identityHashCode(mIncredist)));
             }
             mIncredist = null;
         }
