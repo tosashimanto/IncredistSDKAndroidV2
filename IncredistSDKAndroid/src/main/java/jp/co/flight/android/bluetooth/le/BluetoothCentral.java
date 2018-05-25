@@ -128,19 +128,15 @@ public class BluetoothCentral {
      * @param scan    スキャン中処理
      */
     public void startScan(long time, OnSuccessFunction<Void> success, OnFailureFunction<Void> failure, OnProgressFunction<BluetoothPeripheral> scan) {
-        mScanSuccessFunction = success;
-        mScanFailureFunction = failure;
-        mScanResultFunction = scan;
         if (mScanner != null) {
             // すでにスキャン中の場合
             FLog.d(TAG, "bleStartScan already scanning");
-            callScanFailure(BluetoothLeStatusCode.SCAN_ERROR_ALREADY_SCANNING);
+            callScanFailureBeforeStart(BluetoothLeStatusCode.SCAN_ERROR_ALREADY_SCANNING);
             return;
         }
-
         if (mAdapter != null) {
             if (!mAdapter.isEnabled()) {
-                callScanFailure(BluetoothLeStatusCode.ERROR_ADAPTER_DISABLED);
+                callScanFailureBeforeStart(BluetoothLeStatusCode.ERROR_ADAPTER_DISABLED);
                 return;
             }
 
@@ -149,6 +145,9 @@ public class BluetoothCentral {
             FLog.d(TAG, "adapter not found");
             mScanner = null;
         }
+        mScanSuccessFunction = success;
+        mScanFailureFunction = failure;
+        mScanResultFunction = scan;
 
         if (mScanner != null && (time <= 0 || mHandler != null)) {
             Context context = mContext.get();
@@ -217,6 +216,25 @@ public class BluetoothCentral {
                 }
                 if (progress != null) {
                     progress.onProgress(peripheral);
+                }
+            });
+        }
+    }
+
+    /**
+     * onScanFailure を mHandler のスレッドで実行.
+     *
+     * @param errorCode エラーコード値
+     */
+    private void callScanFailureBeforeStart(final int errorCode) {
+        if (mHandler != null && mScanFailureFunction != null) {
+            mHandler.post(() -> {
+                OnFailureFunction<Void> failure;
+                synchronized (BluetoothCentral.this) {
+                    failure = mScanFailureFunction;
+                }
+                if (failure != null) {
+                    failure.onFailure(errorCode, null);
                 }
             });
         }

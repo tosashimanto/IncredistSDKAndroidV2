@@ -661,6 +661,8 @@ public class IncredistManager {
             FLog.d(TAG, "call onDisconnected");
             if (mListener != null && mIncredist != null) {
                 mListener.onDisconnectIncredist(mIncredist);
+            } else {
+                FLog.w(TAG, String.format("don't call onDisconnected, mListener=%x mIncredist=%x", System.identityHashCode(mListener), System.identityHashCode(mIncredist)));
             }
             mIncredist = null;
         }
@@ -713,6 +715,12 @@ public class IncredistManager {
                 connectInternal(peripheral, connectTimeout);
             } else {
                 FLog.i(TAG, "connect device not found.");
+                Handler handler = mCentral.getHandler();
+                if (mListener != null) {
+                    handler.post(() -> {
+                        mListener.onConnectFailure(StatusCode.CONNECT_ERROR_NOT_FOUND);
+                    });
+                }
             }
         }, (errorCode) -> {
             Handler handler = mCentral.getHandler();
