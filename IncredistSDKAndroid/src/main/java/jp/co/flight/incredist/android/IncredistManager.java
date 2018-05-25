@@ -715,6 +715,12 @@ public class IncredistManager {
                 connectInternal(peripheral, connectTimeout);
             } else {
                 FLog.i(TAG, "connect device not found.");
+                Handler handler = mCentral.getHandler();
+                if (mListener != null) {
+                    handler.post(() -> {
+                        mListener.onConnectFailure(StatusCode.CONNECT_ERROR_NOT_FOUND);
+                    });
+                }
             }
         }, (errorCode) -> {
             Handler handler = mCentral.getHandler();
