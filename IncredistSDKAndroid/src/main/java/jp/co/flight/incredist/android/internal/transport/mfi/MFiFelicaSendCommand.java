@@ -73,10 +73,14 @@ public class MFiFelicaSendCommand extends MFiCommand {
     protected IncredistResult parseMFiResponse(MFiResponse response) {
         // CHECKSTYLE:OFF MagicNumber
         byte[] bytes = response.getData();
-        if (bytes != null && bytes.length > 7) {
+        if (bytes != null && bytes.length >= 7) {
             int length = bytes[6] & 0xff;
 
-            if (bytes[0] == 'f' && bytes[1] == 's' && bytes[2] == 'o' && bytes[3] == 'c' && bytes.length == length + 7) {
+            if (length == 0 && bytes.length == 7) {
+                return new FelicaCommandResult(bytes[4] & 0xff, bytes[5] & 0xff,
+                        new byte[]{},
+                        Arrays.copyOfRange(bytes, 4, bytes.length));
+            } else if (bytes[0] == 'f' && bytes[1] == 's' && bytes[2] == 'o' && bytes[3] == 'c' && bytes.length == length + 7) {
                 return new FelicaCommandResult(bytes[4] & 0xff, bytes[5] & 0xff,
                         Arrays.copyOfRange(bytes, 8, bytes.length),
                         Arrays.copyOfRange(bytes, 4, bytes.length));
