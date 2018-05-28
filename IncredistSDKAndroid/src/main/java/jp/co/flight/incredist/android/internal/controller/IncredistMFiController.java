@@ -67,18 +67,24 @@ public class IncredistMFiController implements IncredistProtocolController {
      * @param callback コールバック
      */
     private void postMFiCommand(final MFiCommand command, final IncredistController.Callback callback) {
-        if (mController != null) {
-            mController.postCommand(() -> {
-                if (mController != null && mMFiTransport != null) {
-                    final IncredistResult result = mMFiTransport.sendCommand(command);
+        IncredistController controller2 = mController;
+        if (controller2 != null) {
+            controller2.postCommand(() -> {
+                MFiTransport transport = mMFiTransport;
+                if (mController != null && transport != null) {
+                    final IncredistResult result = transport.sendCommand(command);
 
                     if (result.status == IncredistResult.STATUS_CANCELED && command.cancelable()) {
-                        command.onCancelled(mMFiTransport);
+                        command.onCancelled(transport);
                     }
 
-                    mController.postCallback(() -> {
-                        callback.onResult(result);
-                    });
+                    // sendCommand 処理中に release が呼ばれている場合があるので　controller を再チェックする
+                    IncredistController controller = mController;
+                    if (controller != null) {
+                        controller.postCallback(() -> {
+                            callback.onResult(result);
+                        });
+                    }
                 }
             }, callback);
         }
@@ -91,26 +97,33 @@ public class IncredistMFiController implements IncredistProtocolController {
      * @param callback    コールバック
      */
     private void postMFiCommandList(@NonNull final List<? extends MFiCommand> commandList, final IncredistController.Callback callback) {
-        if (mController != null) {
-            mController.postCommand(() -> {
-                if (mController != null && mMFiTransport != null) {
+        IncredistController controller3 = mController;
+        if (controller3 != null) {
+            controller3.postCommand(() -> {
+                IncredistController controller2 = mController;
+                MFiTransport transport = mMFiTransport;
+                if (controller2 != null && transport != null) {
                     if (commandList.size() == 0) {
-                        mController.postCallback(() -> {
+                        controller2.postCallback(() -> {
                             callback.onResult(new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND));
                         });
                         return;
                     }
 
                     MFiCommand command = commandList.get(0);
-                    final IncredistResult result = mMFiTransport.sendCommand(commandList.toArray(new MFiCommand[0]));
+                    final IncredistResult result = transport.sendCommand(commandList.toArray(new MFiCommand[0]));
 
                     if (result.status == IncredistResult.STATUS_CANCELED && command.cancelable()) {
-                        command.onCancelled(mMFiTransport);
+                        command.onCancelled(transport);
                     }
 
-                    mController.postCallback(() -> {
-                        callback.onResult(result);
-                    });
+                    // sendCommand 処理中に release が呼ばれている場合があるので　controller を再チェックする
+                    IncredistController controller = mController;
+                    if (controller != null) {
+                        controller.postCallback(() -> {
+                            callback.onResult(result);
+                        });
+                    }
                 }
             }, callback);
         }
@@ -123,8 +136,9 @@ public class IncredistMFiController implements IncredistProtocolController {
      */
     @Override
     public boolean isBusy() {
-        if (mMFiTransport != null) {
-            return mMFiTransport.isBusy();
+        MFiTransport transport = mMFiTransport;
+        if (transport != null) {
+            return transport.isBusy();
         } else {
             return false;
         }
@@ -192,8 +206,9 @@ public class IncredistMFiController implements IncredistProtocolController {
         try {
             postMFiCommand(new MFiPinEntryDCommand(pinType, pinMode, mask, min, max, align, line, timeout), callback);
         } catch (ParameterException ex) {
-            if (mController != null) {
-                mController.postCallback(() -> {
+            IncredistController controller = mController;
+            if (controller != null) {
+                controller.postCallback(() -> {
                     callback.onResult(new IncredistResult(IncredistResult.STATUS_PARAMETER_ERROR));
                 });
             }
@@ -357,11 +372,14 @@ public class IncredistMFiController implements IncredistProtocolController {
      */
     @Override
     public void cancel(IncredistController.Callback callback) {
-        if (mController != null) {
-            mController.postCancel(() -> {
-                if (mController != null && mMFiTransport != null) {
-                    final IncredistResult result = mMFiTransport.cancel();
-                    mController.postCallback(() -> {
+        IncredistController controller2 = mController;
+        if (controller2 != null) {
+            controller2.postCancel(() -> {
+                IncredistController controller = mController;
+                MFiTransport transport = mMFiTransport;
+                if (controller != null && transport != null) {
+                    final IncredistResult result = transport.cancel();
+                    controller.postCallback(() -> {
                         callback.onResult(result);
                     });
                 }
