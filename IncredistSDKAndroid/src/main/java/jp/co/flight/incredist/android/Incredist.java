@@ -1,5 +1,7 @@
 package jp.co.flight.incredist.android;
 
+import android.bluetooth.BluetoothGatt;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.Calendar;
@@ -38,11 +40,13 @@ public class Incredist {
     /**
      * 生成元の IncredistManager インスタンス.
      */
+    @Nullable
     private IncredistManager mManager;
 
     /**
      * IncredistController インスタンス.
      */
+    @Nullable
     private IncredistController mController;
 
     /**
@@ -50,7 +54,7 @@ public class Incredist {
      *
      * @param connection Bluetooth ペリフェラルとの接続オブジェクト
      */
-    Incredist(IncredistManager manager, BluetoothGattConnection connection, String deviceName) {
+    Incredist(@NonNull IncredistManager manager, BluetoothGattConnection connection, String deviceName) {
         mManager = manager;
         mController = new IncredistController(connection, deviceName);
     }
@@ -60,25 +64,29 @@ public class Incredist {
      */
     @Deprecated
     public void disconnect(@Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction failure) {
-        mManager.setupDisconnectV1(this, success, failure);
-        mController.disconnect(result -> {
-            if (result.status != IncredistResult.STATUS_SUCCESS) {
-                if (failure != null) {
-                    failure.onFailure(result.status);
+        if (mManager != null && mController != null) {
+            mManager.setupDisconnectV1(this, success, failure);
+            mController.disconnect(result -> {
+                if (result.status != IncredistResult.STATUS_SUCCESS) {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     /**
      * Incredistとの接続を切断します.
      */
     public void disconnect() {
-        mController.cancel(result -> {
-            mController.disconnect(result2 -> {
-                // コールバックでは特に処理不要
+        if (mController != null) {
+            mController.cancel(result -> {
+                mController.disconnect(result2 -> {
+                    // コールバックでは特に処理不要
+                });
             });
-        });
+        }
     }
 
     /**
@@ -87,7 +95,11 @@ public class Incredist {
      * @return Incredistデバイス名
      */
     public String getDeviceName() {
-        return mController.getDeviceName();
+        if (mController != null) {
+            return mController.getDeviceName();
+        } else {
+            return "";
+        }
     }
 
     /**
@@ -96,7 +108,11 @@ public class Incredist {
      * @return 接続状態(接続中 BluetoothGatt.STATE_CONNECTED, 切断時 BluetoothGatt.STATE_DISCONNECTED)
      */
     public int getConnectionState() {
-        return mController.getConnectionState();
+        if (mController != null) {
+            return mController.getConnectionState();
+        } else {
+            return BluetoothGatt.STATE_DISCONNECTED;
+        }
     }
 
     /**
@@ -106,17 +122,19 @@ public class Incredist {
      * @param failure 取得失敗時の処理
      */
     public void getSerialNumber(@Nullable OnSuccessFunction<String> success, @Nullable OnFailureFunction failure) {
-        mController.getDeviceInfo(result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof DeviceInfoResult) {
-                if (success != null) {
-                    success.onSuccess(((DeviceInfoResult) result).serialNumber);
+        if (mController != null) {
+            mController.getDeviceInfo(result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof DeviceInfoResult) {
+                    if (success != null) {
+                        success.onSuccess(((DeviceInfoResult) result).serialNumber);
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -126,17 +144,19 @@ public class Incredist {
      * @param failure 取得失敗時の処理
      */
     public void getDeviceInfo(@Nullable OnSuccessFunction<DeviceInfo> success, @Nullable OnFailureFunction failure) {
-        mController.getDeviceInfo(result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof DeviceInfoResult) {
-                if (success != null) {
-                    success.onSuccess(((DeviceInfoResult) result).toDeviceInfo());
+        if (mController != null) {
+            mController.getDeviceInfo(result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof DeviceInfoResult) {
+                    if (success != null) {
+                        success.onSuccess(((DeviceInfoResult) result).toDeviceInfo());
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -162,17 +182,19 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void emvDisplayMessage(int type, @Nullable String message, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
-        mController.emvDisplayMessage(type, message, result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS) {
-                if (success != null) {
-                    success.onSuccess();
+        if (mController != null) {
+            mController.emvDisplayMessage(type, message, result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS) {
+                    if (success != null) {
+                        success.onSuccess();
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -195,17 +217,19 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void tfpDisplayMessage(int type, @Nullable String message, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
-        mController.tfpDisplayMessage(type, message, result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS) {
-                if (success != null) {
-                    success.onSuccess();
+        if (mController != null) {
+            mController.tfpDisplayMessage(type, message, result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS) {
+                    if (success != null) {
+                        success.onSuccess();
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -227,17 +251,19 @@ public class Incredist {
      * @param failure 設定失敗時処理
      */
     public void setEncryptionMode(EncryptionMode mode, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
-        mController.setEncryptionMode(mode, result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS) {
-                if (success != null) {
-                    success.onSuccess();
+        if (mController != null) {
+            mController.setEncryptionMode(mode, result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS) {
+                    if (success != null) {
+                        success.onSuccess();
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -256,17 +282,19 @@ public class Incredist {
      */
     public void pinEntryD(PinEntry.Type pinType, PinEntry.Mode pinMode, PinEntry.MaskMode mask, int min, int max, PinEntry.Alignment align, int line, long timeout,
                           @Nullable OnSuccessFunction<PinEntry.Result> success, @Nullable OnFailureFunction failure) {
-        mController.pinEntryD(pinType, pinMode, mask, min, max, align, line, timeout, result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof PinEntryResult) {
-                if (success != null) {
-                    success.onSuccess(new PinEntry.Result((PinEntryResult) result));
+        if (mController != null) {
+            mController.pinEntryD(pinType, pinMode, mask, min, max, align, line, timeout, result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof PinEntryResult) {
+                    if (success != null) {
+                        success.onSuccess(new PinEntry.Result((PinEntryResult) result));
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -277,17 +305,19 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void scanMagneticCard(long timeout, @Nullable OnSuccessFunction<MagCard> success, @Nullable OnFailureFunction failure) {
-        mController.scanMagneticCard(timeout, result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof MagCardResult) {
-                if (success != null) {
-                    success.onSuccess(((MagCardResult) result).toMagCard());
+        if (mController != null) {
+            mController.scanMagneticCard(timeout, result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof MagCardResult) {
+                    if (success != null) {
+                        success.onSuccess(((MagCardResult) result).toMagCard());
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -309,23 +339,25 @@ public class Incredist {
                                @Nullable OnSuccessFunction<EmvPacket> emvSuccess,
                                @Nullable OnSuccessFunction<MagCard> magSuccess,
                                @Nullable OnFailureFunction failure) {
-        mController.scanCreditCard(cardTypeSet, amount, tagType, aidSetting, transactionType, fallback, timeout, result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS) {
-                if (result instanceof EmvResult) {
-                    if (emvSuccess != null) {
-                        emvSuccess.onSuccess(((EmvResult) result).toEmvPacket());
+        if (mController != null) {
+            mController.scanCreditCard(cardTypeSet, amount, tagType, aidSetting, transactionType, fallback, timeout, result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS) {
+                    if (result instanceof EmvResult) {
+                        if (emvSuccess != null) {
+                            emvSuccess.onSuccess(((EmvResult) result).toEmvPacket());
+                        }
+                    } else if (result instanceof MagCardResult) {
+                        if (magSuccess != null) {
+                            magSuccess.onSuccess(((MagCardResult) result).toMagCard());
+                        }
                     }
-                } else if (result instanceof MagCardResult) {
-                    if (magSuccess != null) {
-                        magSuccess.onSuccess(((MagCardResult) result).toMagCard());
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
                     }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -337,19 +369,20 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void setLedColor(LedColor color, boolean isOn, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
-        mController.setLedColor(color, isOn, result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS) {
-                if (success != null) {
-                    success.onSuccess();
+        if (mController != null) {
+            mController.setLedColor(color, isOn, result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS) {
+                    if (success != null) {
+                        success.onSuccess();
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
-
 
     /**
      * FeliCa アクセスのため、デバイスを FeliCa RF モードにします.
@@ -359,17 +392,19 @@ public class Incredist {
      * @param failure 設定失敗時の処理
      */
     public void felicaOpen(boolean withLed, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
-        mController.felicaOpen(withLed, result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS) {
-                if (success != null) {
-                    success.onSuccess();
+        if (mController != null) {
+            mController.felicaOpen(withLed, result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS) {
+                    if (success != null) {
+                        success.onSuccess();
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -390,17 +425,19 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void felicaLedColor(LedColor color, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
-        mController.felicaLedColor(color, result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS) {
-                if (success != null) {
-                    success.onSuccess();
+        if (mController != null) {
+            mController.felicaLedColor(color, result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS) {
+                    if (success != null) {
+                        success.onSuccess();
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -411,18 +448,20 @@ public class Incredist {
      * @param failure       送信失敗時の処理
      */
     public void felicaSendCommand(byte[] felicaCommand, @Nullable OnSuccessFunction<FelicaCommandResult> success, @Nullable OnFailureFunction failure) {
-        mController.felicaSendCommand(felicaCommand, result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) {
-                jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult felicaResult = (jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) result;
-                if (success != null) {
-                    success.onSuccess(new FelicaCommandResult(felicaResult));
+        if (mController != null) {
+            mController.felicaSendCommand(felicaCommand, result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) {
+                    jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult felicaResult = (jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) result;
+                    if (success != null) {
+                        success.onSuccess(new FelicaCommandResult(felicaResult));
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -432,17 +471,19 @@ public class Incredist {
      * @param failure 設定失敗時の処理
      */
     public void felicaClose(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
-        mController.felicaClose(result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS) {
-                if (success != null) {
-                    success.onSuccess();
+        if (mController != null) {
+            mController.felicaClose(result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS) {
+                    if (success != null) {
+                        success.onSuccess();
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -452,17 +493,19 @@ public class Incredist {
      * @param failure 取得失敗時の処理
      */
     public void rtcGetTime(@Nullable OnSuccessFunction<Calendar> success, @Nullable OnFailureFunction failure) {
-        mController.rtcGetTime(result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof RtcResult) {
-                if (success != null) {
-                    success.onSuccess(((RtcResult) result).calendar);
+        if (mController != null) {
+            mController.rtcGetTime(result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof RtcResult) {
+                    if (success != null) {
+                        success.onSuccess(((RtcResult) result).calendar);
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -473,17 +516,19 @@ public class Incredist {
      * @param failure 設定失敗時処理
      */
     public void rtcSetTime(Calendar cal, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
-        mController.rtcSetTime(cal, result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS) {
-                if (success != null) {
-                    success.onSuccess();
+        if (mController != null) {
+            mController.rtcSetTime(cal, result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS) {
+                    if (success != null) {
+                        success.onSuccess();
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -493,17 +538,19 @@ public class Incredist {
      * @param failure 設定失敗時処理
      */
     public void rtcSetCurrentTime(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
-        mController.rtcSetCurrentTime(result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS) {
-                if (success != null) {
-                    success.onSuccess();
+        if (mController != null) {
+            mController.rtcSetCurrentTime(result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS) {
+                    if (success != null) {
+                        success.onSuccess();
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -514,17 +561,19 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void emvSendArc(byte[] arcData, @Nullable OnSuccessFunction<EmvPacket> success, @Nullable OnFailureFunction failure) {
-        mController.emvSendArc(arcData, result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof EmvArcResult) {
-                if (success != null) {
-                    success.onSuccess(((EmvArcResult) result).toEmvPacket());
+        if (mController != null) {
+            mController.emvSendArc(arcData, result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof EmvArcResult) {
+                    if (success != null) {
+                        success.onSuccess(((EmvArcResult) result).toEmvPacket());
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -535,17 +584,19 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void emvCheckCardStatus(@Nullable OnSuccessFunction<ICCardStatus> success, @Nullable OnFailureFunction failure) {
-        mController.emvCheckCardStatus(result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof CardStatusResult) {
-                if (success != null) {
-                    success.onSuccess(((CardStatusResult) result).isInserted ? ICCardStatus.INSERTED : ICCardStatus.REMOVED);
+        if (mController != null) {
+            mController.emvCheckCardStatus(result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof CardStatusResult) {
+                    if (success != null) {
+                        success.onSuccess(((CardStatusResult) result).isInserted ? ICCardStatus.INSERTED : ICCardStatus.REMOVED);
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -556,17 +607,19 @@ public class Incredist {
      * @param duration 点灯時間(msec)
      */
     public void emoneyBlink(boolean isBlink, LedColor color, int duration, OnSuccessFunction<Boolean> success, OnFailureFunction failure) {
-        mController.emoneyBlink(isBlink, color, duration, result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof BlinkResult) {
-                if (success != null) {
-                    success.onSuccess(((BlinkResult) result).isOn);
+        if (mController != null) {
+            mController.emoneyBlink(isBlink, color, duration, result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof BlinkResult) {
+                    if (success != null) {
+                        success.onSuccess(((BlinkResult) result).isOn);
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -576,17 +629,19 @@ public class Incredist {
      * @param failure キャンセル失敗時の処理
      */
     public void cancel(OnSuccessVoidFunction success, OnFailureFunction failure) {
-        mController.cancel(result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS) {
-                if (success != null) {
-                    success.onSuccess();
+        if (mController != null) {
+            mController.cancel(result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS) {
+                    if (success != null) {
+                        success.onSuccess();
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -596,25 +651,29 @@ public class Incredist {
      * @param failure 設定失敗時の処理
      */
     public void stop(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
-        mController.stop(result -> {
-            if (result.status == IncredistResult.STATUS_SUCCESS) {
-                if (success != null) {
-                    success.onSuccess();
+        if (mController != null) {
+            mController.stop(result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS) {
+                    if (success != null) {
+                        success.onSuccess();
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
                 }
-            } else {
-                if (failure != null) {
-                    failure.onFailure(result.status);
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
      * Incredist との接続リソースを解放します
      */
     public void release() {
-        mController.close();
-        mController.release();
+        if (mController != null) {
+            mController.close();
+            mController.release();
+        }
 
         mController = null;
         mManager = null;
@@ -624,8 +683,10 @@ public class Incredist {
      * Incredist との接続リソースを解放します
      */
     public void refreshAndRelease() {
-        mController.refreshAndClose();
-        mController.release();
+        if (mController != null) {
+            mController.refreshAndClose();
+            mController.release();
+        }
 
         mController = null;
         mManager = null;
