@@ -55,7 +55,7 @@ public final class MFiEmvSendArc extends MFiCommand {
         byte[] payload = new byte[ICQ_HEADER.length + 5 + arcData.length];
         System.arraycopy(ICQ_HEADER, 0, payload, 0, ICQ_HEADER.length);
         payload[3] = (byte) (totalCountPackets & 0xff);
-        payload[4] = (byte) (indexPacket & 0xff);
+        payload[4] = (byte) ((indexPacket + 1) & 0xff);
         payload[5] = (byte) (totalLength & 0xff);
         payload[6] = (byte) ((totalLength >> 8) & 0xff);
         payload[7] = (byte) (arcDataLength & 0xff);
