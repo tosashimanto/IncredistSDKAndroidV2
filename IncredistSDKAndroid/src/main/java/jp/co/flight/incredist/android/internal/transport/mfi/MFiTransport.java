@@ -191,6 +191,9 @@ public class MFiTransport {
                                 }
 
                                 mCommand = null;
+                                if (result.status == IncredistResult.STATUS_SUCCESS) {
+                                    mResponse.clear();
+                                }
                                 return result;
                             }
                         }
