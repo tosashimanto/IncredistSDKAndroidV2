@@ -444,12 +444,13 @@ public class Incredist {
      * FeliCa コマンドを送信します.
      *
      * @param felicaCommand FeliCaコマンドのバイト列
+     * @param wait          ウェイト(単位: msec)
      * @param success       送信成功時の処理
      * @param failure       送信失敗時の処理
      */
-    public void felicaSendCommand(byte[] felicaCommand, @Nullable OnSuccessFunction<FelicaCommandResult> success, @Nullable OnFailureFunction failure) {
+    public void felicaSendCommand(byte[] felicaCommand, int wait, @Nullable OnSuccessFunction<FelicaCommandResult> success, @Nullable OnFailureFunction failure) {
         if (mController != null) {
-            mController.felicaSendCommand(felicaCommand, result -> {
+            mController.felicaSendCommand(felicaCommand, wait, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) {
                     jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult felicaResult = (jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) result;
                     if (success != null) {

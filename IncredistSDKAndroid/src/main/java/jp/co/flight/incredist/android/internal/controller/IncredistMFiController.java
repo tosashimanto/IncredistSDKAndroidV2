@@ -276,11 +276,12 @@ public class IncredistMFiController implements IncredistProtocolController {
      * FeliCa コマンドを送信します
      *
      * @param command  送信するFeliCaコマンド
+     * @param wait     ウェイト(単位: msec)
      * @param callback コールバック
      */
     @Override
-    public void felicaSendCommand(byte[] command, IncredistController.Callback callback) {
-        postMFiCommand(new MFiFelicaSendCommand(command), callback);
+    public void felicaSendCommand(byte[] command, int wait, IncredistController.Callback callback) {
+        postMFiCommand(new MFiFelicaSendCommand(wait, command), callback);
     }
 
     /**

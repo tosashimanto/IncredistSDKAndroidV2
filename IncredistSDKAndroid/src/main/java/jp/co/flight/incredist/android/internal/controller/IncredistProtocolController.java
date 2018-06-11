@@ -115,9 +115,10 @@ interface IncredistProtocolController {
      * felica コマンドを送信します.
      *
      * @param command  FeliCaコマンドデータ
+     * @param wait     ウェイト(単位: msec)
      * @param callback コールバック
      */
-    void felicaSendCommand(byte[] command, IncredistController.Callback callback);
+    void felicaSendCommand(byte[] command, int wait, IncredistController.Callback callback);
 
     /**
      * felica モード時のLED色を設定します。

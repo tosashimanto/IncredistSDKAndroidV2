@@ -236,7 +236,7 @@ public interface IncredistModel extends Observable {
         public void felicaSendCommand(OnSuccessFunction<FelicaCommandResult> success, OnFailureFunction failure) {
             if (mIncredist != null) {
                 byte[] felicaCommand = {(byte) 0x00, (byte) 0xff, (byte) 0xff, (byte) 0x00, (byte) 0x00};
-                mIncredist.felicaSendCommand(felicaCommand, success, failure);
+                mIncredist.felicaSendCommand(felicaCommand, 200, success, failure);
             } else {
                 failure.onFailure(-1);
             }

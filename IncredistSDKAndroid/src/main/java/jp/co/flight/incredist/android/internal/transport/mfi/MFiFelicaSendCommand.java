@@ -19,13 +19,13 @@ public class MFiFelicaSendCommand extends MFiCommand {
      * @param felicaCommand FeliCaコマンド
      * @return fsoc コマンドのパケット内容
      */
-    private static byte[] createPayload(byte[] felicaCommand) {
+    private static byte[] createPayload(byte wait, byte[] felicaCommand) {
         // CHECKSTYLE:OFF MagicNumber
         byte[] payload = new byte[felicaCommand.length + 7];
 
         System.arraycopy(FSOC_HEADER, 0, payload, 0, FSOC_HEADER.length);
         payload[4] = (byte) felicaCommand.length;
-        payload[5] = (byte) 200;   // wait 200ms
+        payload[5] = wait;
         System.arraycopy(felicaCommand, 0, payload, 6, felicaCommand.length);
 
         return payload;
@@ -34,9 +34,12 @@ public class MFiFelicaSendCommand extends MFiCommand {
 
     /**
      * コンストラクタ.
+     *
+     * @param wait          コマンド待ち時間(単位: msec)
+     * @param felicaCommand felicaコマンド
      */
-    public MFiFelicaSendCommand(byte[] felicaCommand) {
-        super(createPayload(felicaCommand));
+    public MFiFelicaSendCommand(int wait, byte[] felicaCommand) {
+        super(createPayload((byte) wait, felicaCommand));
     }
 
     /**
