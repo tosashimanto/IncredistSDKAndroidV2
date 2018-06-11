@@ -303,10 +303,11 @@ public class IncredistController {
      * felica コマンドを送信します.
      *
      * @param command  コマンド
+     * @param wait     ウェイト(単位: msec)
      * @param callback コールバック
      */
-    public void felicaSendCommand(byte[] command, IncredistController.Callback callback) {
-        mProtoController.felicaSendCommand(command, callback);
+    public void felicaSendCommand(byte[] command, int wait, IncredistController.Callback callback) {
+        mProtoController.felicaSendCommand(command, wait, callback);
     }
 
     /**
