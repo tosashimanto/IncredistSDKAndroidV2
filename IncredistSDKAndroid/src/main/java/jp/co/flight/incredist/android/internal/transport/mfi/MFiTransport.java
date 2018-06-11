@@ -2,6 +2,8 @@ package jp.co.flight.incredist.android.internal.transport.mfi;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
 import java.util.Arrays;
@@ -25,7 +27,9 @@ public class MFiTransport {
     private static final String TAG = "MFiTransport";
 
     private static final int MFI_TRANSPORT_TIMEOUT = 500;
+    private static final long CANCEL_TIMEOUT = 3000;
 
+    @Nullable
     private BluetoothGattConnection mConnection;
     private BluetoothGattCharacteristic mWriteCharacteristic = null;
     private BluetoothGattCharacteristic mNotifyCharacteristic = null;
@@ -58,7 +62,7 @@ public class MFiTransport {
      *
      * @param connection BluetoothGattConnection オブジェクト
      */
-    public MFiTransport(BluetoothGattConnection connection) {
+    public MFiTransport(@NonNull BluetoothGattConnection connection) {
         mConnection = connection;
     }
 
@@ -113,8 +117,13 @@ public class MFiTransport {
                 int count = command.getPacketCount();
                 FLog.d(TAG, String.format(Locale.JAPANESE, "send %d packet(s)", count));
                 for (int i = 0; i < count; i++) {
+                    BluetoothGattConnection connection = mConnection;
+                    BluetoothGattCharacteristic writeCharacteristic = mWriteCharacteristic;
+                    if (connection == null || writeCharacteristic == null) {
+                        return new IncredistResult(IncredistResult.STATUS_RELEASED);
+                    }
                     ErrorLatch latch = new ErrorLatch();
-                    mConnection.writeCharacteristic(mWriteCharacteristic, command.getValueData(i), success -> {
+                    connection.writeCharacteristic(writeCharacteristic, command.getValueData(i), success -> {
                         latch.mErrorCode = IncredistResult.STATUS_SUCCESS;
                         latch.countDown();
                     }, (errorCode, failure) -> {
@@ -224,7 +233,12 @@ public class MFiTransport {
             return;
         }
 
-        BluetoothGattService sendService = mConnection.findService(IncredistConstants.FS_INCREDIST_SEND_SERVICE_UUID_FULL);
+        BluetoothGattConnection connection = mConnection;
+
+        if (connection == null) {
+            return;
+        }
+        BluetoothGattService sendService = connection.findService(IncredistConstants.FS_INCREDIST_SEND_SERVICE_UUID_FULL);
         FLog.d(TAG, String.format(Locale.JAPANESE, "sendService : %s", sendService != null ? sendService.getUuid().toString() : "(null)"));
         if (sendService != null) {
             mWriteCharacteristic = sendService.getCharacteristic(UUID.fromString(IncredistConstants.FS_INCREDIST_FFB2_CHARACTERISTICS_UUID_FULL));
@@ -240,7 +254,7 @@ public class MFiTransport {
                     mNotifyCharacteristic != null ? mNotifyCharacteristic.getProperties() : -1));
         }
 
-        mConnection.registerNotify(mNotifyCharacteristic, (success) -> {
+        connection.registerNotify(mNotifyCharacteristic, (success) -> {
         }, (errorCode, failure) -> {
         }, (notify) -> {
             synchronized (mResponse) {
@@ -298,7 +312,7 @@ public class MFiTransport {
         }
 
         try {
-            boolean res = mCancelling.await(3000, TimeUnit.MILLISECONDS);
+            boolean res = mCancelling.await(CANCEL_TIMEOUT, TimeUnit.MILLISECONDS);
 
             if (res) {
                 return new IncredistResult(IncredistResult.STATUS_SUCCESS);
