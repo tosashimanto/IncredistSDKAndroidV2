@@ -32,7 +32,7 @@ public class MFiEmoneyBlinkCommand extends MFiCommand {
 
     @Override
     public long getGuardWait() {
-        return 0;
+        return 100;
     }
 
     @NonNull
