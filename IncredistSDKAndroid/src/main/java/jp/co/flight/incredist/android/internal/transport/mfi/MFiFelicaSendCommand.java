@@ -13,6 +13,8 @@ import jp.co.flight.incredist.android.internal.controller.result.IncredistResult
 public class MFiFelicaSendCommand extends MFiCommand {
     private static final byte[] FSOC_HEADER = {'f', 's', 'o', 'c'};
 
+    private static long mWait;
+
     /**
      * コマンドパケット生成
      *
@@ -21,6 +23,7 @@ public class MFiFelicaSendCommand extends MFiCommand {
      */
     private static byte[] createPayload(byte wait, byte[] felicaCommand) {
         // CHECKSTYLE:OFF MagicNumber
+        mWait = wait * 5 + 2000;
         byte[] payload = new byte[felicaCommand.length + 7];
 
         System.arraycopy(FSOC_HEADER, 0, payload, 0, FSOC_HEADER.length);
@@ -45,27 +48,27 @@ public class MFiFelicaSendCommand extends MFiCommand {
     /**
      * 最大応答待ち時間.
      *
-     * @return 1000msec
+     * @return MFiFelicaSendCommandで指定されたwait * 5 + 2000
      */
     @Override
     public long getResponseTimeout() {
-        return 1500;  // SUPPRESS CHECKSTYLE MagicNumber
+        return mWait;  // SUPPRESS CHECKSTYLE MagicNumber
     }
 
     /**
      * 通信後のウェイト時間
-     * FeliCa 通信処理では 0 とする
+     * FeliCa 通信処理では 100 とする
      *
      * @return 0msec
      */
     @Override
     public long getGuardWait() {
-        return 0;
+        return 100;
     }
 
     /**
      * レスポンス解析処理。
-     *
+     * <p>
      * 'f' 's' 'o' 'c' status1 status2 length data が返却される
      *
      * @param response レスポンスパケットデータ
