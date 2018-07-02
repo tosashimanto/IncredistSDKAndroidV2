@@ -481,6 +481,7 @@ public class BluetoothGattConnection {
             });
         }
 
+        mHandler = null;
         mHandlerThread.quitSafely();
     }
 
@@ -520,6 +521,7 @@ public class BluetoothGattConnection {
             });
         }
 
+        mHandler = null;
         mHandlerThread.quitSafely();
     }
 
