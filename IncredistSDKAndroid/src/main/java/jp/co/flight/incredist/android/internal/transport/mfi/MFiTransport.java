@@ -94,6 +94,7 @@ public class MFiTransport {
         // レスポンスの解析などは最初の引数のオブジェクトで実行する
         MFiCommand firstCommand = commandList[0];
 
+        long startTime = System.currentTimeMillis();
         FLog.d(TAG, String.format("sendCommand %s", firstCommand.getClass().getSimpleName()));
 
         // 送信コマンドの途中で割り込まれないように　synchronize で同期化
@@ -109,6 +110,9 @@ public class MFiTransport {
 
             if (mCancelling != null) {
                 mCancelling.countDown();
+
+                FLog.d(TAG, String.format("sendCommand cancelled(%d) %s", IncredistResult.STATUS_CANCELED, firstCommand.getClass().getSimpleName()));
+
                 return new IncredistResult(IncredistResult.STATUS_CANCELED);
             }
 
@@ -120,6 +124,7 @@ public class MFiTransport {
                     BluetoothGattConnection connection = mConnection;
                     BluetoothGattCharacteristic writeCharacteristic = mWriteCharacteristic;
                     if (connection == null || writeCharacteristic == null) {
+                        FLog.d(TAG, String.format("sendCommand released(%d) %s", IncredistResult.STATUS_RELEASED, firstCommand.getClass().getSimpleName()));
                         return new IncredistResult(IncredistResult.STATUS_RELEASED);
                     }
                     ErrorLatch latch = new ErrorLatch();
@@ -142,7 +147,7 @@ public class MFiTransport {
                     }
 
                     if (latch.mErrorCode != IncredistResult.STATUS_SUCCESS) {
-                        FLog.w(TAG, String.format(Locale.JAPANESE, "send error %d", latch.mErrorCode));
+                        FLog.w(TAG, String.format(Locale.JAPANESE, "sendCommand error %d %s", latch.mErrorCode, command.getClass().getSimpleName()));
                         return new IncredistResult(latch.mErrorCode);
                     }
                 }
@@ -158,9 +163,10 @@ public class MFiTransport {
             }
 
             mCommand = null;
+            FLog.d(TAG, String.format("sendCommand has no response %s", firstCommand.getClass().getSimpleName()));
             return firstCommand.parseResponse(new MFiNoResponse());
         } else {
-            FLog.d(TAG, "recv packet(s)");
+            FLog.d(TAG, String.format("recv packet(s) for %s", firstCommand.getClass().getSimpleName()));
 
             try {
                 synchronized (mResponse) {
@@ -178,7 +184,7 @@ public class MFiTransport {
                             }
 
                             if (mCommand.cancelable() && !mResponse.hasData() && mCancelling != null) {
-                                FLog.d(TAG, String.format("command canceled: %s", mCommand.getClass().getSimpleName()));
+                                FLog.d(TAG, String.format("sendCommand canceled: %s", mCommand.getClass().getSimpleName()));
                                 mCommand = null;
                                 mCancelling.countDown();
                                 return new IncredistResult(IncredistResult.STATUS_CANCELED);
@@ -198,6 +204,8 @@ public class MFiTransport {
                                 } catch (InterruptedException ex) {
                                     // ignore.
                                 }
+                                long real = System.currentTimeMillis() - startTime;
+                                FLog.d(TAG, String.format(Locale.JAPANESE, "sendCommand result:%d wait:%d real:%d %s", result.status, firstCommand.getResponseTimeout(), real, mCommand.getClass().getSimpleName()));
 
                                 mCommand = null;
                                 if (result.status == IncredistResult.STATUS_SUCCESS) {
@@ -218,8 +226,8 @@ public class MFiTransport {
                 // ignore.
             }
 
+            FLog.w(TAG, String.format(Locale.JAPANESE, "sendCommand recv timeout(%d): %s %s", IncredistResult.STATUS_TIMEOUT, mCommand.getClass().getSimpleName(), LogUtil.hexString(mResponse.getData())));
             mCommand = null;
-            FLog.w(TAG, "recv timeout: " + LogUtil.hexString(mResponse.getData()));
             return new IncredistResult(IncredistResult.STATUS_TIMEOUT);
         }
     }
