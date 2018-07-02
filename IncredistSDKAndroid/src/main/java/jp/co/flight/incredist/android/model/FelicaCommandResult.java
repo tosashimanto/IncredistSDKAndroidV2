@@ -9,6 +9,7 @@ public class FelicaCommandResult {
     private final int mStatus2;
     private final byte[] mResultData;
     private final byte[] mRawData;
+    private final long mReal;
 
     /**
      * コンストラクタ
@@ -20,6 +21,7 @@ public class FelicaCommandResult {
         mStatus2 = result.status2;
         mResultData = result.resultData;
         mRawData = result.rawData;
+        mReal = result.real;
     }
 
 
@@ -57,5 +59,9 @@ public class FelicaCommandResult {
      */
     public byte[] getRawData() {
         return mRawData;
+    }
+
+    public long getReal() {
+        return mReal;
     }
 }
