@@ -94,6 +94,7 @@ public class MFiTransport {
         // レスポンスの解析などは最初の引数のオブジェクトで実行する
         MFiCommand firstCommand = commandList[0];
 
+        long startTime = System.currentTimeMillis();
         FLog.d(TAG, String.format("sendCommand %s", firstCommand.getClass().getSimpleName()));
 
         // 送信コマンドの途中で割り込まれないように　synchronize で同期化
@@ -203,7 +204,8 @@ public class MFiTransport {
                                 } catch (InterruptedException ex) {
                                     // ignore.
                                 }
-                                FLog.d(TAG, String.format(Locale.JAPANESE, "sendCommand result:%d %s", result.status, mCommand.getClass().getSimpleName()));
+                                long real = System.currentTimeMillis() - startTime;
+                                FLog.d(TAG, String.format(Locale.JAPANESE, "sendCommand result:%d wait:%d real:%d %s", result.status, firstCommand.getResponseTimeout(), real, mCommand.getClass().getSimpleName()));
 
                                 mCommand = null;
                                 if (result.status == IncredistResult.STATUS_SUCCESS) {
