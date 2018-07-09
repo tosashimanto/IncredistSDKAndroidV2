@@ -18,6 +18,11 @@ public class MFiFelicaLedColorCommand extends MFiCommand {
         return 0;
     }
 
+    @Override
+    public long getResponseTimeout() {
+        return 900; // SUPPRESS CHECKSTYLE MagicNumber
+    }
+    
     @NonNull
     @Override
     protected IncredistResult parseMFiResponse(MFiResponse response) {
