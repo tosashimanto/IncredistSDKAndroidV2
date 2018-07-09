@@ -26,7 +26,7 @@ import jp.co.flight.incredist.android.internal.util.LogUtil;
 public class MFiTransport {
     private static final String TAG = "MFiTransport";
 
-    private static final int MFI_TRANSPORT_TIMEOUT = 500;
+    private static final int MFI_TRANSPORT_TIMEOUT = 1000;
     private static final long CANCEL_TIMEOUT = 3000;
 
     @Nullable
@@ -139,7 +139,7 @@ public class MFiTransport {
                     try {
                         if (!latch.await(MFI_TRANSPORT_TIMEOUT, TimeUnit.MILLISECONDS)) {
                             FLog.w(TAG, "send timeout");
-                            latch.mErrorCode = IncredistResult.STATUS_TIMEOUT;
+                            latch.mErrorCode = IncredistResult.STATUS_SEND_TIMEOUT;
                         }
                     } catch (InterruptedException e) {
                         FLog.w(TAG, "send interrupted");

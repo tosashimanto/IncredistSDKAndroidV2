@@ -43,6 +43,11 @@ public interface StatusCode extends BluetoothLeStatusCode {
     int STATUS_TIMEOUT = 802;
 
     /**
+     * 送信処理がタイムアウトしたことを示します
+     */
+    int STATUS_SEND_TIMEOUT = 803;
+
+    /**
      * 予期せぬ形式のデータを受信したことを示します
      */
     int STATUS_INVALID_RESPONSE = 701;
