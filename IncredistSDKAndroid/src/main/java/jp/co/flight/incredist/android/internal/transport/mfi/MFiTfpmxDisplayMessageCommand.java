@@ -50,7 +50,7 @@ public class MFiTfpmxDisplayMessageCommand extends MFiCommand {
      */
     @Override
     public long getResponseTimeout() {
-        return 300;
+        return 600;  // SUPPRESS CHECKSTYLE MagicNumber
     }
 
     @Override
