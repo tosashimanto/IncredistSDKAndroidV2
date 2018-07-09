@@ -64,13 +64,13 @@ public class MFiFelicaSendCommand extends MFiCommand {
 
     /**
      * 通信後のウェイト時間
-     * FeliCa 通信処理では 100 とする
+     * FeliCa 通信処理では 10 とする
      *
      * @return 0msec
      */
     @Override
     public long getGuardWait() {
-        return 100;
+        return 10;
     }
 
     /**
@@ -89,18 +89,19 @@ public class MFiFelicaSendCommand extends MFiCommand {
         if (bytes != null && bytes.length >= 7) {
             int length = bytes[6] & 0xff;
 
+            long real = System.currentTimeMillis() - mCreatedTime;
             if (length == 0 && bytes.length == 7) {
-                FLog.d(TAG, String.format(Locale.JAPANESE, "wait param:%d wait:%d real:%d length: %d", mWaitParam, mWait, System.currentTimeMillis() - mCreatedTime, bytes.length));
+                FLog.d(TAG, String.format(Locale.JAPANESE, "wait param:%d wait:%d real:%d length: %d", mWaitParam, mWait, real, bytes.length));
 
                 return new FelicaCommandResult(bytes[4] & 0xff, bytes[5] & 0xff,
                         new byte[]{},
-                        Arrays.copyOfRange(bytes, 4, bytes.length));
+                        Arrays.copyOfRange(bytes, 4, bytes.length), real);
             } else if (bytes[0] == 'f' && bytes[1] == 's' && bytes[2] == 'o' && bytes[3] == 'c' && bytes.length == length + 7) {
-                FLog.d(TAG, String.format(Locale.JAPANESE, "wait param:%d wait:%d real:%d length: %d", mWaitParam, mWait, System.currentTimeMillis() - mCreatedTime, bytes.length));
+                FLog.d(TAG, String.format(Locale.JAPANESE, "wait param:%d wait:%d real:%d length: %d", mWaitParam, mWait, real, bytes.length));
 
                 return new FelicaCommandResult(bytes[4] & 0xff, bytes[5] & 0xff,
                         Arrays.copyOfRange(bytes, 8, bytes.length),
-                        Arrays.copyOfRange(bytes, 4, bytes.length));
+                        Arrays.copyOfRange(bytes, 4, bytes.length), real);
             }
         }
         // CHECKSTYLE:ON MagicNumber

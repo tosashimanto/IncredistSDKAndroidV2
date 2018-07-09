@@ -29,7 +29,7 @@ import jp.co.flight.incredist.android.internal.transport.mfi.MFiSetEncryptionMod
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiSetLedColorCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiSetRealTimeCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiStopCommand;
-import jp.co.flight.incredist.android.internal.transport.mfi.MFiTfpDisplayMessageCommand;
+import jp.co.flight.incredist.android.internal.transport.mfi.MFiTfpmxDisplayMessageCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.EmvTagType;
@@ -174,7 +174,7 @@ public class IncredistMFiController implements IncredistProtocolController {
      */
     @Override
     public void tfpDisplayMessage(int type, @Nullable String message, IncredistController.Callback callback) {
-        postMFiCommand(new MFiTfpDisplayMessageCommand(type, message), callback);
+        postMFiCommand(new MFiTfpmxDisplayMessageCommand(type, message), callback);
     }
 
     /**
