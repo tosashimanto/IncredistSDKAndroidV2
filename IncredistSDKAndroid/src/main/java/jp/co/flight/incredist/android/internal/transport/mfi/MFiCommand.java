@@ -21,7 +21,9 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
     private static final int DEFAULT_GUARD_WAIT_WITH_RESPONSE = 0;
     private static final int DEFAULT_GUARD_WAIT_WITHOUT_RESPONSE = 200;
 
-    private static final int CHARACTERISTIC_VALUE_LENGTH = 20;
+    private static final int DEFAULT_PACKET_LENGTH = 20;
+
+    private static int sPacketLength = DEFAULT_PACKET_LENGTH;
 
     /**
      * コンストラクタ.
@@ -47,6 +49,10 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
         // CHECKSTYLE:ON MagicNumber
     }
 
+    public static void setPacketLength(int packetLength) {
+        sPacketLength = packetLength;
+    }
+
     /**
      * 送信するパケットの個数.
      *
@@ -54,7 +60,7 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
      */
     int getPacketCount() {
         if (mMFiData != null) {
-            return mMFiData.length / CHARACTERISTIC_VALUE_LENGTH + 1;
+            return mMFiData.length / sPacketLength + 1;
         } else {
             return 0;
         }
@@ -69,8 +75,8 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
     @Nullable
     byte[] getValueData(int count) {
         if (mMFiData != null && count >= 0 && count < getPacketCount()) {
-            int from = count * CHARACTERISTIC_VALUE_LENGTH;
-            int to = (count + 1) * CHARACTERISTIC_VALUE_LENGTH;
+            int from = count * sPacketLength;
+            int to = (count + 1) * sPacketLength;
             if (mMFiData.length < to) {
                 to = mMFiData.length;
             }

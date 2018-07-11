@@ -58,6 +58,7 @@ public class IncredistMFiController implements IncredistProtocolController {
     IncredistMFiController(@NonNull IncredistController controller, @NonNull BluetoothGattConnection connection) {
         mController = controller;
         mMFiTransport = new MFiTransport(connection);
+        MFiCommand.setPacketLength(connection.getMtu() - 3);
     }
 
     /**

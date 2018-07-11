@@ -28,6 +28,8 @@ import jp.co.flight.incredist.android.internal.util.FLog;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class BluetoothGattConnection {
     private static final String TAG = "BluetoothGattConnection";
+    private static final int DEFAULT_MTU_LENGTH = 20;
+    private static final int REQUEST_MTU_LENGTH = 256;
 
     @NonNull
     private final HandlerThread mHandlerThread;
@@ -43,6 +45,8 @@ public class BluetoothGattConnection {
 
     @Nullable
     private ConnectionListener mListener;
+
+    private int mMtu = DEFAULT_MTU_LENGTH;
 
     private long mTimeout = 1000;  // SUPPRESS CHECKSTYLE MagicNumber
 
@@ -148,9 +152,25 @@ public class BluetoothGattConnection {
 
             List<BluetoothGattService> services = gatt.getServices();
             if (services.size() == 0) {
+
+
                 FLog.d(TAG, "onServicesDiscovered: failed? restart");
                 gatt.discoverServices();
+            } else {
+                gatt.requestMtu(REQUEST_MTU_LENGTH);
             }
+        }
+
+        @Override
+        public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
+            super.onMtuChanged(gatt, mtu, status);
+
+            FLog.d(TAG, String.format(Locale.JAPANESE, "onMtuChanged: gatt %x mtu %d status %d", System.identityHashCode(gatt), mtu, status));
+
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                mMtu = mtu;
+            }
+
             final ConnectionListener listener = mListener;
             if (listener != null) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
@@ -272,6 +292,15 @@ public class BluetoothGattConnection {
             return BluetoothGatt.STATE_DISCONNECTED;
         }
         return mCentral.getConnectionState(mGatt.getDevice());
+    }
+
+    /**
+     * MTU サイズを取得します
+     *
+     * @return MTU 長(byte)
+     */
+    public int getMtu() {
+        return mMtu;
     }
 
     /**
