@@ -32,6 +32,13 @@ interface IncredistProtocolController {
     void getDeviceInfo(IncredistController.Callback callback);
 
     /**
+     * ブートローダのバージョンを取得します
+     *
+     * @param callback コールバック
+     */
+    void getBootloaderVersion(IncredistController.Callback callback);
+
+    /**
      * EMV メッセージを表示します
      *
      * @param type     メッセージ番号
