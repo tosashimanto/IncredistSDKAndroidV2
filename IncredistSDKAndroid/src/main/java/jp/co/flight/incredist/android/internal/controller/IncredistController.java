@@ -203,6 +203,14 @@ public class IncredistController {
         mProtoController.getDeviceInfo(callback);
     }
 
+    /**
+     * ブートローダのバージョンを取得します
+     *
+     * @param callback コールバック
+     */
+    public void getBootloaderVersion(Callback callback) {
+        mProtoController.getBootloaderVersion(callback);
+    }
 
     /**
      * EMV メッセージを表示します

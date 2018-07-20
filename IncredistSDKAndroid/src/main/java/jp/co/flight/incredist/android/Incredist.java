@@ -10,6 +10,7 @@ import java.util.EnumSet;
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.IncredistController;
 import jp.co.flight.incredist.android.internal.controller.result.BlinkResult;
+import jp.co.flight.incredist.android.internal.controller.result.BootloaderVersionResult;
 import jp.co.flight.incredist.android.internal.controller.result.CardStatusResult;
 import jp.co.flight.incredist.android.internal.controller.result.DeviceInfoResult;
 import jp.co.flight.incredist.android.internal.controller.result.EmvArcResult;
@@ -18,6 +19,7 @@ import jp.co.flight.incredist.android.internal.controller.result.IncredistResult
 import jp.co.flight.incredist.android.internal.controller.result.MagCardResult;
 import jp.co.flight.incredist.android.internal.controller.result.PinEntryResult;
 import jp.co.flight.incredist.android.internal.controller.result.RtcResult;
+import jp.co.flight.incredist.android.model.BootloaderVersion;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.DeviceInfo;
 import jp.co.flight.incredist.android.model.EmvPacket;
@@ -171,6 +173,28 @@ public class Incredist {
                 success.onSuccess(new ProductInfo(deviceInfo));
             }
         }, failure);
+    }
+
+    /**
+     * ブートローダのバージョン情報を取得します
+     *
+     * @param success 取得成功時の処理
+     * @param failure 取得失敗時の処理
+     */
+    public void getBootloaderVersion(@Nullable OnSuccessFunction<BootloaderVersion> success, @Nullable OnFailureFunction failure) {
+        if (mController != null) {
+            mController.getBootloaderVersion(result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof BootloaderVersionResult) {
+                    if (success != null) {
+                        success.onSuccess(((BootloaderVersionResult) result).toBootloaderVersion());
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
+                }
+            });
+        }
     }
 
     /**

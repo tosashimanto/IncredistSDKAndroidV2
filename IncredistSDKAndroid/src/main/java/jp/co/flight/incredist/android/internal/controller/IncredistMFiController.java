@@ -10,6 +10,7 @@ import java.util.List;
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.exception.ParameterException;
+import jp.co.flight.incredist.android.internal.transport.mfi.MFiBootloaderVersionCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiDeviceInfoCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmoneyBlinkCommand;
@@ -152,6 +153,16 @@ public class IncredistMFiController implements IncredistProtocolController {
      */
     public void getDeviceInfo(final IncredistController.Callback callback) {
         postMFiCommand(new MFiDeviceInfoCommand(), callback);
+    }
+
+    /**
+     * ブートローダのバージョンを取得します
+     *
+     * @param callback コールバック
+     */
+    @Override
+    public void getBootloaderVersion(IncredistController.Callback callback) {
+        postMFiCommand(new MFiBootloaderVersionCommand(), callback);
     }
 
     /**
