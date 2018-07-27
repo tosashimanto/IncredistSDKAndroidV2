@@ -286,6 +286,10 @@ public class BluetoothCentral {
     BluetoothGatt connectGatt(@NonNull BluetoothPeripheral peripheral, @NonNull BluetoothGattCallback gattCallback) {
         Context context = mContext.get();
         if (context != null) {
+            if (!isBluetoothEnabled()) {
+                return null;
+            }
+
             BluetoothDevice device = mAdapter.getRemoteDevice(peripheral.getDeviceAddress());
             if (device != null) {
                 BluetoothGatt gatt = device.connectGatt(context, false, gattCallback);
@@ -304,6 +308,10 @@ public class BluetoothCentral {
      * @param peripheral 切断するペリフェラル
      */
     void disconnectGatt(@NonNull BluetoothPeripheral peripheral) {
+        if (!isBluetoothEnabled()) {
+            return;
+        }
+
         Context context = mContext.get();
         if (context != null) {
             BluetoothDevice device = mAdapter.getRemoteDevice(peripheral.getDeviceAddress());
@@ -353,6 +361,10 @@ public class BluetoothCentral {
      * @param peripheral Bluetoothペリフェラル
      */
     int getConnectionState(BluetoothPeripheral peripheral) {
+        if (!isBluetoothEnabled()) {
+            return BluetoothGatt.STATE_DISCONNECTED;
+        }
+
         BluetoothDevice device = mAdapter.getRemoteDevice(peripheral.getDeviceAddress());
         return getConnectionState(device);
     }
@@ -364,6 +376,10 @@ public class BluetoothCentral {
      */
     public @NonNull
     List<BluetoothPeripheral> getConnectedPeripherals() {
+        if (!isBluetoothEnabled()) {
+            return new ArrayList<>();
+        }
+
         List<BluetoothDevice> devices = mManager.getConnectedDevices(BluetoothGatt.GATT);
 
         List<BluetoothPeripheral> peripherals = new ArrayList<>();
@@ -372,6 +388,16 @@ public class BluetoothCentral {
         }
 
         return peripherals;
+    }
+
+    /**
+     * Bluetooth が接続可能か調べます
+     *
+     * @return 接続可能な場合 true
+     */
+    private boolean isBluetoothEnabled() {
+        BluetoothAdapter adapter = mManager.getAdapter();
+        return adapter != null && adapter.isEnabled();
     }
 
     /**
@@ -405,7 +431,7 @@ public class BluetoothCentral {
             return;
         }
         BroadcastReceiver receiver = new BroadcastReceiver() {
-            final String TAG = "BroadcastReceiver";
+            private static final String TAG = "BroadcastReceiver";
             boolean mDisabling = true;
 
             @Override
