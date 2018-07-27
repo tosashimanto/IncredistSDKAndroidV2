@@ -680,6 +680,17 @@ public class IncredistManager {
         mListener = listener;
         FLog.i(TAG, String.format(Locale.JAPANESE, "connect device:%s scanTimeout:%d connectTimeout:%d", deviceName, scanTimeout, connectTimeout));
 
+        if (!mCentral.isBluetoothEnabled()) {
+            Handler handler = mCentral.getHandler();
+            if (mListener != null) {
+                handler.post(() -> {
+                    mListener.onConnectFailure(StatusCode.CONNECT_ERROR_NOT_FOUND);
+                });
+            }
+
+            return;
+        }
+
         // 接続中のペリフェラルの場合は直接 connectInternal を呼び出す
         List<BluetoothPeripheral> peripherals = mCentral.getConnectedPeripherals();
         FLog.i(TAG, String.format(Locale.JAPANESE, "connected peripherals: %d", peripherals.size()));
