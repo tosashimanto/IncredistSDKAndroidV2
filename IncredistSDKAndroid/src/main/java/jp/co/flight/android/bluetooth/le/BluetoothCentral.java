@@ -395,7 +395,7 @@ public class BluetoothCentral {
      *
      * @return 接続可能な場合 true
      */
-    private boolean isBluetoothEnabled() {
+    public boolean isBluetoothEnabled() {
         BluetoothAdapter adapter = mManager.getAdapter();
         return adapter != null && adapter.isEnabled();
     }
