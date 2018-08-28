@@ -604,6 +604,30 @@ public class Incredist {
     }
 
     /**
+     * Incredist の EMVカーネル設定情報をチェックします
+     *
+     * @param type     設定種別
+     * @param hashData 設定値のハッシュデータ
+     * @param success  成功時処理
+     * @param failure  失敗時処理
+     */
+    public void emvCheckKernelSetting(EmvSetupDataType type, byte[] hashData, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        if (mController != null) {
+            mController.emvCheckKernelSetting(type, hashData, result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS) {
+                    if (success != null) {
+                        success.onSuccess();
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
      * EMV kernel に ARC データを送信します
      *
      * @param arcData カードへの送信データ

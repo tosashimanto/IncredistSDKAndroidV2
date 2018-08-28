@@ -15,6 +15,7 @@ import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiDeviceInfoCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmoneyBlinkCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmvCardStatusCommand;
+import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmvCheckKernelSettingCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmvDisplayMessageCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmvKernelSetupCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmvSendArcCommand;
@@ -360,6 +361,18 @@ public class IncredistMFiController implements IncredistProtocolController {
     @Override
     public void emvKernelSetup(EmvSetupDataType type, byte[] setupData, IncredistController.Callback callback) {
         postMFiCommandList(MFiEmvKernelSetupCommand.createCommandList(type, setupData), callback);
+    }
+
+    /**
+     * Incredist の EMVカーネル設定情報をチェックします
+     *
+     * @param type     設定種別
+     * @param hashData 設定値のハッシュデータ
+     * @param callback コールバック
+     */
+    @Override
+    public void emvCheckKernelSetting(EmvSetupDataType type, byte[] hashData, IncredistController.Callback callback) {
+        postMFiCommand(new MFiEmvCheckKernelSettingCommand(type, hashData), callback);
     }
 
     /**

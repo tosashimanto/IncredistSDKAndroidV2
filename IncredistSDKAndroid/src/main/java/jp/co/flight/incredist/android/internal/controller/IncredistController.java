@@ -378,6 +378,17 @@ public class IncredistController {
     }
 
     /**
+     * Incredist の EMVカーネル設定情報をチェックします
+     *
+     * @param type     設定種別
+     * @param hashData 設定値のハッシュデータ
+     * @param callback コールバック
+     */
+    public void emvCheckKernelSetting(EmvSetupDataType type, byte[] hashData, IncredistController.Callback callback) {
+        mProtoController.emvCheckKernelSetting(type, hashData, callback);
+    }
+
+    /**
      * EMV kernel に ARC データを送信します
      *
      * @param arcData  ARCデータ
