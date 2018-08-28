@@ -23,6 +23,7 @@ import jp.co.flight.incredist.android.model.BootloaderVersion;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.DeviceInfo;
 import jp.co.flight.incredist.android.model.EmvPacket;
+import jp.co.flight.incredist.android.model.EmvSetupDataType;
 import jp.co.flight.incredist.android.model.EmvTagType;
 import jp.co.flight.incredist.android.model.EmvTransactionType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
@@ -565,6 +566,54 @@ public class Incredist {
     public void rtcSetCurrentTime(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
         if (mController != null) {
             mController.rtcSetCurrentTime(result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS) {
+                    if (success != null) {
+                        success.onSuccess();
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Incredist の EMVカーネル設定情報を送信します
+     *
+     * @param type      設定種別
+     * @param setupData 設定データ
+     * @param success   成功時処理
+     * @param failure   失敗時処理
+     */
+    public void emvKernelSetup(EmvSetupDataType type, byte[] setupData, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        if (mController != null) {
+            mController.emvKernelSetup(type, setupData, result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS) {
+                    if (success != null) {
+                        success.onSuccess();
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Incredist の EMVカーネル設定情報をチェックします
+     *
+     * @param type     設定種別
+     * @param hashData 設定値のハッシュデータ
+     * @param success  成功時処理
+     * @param failure  失敗時処理
+     */
+    public void emvCheckKernelSetting(EmvSetupDataType type, byte[] hashData, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        if (mController != null) {
+            mController.emvCheckKernelSetting(type, hashData, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS) {
                     if (success != null) {
                         success.onSuccess();
