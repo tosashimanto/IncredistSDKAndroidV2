@@ -154,6 +154,7 @@ public class IncredistMFiController implements IncredistProtocolController {
      *
      * @param callback コールバック
      */
+    @Override
     public void getDeviceInfo(final IncredistController.Callback callback) {
         postMFiCommand(new MFiDeviceInfoCommand(), callback);
     }
@@ -276,6 +277,7 @@ public class IncredistMFiController implements IncredistProtocolController {
      * @param withLed  LED を点灯するかどうか
      * @param callback コールバック
      */
+    @Override
     public void felicaOpen(boolean withLed, final IncredistController.Callback callback) {
         MFiCommand command;
         if (withLed) {
@@ -381,6 +383,7 @@ public class IncredistMFiController implements IncredistProtocolController {
      * @param arcData  ARCデータ
      * @param callback コールバック
      */
+    @Override
     public void emvSendArc(byte[] arcData, IncredistController.Callback callback) {
         postMFiCommandList(MFiEmvSendArcCommand.createCommandList(arcData), callback);
     }
@@ -390,6 +393,7 @@ public class IncredistMFiController implements IncredistProtocolController {
      *
      * @param callback コールバック
      */
+    @Override
     public void emvCheckCardStatus(IncredistController.Callback callback) {
         postMFiCommand(new MFiEmvCardStatusCommand(), callback);
     }
@@ -401,6 +405,7 @@ public class IncredistMFiController implements IncredistProtocolController {
      * @param color    LEDの点灯時の色
      * @param duration 点灯時間(msec)
      */
+    @Override
     public void emoneyBlink(boolean isBlink, LedColor color, int duration, IncredistController.Callback callback) {
         postMFiCommand(new MFiEmoneyBlinkCommand(isBlink, color, duration), callback);
     }
