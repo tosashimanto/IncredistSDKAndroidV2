@@ -14,6 +14,7 @@ import java.util.concurrent.CountDownLatch;
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.model.CreditCardType;
+import jp.co.flight.incredist.android.model.EmvSetupDataType;
 import jp.co.flight.incredist.android.model.EmvTagType;
 import jp.co.flight.incredist.android.model.EmvTransactionType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
@@ -363,6 +364,17 @@ public class IncredistController {
      */
     public void rtcSetCurrentTime(IncredistController.Callback callback) {
         mProtoController.rtcSetCurrentTime(callback);
+    }
+
+    /**
+     * EMV kernel に setup データを送信します
+     *
+     * @param type      設定種別
+     * @param setupData setupデータ
+     * @param callback  コールバック
+     */
+    public void emvKernelSetup(EmvSetupDataType type, byte[] setupData, IncredistController.Callback callback) {
+        mProtoController.emvKernelSetup(type, setupData, callback);
     }
 
     /**

@@ -16,7 +16,8 @@ import jp.co.flight.incredist.android.internal.transport.mfi.MFiDeviceInfoComman
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmoneyBlinkCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmvCardStatusCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmvDisplayMessageCommand;
-import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmvSendArc;
+import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmvKernelSetupCommand;
+import jp.co.flight.incredist.android.internal.transport.mfi.MFiEmvSendArcCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiFelicaCloseCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiFelicaLedColorCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiFelicaOpenCommand;
@@ -33,6 +34,7 @@ import jp.co.flight.incredist.android.internal.transport.mfi.MFiStopCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTfpmxDisplayMessageCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
 import jp.co.flight.incredist.android.model.CreditCardType;
+import jp.co.flight.incredist.android.model.EmvSetupDataType;
 import jp.co.flight.incredist.android.model.EmvTagType;
 import jp.co.flight.incredist.android.model.EmvTransactionType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
@@ -349,13 +351,25 @@ public class IncredistMFiController implements IncredistProtocolController {
     }
 
     /**
+     * EMV kernel に setup データを送信します
+     *
+     * @param type      設定種別
+     * @param setupData setupデータ
+     * @param callback  コールバック
+     */
+    @Override
+    public void emvKernelSetup(EmvSetupDataType type, byte[] setupData, IncredistController.Callback callback) {
+        postMFiCommandList(MFiEmvKernelSetupCommand.createCommandList(type, setupData), callback);
+    }
+
+    /**
      * EMV kernel に ARC データを送信します
      *
      * @param arcData  ARCデータ
      * @param callback コールバック
      */
     public void emvSendArc(byte[] arcData, IncredistController.Callback callback) {
-        postMFiCommandList(MFiEmvSendArc.createCommandList(arcData), callback);
+        postMFiCommandList(MFiEmvSendArcCommand.createCommandList(arcData), callback);
     }
 
     /**

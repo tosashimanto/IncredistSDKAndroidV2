@@ -15,28 +15,28 @@ import jp.co.flight.incredist.android.internal.util.LogUtil;
  *
  * ARCデータは複数の MFi パケットで構成される場合があるのでこのクラスは1パケット分を扱う
  */
-public final class MFiEmvSendArc extends MFiCommand {
+public final class MFiEmvSendArcCommand extends MFiCommand {
     private static final byte[] ICQ_HEADER = new byte[]{'i', 'c', 'q'};
 
     /**
-     * ARC データの最大長(最大長を超える場合複数の MFiEmvSendArc コマンドに分割する)
+     * ARC データの最大長(最大長を超える場合複数の MFiEmvSendArcCommand コマンドに分割する)
      */
     private static final int MAX_SEND_ARC_PACKET_LENGTH = 200;
 
     /**
-     * ARC データを複数の MFiEmvSendArc に分割して生成します
+     * ARC データを複数の MFiEmvSendArcCommand に分割して生成します
      *
      * @param arcData ARC データ
-     * @return MFiEmvSendArc のリスト
+     * @return MFiEmvSendArcCommand のリスト
      */
-    public static List<MFiEmvSendArc> createCommandList(byte[] arcData) {
-        List<MFiEmvSendArc> list = new ArrayList<>();
+    public static List<MFiEmvSendArcCommand> createCommandList(byte[] arcData) {
+        List<MFiEmvSendArcCommand> list = new ArrayList<>();
 
         int totalLength = arcData.length;
         int totalCountPackets = totalLength / MAX_SEND_ARC_PACKET_LENGTH + 1;
 
         for (int i = 0; i < totalCountPackets; i++) {
-            list.add(new MFiEmvSendArc(totalCountPackets, i, totalLength,
+            list.add(new MFiEmvSendArcCommand(totalCountPackets, i, totalLength,
                     Arrays.copyOfRange(arcData, i * MAX_SEND_ARC_PACKET_LENGTH,
                             (i < totalCountPackets - 1) ? MAX_SEND_ARC_PACKET_LENGTH : totalLength - i * MAX_SEND_ARC_PACKET_LENGTH)));
         }
@@ -73,7 +73,7 @@ public final class MFiEmvSendArc extends MFiCommand {
      * @param totalLength       合計データ長
      * @param arcData           パケットデータ
      */
-    private MFiEmvSendArc(int totalCountPackets, int indexPacket, int totalLength, byte[] arcData) {
+    private MFiEmvSendArcCommand(int totalCountPackets, int indexPacket, int totalLength, byte[] arcData) {
         super(createPayload(totalCountPackets, indexPacket, totalLength, arcData));
     }
 
