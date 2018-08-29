@@ -37,7 +37,7 @@ public final class MFiEmvKernelSetupCommand extends MFiCommand {
 
         for (int i = 0; i < totalCountPackets; i++) {
             byte[] dataFrag = Arrays.copyOfRange(setupData, i * MAX_SEND_SETUP_PACKET_LENGTH,
-                    (i < totalCountPackets - 1) ? MAX_SEND_SETUP_PACKET_LENGTH : totalLength - i * MAX_SEND_SETUP_PACKET_LENGTH);
+                    (i < totalCountPackets - 1) ? (i + 1) * MAX_SEND_SETUP_PACKET_LENGTH : totalLength);
             if (i == 0) {
                 list.add(new MFiEmvKernelSetupCommand(type, totalCountPackets, totalLength, dataFrag));
             } else {

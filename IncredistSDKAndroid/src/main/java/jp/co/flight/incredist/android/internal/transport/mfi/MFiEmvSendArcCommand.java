@@ -38,7 +38,7 @@ public final class MFiEmvSendArcCommand extends MFiCommand {
         for (int i = 0; i < totalCountPackets; i++) {
             list.add(new MFiEmvSendArcCommand(totalCountPackets, i, totalLength,
                     Arrays.copyOfRange(arcData, i * MAX_SEND_ARC_PACKET_LENGTH,
-                            (i < totalCountPackets - 1) ? MAX_SEND_ARC_PACKET_LENGTH : totalLength - i * MAX_SEND_ARC_PACKET_LENGTH)));
+                            (i < totalCountPackets - 1) ? (i + 1) * MAX_SEND_ARC_PACKET_LENGTH : totalLength)));
         }
 
         return list;
