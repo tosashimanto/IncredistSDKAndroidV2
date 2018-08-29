@@ -14,6 +14,7 @@ import jp.co.flight.incredist.android.internal.controller.result.BootloaderVersi
 import jp.co.flight.incredist.android.internal.controller.result.CardStatusResult;
 import jp.co.flight.incredist.android.internal.controller.result.DeviceInfoResult;
 import jp.co.flight.incredist.android.internal.controller.result.EmvArcResult;
+import jp.co.flight.incredist.android.internal.controller.result.EmvCheckKernelSettingResult;
 import jp.co.flight.incredist.android.internal.controller.result.EmvResult;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.controller.result.MagCardResult;
@@ -22,6 +23,7 @@ import jp.co.flight.incredist.android.internal.controller.result.RtcResult;
 import jp.co.flight.incredist.android.model.BootloaderVersion;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.DeviceInfo;
+import jp.co.flight.incredist.android.model.EmvKernelSettingStatus;
 import jp.co.flight.incredist.android.model.EmvPacket;
 import jp.co.flight.incredist.android.model.EmvSetupDataType;
 import jp.co.flight.incredist.android.model.EmvTagType;
@@ -611,12 +613,12 @@ public class Incredist {
      * @param success  成功時処理
      * @param failure  失敗時処理
      */
-    public void emvCheckKernelSetting(EmvSetupDataType type, byte[] hashData, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+    public void emvCheckKernelSetting(EmvSetupDataType type, byte[] hashData, @Nullable OnSuccessFunction<EmvKernelSettingStatus> success, @Nullable OnFailureFunction failure) {
         if (mController != null) {
             mController.emvCheckKernelSetting(type, hashData, result -> {
-                if (result.status == IncredistResult.STATUS_SUCCESS) {
+                if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof EmvCheckKernelSettingResult) {
                     if (success != null) {
-                        success.onSuccess();
+                        success.onSuccess(((EmvCheckKernelSettingResult) result).isMatched ? EmvKernelSettingStatus.MATCHED : EmvKernelSettingStatus.UNMATCHED);
                     }
                 } else {
                     if (failure != null) {
