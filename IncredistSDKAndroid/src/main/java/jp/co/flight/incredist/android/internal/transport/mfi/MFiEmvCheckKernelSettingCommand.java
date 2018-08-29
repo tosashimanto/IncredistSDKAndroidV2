@@ -2,6 +2,7 @@ package jp.co.flight.incredist.android.internal.transport.mfi;
 
 import android.support.annotation.NonNull;
 
+import jp.co.flight.incredist.android.internal.controller.result.EmvCheckKernelSettingResult;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.util.LogUtil;
 import jp.co.flight.incredist.android.model.EmvSetupDataType;
@@ -44,9 +45,9 @@ public final class MFiEmvCheckKernelSettingCommand extends MFiCommand {
         byte[] bytes = response.getData();
         if (bytes != null && bytes.length == 1) {
             if (bytes[0] == 0) {
-                return new IncredistResult(IncredistResult.STATUS_SUCCESS);
+                return new EmvCheckKernelSettingResult(true);
             } else {
-                return new IncredistResult(IncredistResult.STATUS_FAILURE);
+                return new EmvCheckKernelSettingResult(false);
             }
         }
 
