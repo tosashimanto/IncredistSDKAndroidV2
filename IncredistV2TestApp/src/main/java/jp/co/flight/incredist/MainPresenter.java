@@ -1,5 +1,6 @@
 package jp.co.flight.incredist;
 
+import android.hardware.usb.UsbDevice;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
@@ -30,7 +31,7 @@ import jp.co.flight.incredist.model.PinEntryDParam;
  * MainActivity 用 Presenter インタフェース.
  */
 public interface MainPresenter {
-    void onStartUsb();
+    void onUsbDeviceList();
 
     void onStartScan();
 
@@ -38,7 +39,11 @@ public interface MainPresenter {
 
     void setSelectedDevice(String deviceName);
 
+    void onFindUsbDevice();
+
     void onConnect();
+
+    void onConnectUsb();
 
     void onGetDeviceInfo();
 
@@ -149,8 +154,8 @@ public interface MainPresenter {
         }
 
         @Override
-        public void onStartUsb() {
-            mFragment.startUsb();
+        public void onUsbDeviceList() {
+            mFragment.usbDeviceList();
         }
 
         @Override
@@ -191,9 +196,31 @@ public interface MainPresenter {
         }
 
         @Override
+        public void onFindUsbDevice() {
+            addLog("findUsbDevice");
+            UsbDevice device = mIncredist.findUsbDevice();
+            if (device == null) {
+                addLog("UsbDevice is null");
+            } else {
+                addLog("found UsbDevice");
+            }
+        }
+
+        @Override
         public void onConnect() {
             addLog("connect");
             mIncredist.connect(mConnectionListener);
+        }
+
+        @Override
+        public void onConnectUsb() {
+            addLog("usbConenct");
+            UsbDevice device = mIncredist.getUsbDevice();
+            if (device == null) {
+                addLog("UsbDevice is null");
+            } else {
+                mIncredist.connect(device, mConnectionListener);
+            }
         }
 
         @Override

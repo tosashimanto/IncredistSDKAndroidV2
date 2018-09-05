@@ -31,6 +31,9 @@ import jp.co.flight.incredist.android.model.StatusCode;
 public class IncredistManager {
     private static final String TAG = "IncredistManager";
 
+    public static final int INCREDIST_PREMIUM_VENDOR_ID = 0x2925;
+    public static final int INCREDIST_PREMIUM_PRODUCT_ID = 0x7008;
+
     private final BluetoothCentral mCentral;
     private final UsbManager mUsbManager;
 
@@ -133,6 +136,29 @@ public class IncredistManager {
     public void bleStopScan() {
         FLog.i(TAG, "bleStopScan");
         mCentral.stopScan();
+    }
+
+    /**
+     * USB 接続の Incredist を検索して返却します。
+     *
+     * 現状は、アプリケーションから単にこのメソッドを呼んだ場合は null が返却されるので、
+     * AndroidManifest に device_filter.xml を記述して Activity を起動させて UsbDevice を
+     * 取得させる必要がありそうです。ただ、一度取得した後ならば、本メソッドで再取得することは
+     * 可能であると考えられます(OS 仕様のため曖昧な記載となっていますが今後調査します)。
+     *
+     * @return UsbDevice オブジェクト
+     */
+    @Nullable
+    public UsbDevice findUsbIncredist() {
+        HashMap<String, UsbDevice> deviceList = mUsbManager.getDeviceList();
+        for (Map.Entry<String, UsbDevice> deviceEntry : deviceList.entrySet()) {
+            UsbDevice device = deviceEntry.getValue();
+            if (device.getVendorId() == INCREDIST_PREMIUM_VENDOR_ID && device.getProductId() == INCREDIST_PREMIUM_PRODUCT_ID) {
+                return device;
+            }
+        }
+
+        return null;
     }
 
     /**

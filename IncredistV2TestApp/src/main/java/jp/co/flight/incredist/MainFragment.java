@@ -240,7 +240,7 @@ public class MainFragment extends Fragment
         mPresenter.emoneyBlink(isBlink, color, duration);
     }
 
-    public void startUsb() {
+    public void usbDeviceList() {
         Context context = getContext();
         if (context != null) {
             UsbManager usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
@@ -251,7 +251,6 @@ public class MainFragment extends Fragment
                 UsbDevice device = entry.getValue();
                 mPresenter.addLog(String.format(Locale.US, "key:%s vid:%x pid:%x name:%s", entry.getKey(), device.getVendorId(), device.getProductId(), device.getProductName()));
             }
-
         }
     }
 

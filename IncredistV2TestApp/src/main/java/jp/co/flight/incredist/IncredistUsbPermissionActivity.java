@@ -37,7 +37,6 @@ public class IncredistUsbPermissionActivity extends AppCompatActivity {
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         if (device != null) {
                             //call method to set up device communication
-
                             connectDevice(device);
                         }
                     } else {

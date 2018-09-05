@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
 import android.databinding.Observable;
+import android.hardware.usb.UsbDevice;
 import android.preference.PreferenceManager;
 
 import java.util.Calendar;
@@ -43,6 +44,8 @@ public interface IncredistModel extends Observable {
     List<BluetoothPeripheral> getDeviceList();
 
     void connect(IncredistManager.IncredistConnectionListener listener);
+
+    void connect(UsbDevice device, IncredistManager.IncredistConnectionListener connectionListener);
 
     void disconnect();
 
@@ -111,6 +114,10 @@ public interface IncredistModel extends Observable {
 
     void restart(OnSuccessVoidFunction success, OnFailureFunction failure);
 
+    UsbDevice findUsbDevice();
+
+    UsbDevice getUsbDevice();
+
     class Impl extends BaseObservable implements IncredistModel {
         private static final String PREFERENCE_KEY_DEVICE_NAME = "device_name";
         private static final String PREFERENCE_KEY_EMV_MESSAGE_TYPE = "emv_message_type";
@@ -129,6 +136,7 @@ public interface IncredistModel extends Observable {
         private int mTfpMessageType;
         private String mTfpMessageString;
         private String mSerialNumber;
+        private UsbDevice mUsbDevice;
 
         public Impl(Context context) {
             mContext = context;
@@ -163,6 +171,35 @@ public interface IncredistModel extends Observable {
         @Override
         public void connect(IncredistManager.IncredistConnectionListener listener) {
             mIncredistManager.connect(mSelectedDevice, 3000, 5000, new IncredistManager.IncredistConnectionListener() {
+                @Override
+                public void onConnectIncredist(Incredist incredist) {
+                    mIncredist = incredist;
+                    if (listener != null) {
+                        listener.onConnectIncredist(incredist);
+                    }
+                }
+
+                @Override
+                public void onConnectFailure(int errorCode) {
+                    mIncredist = null;
+                    if (listener != null) {
+                        listener.onConnectFailure(errorCode);
+                    }
+                }
+
+                @Override
+                public void onDisconnectIncredist(Incredist incredist) {
+                    mIncredist = null;
+                    if (listener != null) {
+                        listener.onDisconnectIncredist(incredist);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void connect(UsbDevice device, IncredistManager.IncredistConnectionListener listener) {
+            mIncredistManager.connect(device, new IncredistManager.IncredistConnectionListener() {
                 @Override
                 public void onConnectIncredist(Incredist incredist) {
                     mIncredist = incredist;
@@ -503,6 +540,17 @@ public interface IncredistModel extends Observable {
         public void restart(OnSuccessVoidFunction success, OnFailureFunction failure) {
             mIncredistManager.restartAdapter(success, failure);
             mIncredist = null;
+        }
+
+        @Override
+        public UsbDevice findUsbDevice() {
+            mUsbDevice = mIncredistManager.findUsbIncredist();
+            return mUsbDevice;
+        }
+
+        @Override
+        public UsbDevice getUsbDevice() {
+            return mUsbDevice;
         }
 
         private SharedPreferences getSharedPreference() {
