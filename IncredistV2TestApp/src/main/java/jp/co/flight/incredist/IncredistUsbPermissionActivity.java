@@ -13,10 +13,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
+import java.util.Locale;
+
 import jp.co.flight.incredist.android.Incredist;
 import jp.co.flight.incredist.android.IncredistManager;
 import jp.co.flight.incredist.android.IncredistV2TestApp.R;
-import jp.co.flight.incredist.android.model.LedColor;
 
 public class IncredistUsbPermissionActivity extends AppCompatActivity {
 
@@ -46,10 +47,10 @@ public class IncredistUsbPermissionActivity extends AppCompatActivity {
             }
         }
     };
+
     private PendingIntent mPermissionIntent;
     private Handler mHandler;
     private Incredist mIncredist;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,12 +75,16 @@ public class IncredistUsbPermissionActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         unregisterReceiver(mUsbReceiver);
-        
+
         super.onDestroy();
     }
 
     void connectDevice(UsbDevice device) {
         UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+
+        if (usbManager == null) {
+            return;
+        }
 
         if (!usbManager.hasPermission(device)) {
             usbManager.requestPermission(device, mPermissionIntent);
@@ -111,13 +116,13 @@ public class IncredistUsbPermissionActivity extends AppCompatActivity {
     private void getSerialNumber() {
         TextView textView = findViewById(R.id.text);
 
-        mIncredist.emoneyBlink(true, LedColor.GREEN, 100, (b) -> {
+        mIncredist.getSerialNumber((serialNumber) -> {
             mHandler.post(() -> {
-                textView.setText("blink");
+                textView.setText(serialNumber);
             });
         }, (errorCode) -> {
             mHandler.post(() -> {
-                textView.setText("error");
+                textView.setText(String.format(Locale.US, "error %d", errorCode));
             });
         });
     }
