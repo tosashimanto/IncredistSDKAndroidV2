@@ -29,7 +29,18 @@ public class MFiResponse extends MFiPacket {
      *
      * @param data 受信データのbyte配列
      */
-    synchronized void appendData(byte[] data) {
+    void appendData(byte[] data) {
+        appendData(data, 0, data.length);
+    }
+
+    /**
+     * 受信データを追加.
+     *
+     * @param data       受信データのbyte配列
+     * @param offset     先頭位置
+     * @param datalength データ長
+     */
+    synchronized void appendData(byte[] data, int offset, int datalength) {
         if (mMFiData == null) {
             // 最初のパケット
             int length = responseLength(data);
@@ -37,22 +48,22 @@ public class MFiResponse extends MFiPacket {
             if (length > 0) {
                 mMFiData = new byte[length];
 
-                int firstLen = data.length;
+                int firstLen = datalength;
                 if (firstLen > length) {
                     // 実際に受信したデータの方がパケット長より長い
-                    FLog.w(TAG, String.format(Locale.US, "packet length mismatch header:%d received:%d", length, data.length));
+                    FLog.w(TAG, String.format(Locale.US, "packet length mismatch header:%d received:%d", length, datalength));
                     firstLen = length;
                 }
-                System.arraycopy(data, 0, mMFiData, 0, firstLen);
-                mAppendPos = data.length;
+                System.arraycopy(data, offset, mMFiData, 0, firstLen);
+                mAppendPos = datalength;
                 mErrorCode = -1;
             } else {
                 mErrorCode = IncredistResult.STATUS_INVALID_RESPONSE_HEADER;
             }
         } else {
-            if (mAppendPos + data.length <= mMFiData.length) {
-                System.arraycopy(data, 0, mMFiData, mAppendPos, data.length);
-                mAppendPos += data.length;
+            if (mAppendPos + datalength <= mMFiData.length) {
+                System.arraycopy(data, offset, mMFiData, mAppendPos, datalength);
+                mAppendPos += datalength;
                 mErrorCode = -1;
             } else {
                 // 受信サイズエラー(パケット長より多くのデータを受信)
@@ -60,7 +71,7 @@ public class MFiResponse extends MFiPacket {
             }
         }
     }
-
+    
     /**
      * 受信を継続するかどうかを取得します.
      *

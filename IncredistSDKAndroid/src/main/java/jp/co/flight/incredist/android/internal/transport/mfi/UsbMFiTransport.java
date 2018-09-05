@@ -89,14 +89,41 @@ public class UsbMFiTransport implements MFiTransport {
 
         mResponse.clear();
 
-        FLog.d(TAG, "sendCommand wait receive");
         synchronized (mResponse) {
+            FLog.d(TAG, "sendCommand wait receive");
             boolean continueReceive;
             do {
                 continueReceive = false;
+
+                if (request == mReceiveRequest) {
+                    mReceiveBuffer.flip();
+                    int length = mReceiveBuffer.remaining();
+                    mReceiveBuffer.get(buf, 0, length);
+                    FLog.d(TAG, String.format("sendCommand received length:%d data: %s", length, LogUtil.hexString(buf, 0, length)));
+                    mResponse.appendData(buf, 0, length);
+
+                    queueRequest(mReceiveRequest, mReceiveBuffer);
+                } else if (request != null) {
+                    FLog.d(TAG, String.format(Locale.US, "unknown request endpoint:%d", request.getEndpoint().getEndpointNumber()));
+                }
+
                 do {
-                    mReceiveBuffer.get(buf);
-                    mResponse.appendData(buf);
+                    FLog.d(TAG, "sendCommand requestWait");
+                    request = mConnection.requestWait();
+                    FLog.d(TAG, "sendCommand requestWait end");
+
+                    if (request == mReceiveRequest) {
+                        mReceiveBuffer.flip();
+                        int length = mReceiveBuffer.remaining();
+                        mReceiveBuffer.get(buf, 0, length);
+                        FLog.d(TAG, String.format("sendCommand received data: %s", LogUtil.hexString(buf, 0, length)));
+                        mResponse.appendData(buf, 0, length);
+                    } else if (request == null) {
+                        // 受信エラー
+                        break;
+                    } else {
+                        FLog.d(TAG, String.format(Locale.US, "unknown request endpoint:%d", request.getEndpoint().getEndpointNumber()));
+                    }
                 } while (mResponse.needMoreData());
 
                 if (mResponse.isValid()) {

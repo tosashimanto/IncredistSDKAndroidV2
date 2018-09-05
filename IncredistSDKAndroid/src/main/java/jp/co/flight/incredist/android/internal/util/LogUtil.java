@@ -19,11 +19,20 @@ public final class LogUtil {
      * @return 16進文字列
      */
     public static String hexString(byte[] bytes) {
+        return hexString(bytes, 0, bytes.length);
+    }
+
+    public static String hexString(byte[] bytes, int offset, int length) {
         if (bytes != null) {
             StringBuilder sb = new StringBuilder();
 
-            for (byte b : bytes) {
-                sb.append(String.format("%02x:", b));
+            for (int i = 0; i < length; i++) {
+                if (offset + i < bytes.length) {
+                    sb.append(String.format("%02x:", bytes[offset + i]));
+                } else {
+                    sb.append(" length over ");
+                    break;
+                }
             }
 
             return sb.toString();
