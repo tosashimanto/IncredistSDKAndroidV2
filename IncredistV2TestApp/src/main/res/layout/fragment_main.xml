@@ -50,6 +50,30 @@
                 android:layout_height="wrap_content"
                 android:background="@android:color/white">
 
+                <!-- usbtest -->
+                <android.support.v7.widget.AppCompatTextView
+                    android:id="@+id/label_usb"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/colorHeaderBackground"
+                    android:text="USB"
+                    app:layout_constraintBottom_toTopOf="@+id/button_usb"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <Button
+                    android:id="@+id/button_usb"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:onClick="@{(view)->presenter.onStartUsb()}"
+                    android:text="Scan"
+                    app:layout_constraintBottom_toTopOf="@+id/label_incredist"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/label_usb" />
+
                 <!-- incredist -->
                 <android.support.v7.widget.AppCompatTextView
                     android:id="@+id/label_incredist"
@@ -89,9 +113,9 @@
                     android:id="@+id/text_device_name"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@{incredist.selectedDevice}"
-                    android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
+                    android:layout_marginStart="8dp"
+                    android:text="@{incredist.selectedDevice}"
                     app:layout_constraintBottom_toBottomOf="@+id/button_scan"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/button_select"

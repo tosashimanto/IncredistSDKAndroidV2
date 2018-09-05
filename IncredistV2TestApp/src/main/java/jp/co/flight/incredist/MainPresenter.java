@@ -30,6 +30,8 @@ import jp.co.flight.incredist.model.PinEntryDParam;
  * MainActivity 用 Presenter インタフェース.
  */
 public interface MainPresenter {
+    void onStartUsb();
+
     void onStartScan();
 
     void onSelectDevice();
@@ -144,6 +146,11 @@ public interface MainPresenter {
             mMainThreadHandler = new Handler(Looper.getMainLooper());
 
             addLog(String.format("%s:%s API:%s", BuildConfig.APPLICATION_ID, BuildConfig.VERSION_NAME, mIncredist.getApiVersion()));
+        }
+
+        @Override
+        public void onStartUsb() {
+            mFragment.startUsb();
         }
 
         @Override
