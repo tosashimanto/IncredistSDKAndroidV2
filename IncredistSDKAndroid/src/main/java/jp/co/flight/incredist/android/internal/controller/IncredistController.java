@@ -82,7 +82,7 @@ public class IncredistController {
         mDeviceName = deviceName;
 
         // 最初は MFi のみ対応
-        mProtoController = new IncredistMFiController(this, connection);
+        mProtoController = new IncredistBleMFiController(this, connection);
         createThreads(mDeviceName);
     }
 

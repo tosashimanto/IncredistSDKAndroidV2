@@ -46,7 +46,7 @@ import jp.co.flight.incredist.android.model.PinEntry;
 /**
  * BLE - MFi版 Incredist 用 Controller.
  */
-public class IncredistMFiController implements IncredistProtocolController {
+public class IncredistBleMFiController implements IncredistProtocolController {
 
     @Nullable
     private IncredistController mController;
@@ -62,7 +62,7 @@ public class IncredistMFiController implements IncredistProtocolController {
      * @param controller IncredistController オブジェクト
      * @param connection BluetoothGattConnection オブジェクt
      */
-    IncredistMFiController(@NonNull IncredistController controller, @NonNull BluetoothGattConnection connection) {
+    IncredistBleMFiController(@NonNull IncredistController controller, @NonNull BluetoothGattConnection connection) {
         mController = controller;
         mConnection = connection;
         mMFiTransport = new BleMFiTransport(connection);
