@@ -446,8 +446,13 @@ public class IncredistMFiController implements IncredistProtocolController {
         postMFiCommand(new MFiStopCommand(), callback);
     }
 
+    /**
+     * 切断処理
+     *
+     * @param callback BLE の場合 OS から通知されるので使用しない
+     */
     @Override
-    public void disconnect() {
+    public void disconnect(IncredistController.Callback callback) {
         mConnection.disconnect();
     }
 

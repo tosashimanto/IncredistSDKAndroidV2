@@ -451,8 +451,13 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
         postMFiCommand(new MFiStopCommand(), callback);
     }
 
+    /**
+     * 切断処理
+     *
+     * @param callback 　コールバック
+     */
     @Override
-    public void disconnect() {
+    public void disconnect(IncredistController.Callback callback) {
         UsbDeviceConnection connection = mConnection;
         UsbInterface usbInterface = mUsbInterface;
         if (connection != null) {
@@ -460,6 +465,13 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
                 connection.releaseInterface(usbInterface);
             }
             connection.close();
+
+            IncredistController controller = mController;
+            if (controller != null) {
+                controller.postCallback(() -> {
+                    callback.onResult(new IncredistResult(IncredistResult.STATUS_SUCCESS));
+                });
+            }
         }
 
         mUsbInterface = null;

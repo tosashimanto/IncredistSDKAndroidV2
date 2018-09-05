@@ -37,7 +37,6 @@ public class IncredistManager {
     private final BluetoothCentral mCentral;
     private final UsbManager mUsbManager;
 
-    InternalConnectionListenerV1 mConnectionListenerV1;
     private IncredistConnectionListener mListener = null;
 
     /**
@@ -737,7 +736,7 @@ public class IncredistManager {
 
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(() -> {
-            listener.onConnectIncredist(new Incredist(this, connection, usbInterface));
+            listener.onConnectIncredist(new Incredist(this, connection, usbInterface, listener));
         });
     }
 
@@ -776,18 +775,4 @@ public class IncredistManager {
         });
     }
 
-    /**
-     * Incredist との接続を切断します
-     */
-    @Deprecated
-    void setupDisconnectV1(Incredist incredist, OnSuccessFunction<Incredist> success, OnFailureFunction failure) {
-        mConnectionListenerV1.setupDisconnect(incredist, success, failure);
-    }
-
-    /**
-     * ConnectionListener の設定をクリアします
-     */
-    void resetConnectionListener() {
-        mConnectionListenerV1.clearListener();
-    }
 }

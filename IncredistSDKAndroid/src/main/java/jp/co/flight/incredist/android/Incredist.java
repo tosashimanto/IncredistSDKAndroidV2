@@ -6,6 +6,7 @@ import android.hardware.usb.UsbInterface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.EnumSet;
 
@@ -44,6 +45,7 @@ import jp.co.flight.incredist.android.model.ProductInfo;
 @SuppressWarnings({"WeakerAccess", "unused"}) // for public API.
 public class Incredist {
     private static final String TAG = "Incredist";
+    private WeakReference<IncredistManager.IncredistConnectionListener> mConnectionListenerRef;
     /**
      * 生成元の IncredistManager インスタンス.
      */
@@ -72,10 +74,12 @@ public class Incredist {
      *
      * @param connection   UsbDeviceConnection オブジェクト
      * @param usbInterface UsbInterface オブジェクト
+     * @param listener     接続情報通知用リスナ
      */
-    public Incredist(@NonNull IncredistManager manager, UsbDeviceConnection connection, UsbInterface usbInterface) {
+    public Incredist(@NonNull IncredistManager manager, UsbDeviceConnection connection, UsbInterface usbInterface, IncredistManager.IncredistConnectionListener listener) {
         mManager = manager;
         mController = new IncredistController(connection, usbInterface);
+        mConnectionListenerRef = new WeakReference<>(listener);
     }
 
     /**
@@ -83,8 +87,18 @@ public class Incredist {
      */
     public void disconnect() {
         if (mController != null) {
-            mController.cancel(result -> {
-                mController.disconnect();
+            // コマンド実行中の場合があるので cancel を呼び出し、実行結果は無視して、続けて切断を行います
+            mController.cancel(resultIgnore -> {
+                mController.disconnect(result -> {
+                    if (result.status == IncredistResult.STATUS_SUCCESS) {
+                        mController.postCallback(() -> {
+                            IncredistManager.IncredistConnectionListener listener = mConnectionListenerRef.get();
+                            if (listener != null) {
+                                listener.onDisconnectIncredist(this);
+                            }
+                        });
+                    }
+                });
             });
         }
     }

@@ -91,6 +91,7 @@ public class IncredistController {
      *
      * @param connection   UsbDeviceConnnection オブジェクト
      * @param usbInterface UsbInterface オブジェクト
+     * @param listener
      */
     public IncredistController(UsbDeviceConnection connection, UsbInterface usbInterface) {
         mDeviceName = "USBIncredist";
@@ -462,8 +463,8 @@ public class IncredistController {
     /**
      * Incredist デバイスから切断します.
      */
-    public void disconnect() {
-        mProtoController.disconnect();
+    public void disconnect(IncredistController.Callback callback) {
+        mProtoController.disconnect(callback);
     }
 
     /**

@@ -225,8 +225,10 @@ interface IncredistProtocolController {
 
     /**
      * Incredist との接続を切断します
+     *
+     * @param callback コールバック
      */
-    void disconnect();
+    void disconnect(IncredistController.Callback callback);
 
     /**
      * オブジェクトを解放します
