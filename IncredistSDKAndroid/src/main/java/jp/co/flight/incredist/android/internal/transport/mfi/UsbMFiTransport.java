@@ -73,8 +73,6 @@ public class UsbMFiTransport implements MFiTransport {
     @Override
     public IncredistResult sendCommand(MFiCommand... commandList) {
         //TODO NPE対策が必要
-        queueRequest(mReceiveRequest, mReceiveBuffer);
-
         if (commandList == null || commandList.length == 0) {
             return new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND);
         }
@@ -84,7 +82,7 @@ public class UsbMFiTransport implements MFiTransport {
         long startTime = System.currentTimeMillis();
         FLog.d(TAG, String.format("sendCommand %s", firstCommand.getClass().getSimpleName()));
 
-        UsbRequest request = sendRequests(commandList);
+        sendRequests(commandList);
         byte[] buf = new byte[MAX_PACKET_LENGTH];
 
         mResponse.clear();
@@ -95,28 +93,16 @@ public class UsbMFiTransport implements MFiTransport {
             do {
                 continueReceive = false;
 
-                if (request == mReceiveRequest) {
-                    mReceiveBuffer.flip();
-                    int length = mReceiveBuffer.remaining();
-                    mReceiveBuffer.get(buf, 0, length);
-                    FLog.d(TAG, String.format("sendCommand received length:%d data: %s", length, LogUtil.hexString(buf, 0, length)));
-                    mResponse.appendData(buf, 0, length);
-
-                    queueRequest(mReceiveRequest, mReceiveBuffer);
-                } else if (request != null) {
-                    FLog.d(TAG, String.format(Locale.US, "unknown request endpoint:%d", request.getEndpoint().getEndpointNumber()));
-                }
-
                 do {
-                    FLog.d(TAG, "sendCommand requestWait");
-                    request = mConnection.requestWait();
-                    FLog.d(TAG, "sendCommand requestWait end");
+                    mReceiveBuffer.clear();
+                    queueRequest(mReceiveRequest, mReceiveBuffer);
+                    UsbRequest request = mConnection.requestWait();
 
                     if (request == mReceiveRequest) {
                         mReceiveBuffer.flip();
                         int length = mReceiveBuffer.remaining();
                         mReceiveBuffer.get(buf, 0, length);
-                        FLog.d(TAG, String.format("sendCommand received data: %s", LogUtil.hexString(buf, 0, length)));
+                        FLog.d(TAG, String.format(Locale.US, "sendCommand received length:%d data: %s", length, LogUtil.hexString(buf, 0, length)));
                         mResponse.appendData(buf, 0, length);
                     } else if (request == null) {
                         // 受信エラー
@@ -124,7 +110,9 @@ public class UsbMFiTransport implements MFiTransport {
                     } else {
                         FLog.d(TAG, String.format(Locale.US, "unknown request endpoint:%d", request.getEndpoint().getEndpointNumber()));
                     }
-                } while (mResponse.needMoreData());
+
+                    request = null;
+                } while (mResponse.isEmpty() || mResponse.needMoreData());
 
                 if (mResponse.isValid()) {
                     FLog.d(TAG, "recv valid packet: " + LogUtil.hexString(mResponse.getData()));
@@ -159,48 +147,41 @@ public class UsbMFiTransport implements MFiTransport {
     private void queueRequest(UsbRequest request, ByteBuffer buffer) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             FLog.d(TAG, String.format(Locale.US, "queue endpoint:%d with length", request.getEndpoint().getEndpointNumber()));
-            if (request.queue(buffer, MAX_PACKET_LENGTH)) {
-                FLog.d(TAG, "queue success");
-            } else {
+            if (!request.queue(buffer, MAX_PACKET_LENGTH)) {
                 FLog.d(TAG, "queue failed");
             }
         } else {
             FLog.d(TAG, String.format(Locale.US, "queue endpoint:%d without length", request.getEndpoint().getEndpointNumber()));
-            if (request.queue(buffer)) {
-                FLog.d(TAG, "queue success");
-            } else {
+            if (!request.queue(buffer)) {
                 FLog.d(TAG, "queue failed");
             }
         }
     }
 
-    private UsbRequest sendRequests(MFiCommand[] commandList) {
-        FLog.d(TAG, String.format(Locale.US, "sendRequests %d", commandList.length));
+    private void sendRequests(MFiCommand[] commandList) {
+        FLog.d(TAG, String.format(Locale.US, "sendRequests commandList.length:%d", commandList.length));
         for (MFiCommand command : commandList) {
             int count = command.getPacketCount(MAX_PACKET_LENGTH);
 
-            FLog.d(TAG, String.format(Locale.US, "sendRequests count %d", count));
+            FLog.d(TAG, String.format(Locale.US, "sendRequests packet count:%d", count));
             for (int i = 0; i < count; i++) {
                 byte[] data = command.getValueData(i, MAX_PACKET_LENGTH);
+                mSendBuffer.clear();
                 mSendBuffer.put(data);
                 queueRequest(mSendRequest, mSendBuffer);
 
                 //TODO タイムアウトパラメータが API26 以上
-                FLog.d(TAG, "sendRequests requestWait");
                 UsbRequest request = mConnection.requestWait();
-                FLog.d(TAG, "sendRequests requestWait end");
 
                 if (request != mSendRequest) {
                     FLog.d(TAG, "sendRequests request is not sendRequest");
-                    return request;
+                    return;
                 }
             }
         }
 
-        FLog.d(TAG, "sendRequests completed");
-
         // 正常に送信完了した場合
-        return null;
+        FLog.d(TAG, "sendRequests completed");
     }
 
     @Override

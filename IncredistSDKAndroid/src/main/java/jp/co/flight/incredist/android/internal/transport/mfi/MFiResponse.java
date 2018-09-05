@@ -71,7 +71,7 @@ public class MFiResponse extends MFiPacket {
             }
         }
     }
-    
+
     /**
      * 受信を継続するかどうかを取得します.
      *
@@ -150,5 +150,9 @@ public class MFiResponse extends MFiPacket {
      */
     public boolean hasData() {
         return mAppendPos > 0;
+    }
+
+    public boolean isEmpty() {
+        return mMFiData == null;
     }
 }
