@@ -254,7 +254,17 @@ public class MainFragment extends Fragment
         }
     }
 
+    public boolean checkUsbPermission(UsbDevice device) {
+        if (mListener != null) {
+            return mListener.checkUsbPermission(device);
+        } else {
+            return false;
+        }
+    }
+
     public interface OnFragmentInteractionListener {
         IncredistModel getModel();
+
+        boolean checkUsbPermission(UsbDevice device);
     }
 }

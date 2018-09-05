@@ -219,7 +219,11 @@ public interface MainPresenter {
             if (device == null) {
                 addLog("UsbDevice is null");
             } else {
-                mIncredist.connect(device, mConnectionListener);
+                if (mFragment.checkUsbPermission(device)) {
+                    mIncredist.connect(device, mConnectionListener);
+                } else {
+                    addLog("UsbPermission failed");
+                }
             }
         }
 
