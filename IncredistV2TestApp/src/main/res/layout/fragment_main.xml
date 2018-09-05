@@ -174,20 +174,9 @@
                     android:onClick="@{(view)->presenter.onStop()}"
                     android:text="Stop"
                     app:layout_constraintBottom_toTopOf="@+id/button_restart"
-                    app:layout_constraintEnd_toStartOf="@+id/button_release"
+                    app:layout_constraintEnd_toStartOf="@+id/button_cancel"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/button_connect" />
-
-                <Button
-                    android:id="@+id/button_release"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="@{(view)->presenter.onRelease()}"
-                    android:text="Release"
-                    app:layout_constraintBottom_toBottomOf="@+id/button_stop"
-                    app:layout_constraintEnd_toStartOf="@+id/button_cancel"
-                    app:layout_constraintStart_toEndOf="@+id/button_stop"
-                    app:layout_constraintTop_toTopOf="@+id/button_stop" />
 
                 <Button
                     android:id="@+id/button_cancel"
@@ -197,7 +186,7 @@
                     android:text="Cancel"
                     app:layout_constraintBottom_toBottomOf="@+id/button_stop"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/button_release"
+                    app:layout_constraintStart_toEndOf="@+id/button_stop"
                     app:layout_constraintTop_toTopOf="@+id/button_stop" />
 
                 <Button

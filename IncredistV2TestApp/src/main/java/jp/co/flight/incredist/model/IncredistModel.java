@@ -89,12 +89,6 @@ public interface IncredistModel extends Observable {
 
     void cancel(OnSuccessVoidFunction success, OnFailureFunction failure);
 
-    void release(OnSuccessVoidFunction success, OnFailureFunction failure);
-
-    void releaseManager();
-
-    void clearManager();
-
     @Bindable
     String getSelectedDevice();
 
@@ -189,6 +183,7 @@ public interface IncredistModel extends Observable {
 
                 @Override
                 public void onDisconnectIncredist(Incredist incredist) {
+                    mIncredist.release();
                     mIncredist = null;
                     if (listener != null) {
                         listener.onDisconnectIncredist(incredist);
@@ -438,27 +433,6 @@ public interface IncredistModel extends Observable {
             } else {
                 failure.onFailure(-1);
             }
-        }
-
-        @Override
-        public void release(OnSuccessVoidFunction success, OnFailureFunction failure) {
-            if (mIncredist != null) {
-                mIncredist.release();
-                mIncredist = null;
-                success.onSuccess();
-            } else {
-                failure.onFailure(-1);
-            }
-        }
-
-        @Override
-        public void releaseManager() {
-            mIncredistManager.release();
-        }
-
-        @Override
-        public void clearManager() {
-            mIncredistManager = null;
         }
 
         //-- methods for DataBinding.

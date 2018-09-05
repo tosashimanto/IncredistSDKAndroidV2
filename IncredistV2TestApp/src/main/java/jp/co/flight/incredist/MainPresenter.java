@@ -55,8 +55,6 @@ public interface MainPresenter {
 
     void onCancel();
 
-    void onRelease();
-
     void onRestart();
 
     void onAuto();
@@ -270,16 +268,6 @@ public interface MainPresenter {
                 addLog("cancel success");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "cancel failure %d", errorCode));
-            });
-        }
-
-        @Override
-        public void onRelease() {
-            addLog("release");
-            mIncredist.release(() -> {
-                addLog("release success");
-            }, (errorCode) -> {
-                addLog(String.format(Locale.JAPANESE, "release failure %d", errorCode));
             });
         }
 
