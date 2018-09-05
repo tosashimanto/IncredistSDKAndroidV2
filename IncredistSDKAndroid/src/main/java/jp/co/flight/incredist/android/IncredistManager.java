@@ -2,7 +2,12 @@ package jp.co.flight.incredist.android;
 
 import android.bluetooth.BluetoothGatt;
 import android.content.Context;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbInterface;
+import android.hardware.usb.UsbManager;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -27,6 +32,7 @@ public class IncredistManager {
     private static final String TAG = "IncredistManager";
 
     private final BluetoothCentral mCentral;
+    private final UsbManager mUsbManager;
 
     InternalConnectionListenerV1 mConnectionListenerV1;
     private IncredistConnectionListener mListener = null;
@@ -67,7 +73,10 @@ public class IncredistManager {
      */
     public IncredistManager(Context context) {
         FLog.i(TAG, String.format(Locale.JAPANESE, "new IncredistManager context:%s", context));
+
+        //TODO USB/BLE 共に必要な場合に生成する
         mCentral = new BluetoothCentral(context);
+        mUsbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
     }
 
     /**
@@ -752,6 +761,22 @@ public class IncredistManager {
     public void connectToAddress(String address, long timeout) {
         BluetoothPeripheral peripheral = new BluetoothPeripheral("add", address);
         connectInternal(peripheral, timeout);
+    }
+
+    /**
+     * USB デバイスへ接続します
+     *
+     * @param device
+     * @param listener
+     */
+    public void connect(UsbDevice device, @Nullable IncredistConnectionListener listener) {
+        UsbDeviceConnection connection = mUsbManager.openDevice(device);
+        UsbInterface usbInterface = device.getInterface(0);
+
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(() -> {
+            listener.onConnectIncredist(new Incredist(this, connection, usbInterface));
+        });
     }
 
     /**

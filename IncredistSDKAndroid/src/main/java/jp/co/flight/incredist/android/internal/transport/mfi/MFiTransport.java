@@ -1,80 +1,10 @@
 package jp.co.flight.incredist.android.internal.transport.mfi;
 
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattService;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
-import jp.co.flight.incredist.android.internal.controller.IncredistConstants;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
-import jp.co.flight.incredist.android.internal.util.FLog;
-import jp.co.flight.incredist.android.internal.util.LogUtil;
 
-/**
- * MFi 版 Incredist との MFi パケット通信を行うユーティリティクラス.
- * このクラスのメソッドはバックグラウンドスレッドで実行される前提なので同期処理として実装する.
- */
-public class MFiTransport {
-    private static final String TAG = "MFiTransport";
-
-    private static final int MFI_TRANSPORT_TIMEOUT = 1000;
-    private static final long CANCEL_TIMEOUT = 3000;
-
-    @Nullable
-    private BluetoothGattConnection mConnection;
-    private BluetoothGattCharacteristic mWriteCharacteristic = null;
-    private BluetoothGattCharacteristic mNotifyCharacteristic = null;
-
-    /**
-     * 送信中のコマンド
-     */
-    private MFiCommand mCommand = null;
-
-    /**
-     * 受信用パケット.
-     */
-    private final MFiResponse mResponse = new MFiResponse();
-
-    /**
-     * キャンセルフラグ
-     */
-    private CountDownLatch mCancelling = null;
-
-    class ErrorLatch extends CountDownLatch {
-        int mErrorCode;
-
-        ErrorLatch() {
-            super(1);
-        }
-    }
-
-    /**
-     * コンストラクタ.
-     *
-     * @param connection BluetoothGattConnection オブジェクト
-     */
-    public MFiTransport(@NonNull BluetoothGattConnection connection) {
-        mConnection = connection;
-    }
-
-    /**
-     * 現在コマンド送受信中かどうかを取得します。
-     *
-     * @return 送受信処理中の場合 true
-     */
-    public boolean isBusy() {
-        return false;
-    }
-
+public interface MFiTransport {
     /**
      * コマンドを送信し、レスポンスを受信して返却します.
      *
@@ -82,205 +12,7 @@ public class MFiTransport {
      * @return レスポンスの MFiパケット
      */
     @WorkerThread
-    public IncredistResult sendCommand(MFiCommand... commandList) {
-        findCharacteristics();
-
-        if (commandList == null || commandList.length == 0) {
-            return new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND);
-        }
-
-        Iterator<MFiCommand> iterator = Arrays.asList(commandList).iterator();
-
-        // レスポンスの解析などは最初の引数のオブジェクトで実行する
-        MFiCommand firstCommand = commandList[0];
-
-        long startTime = System.currentTimeMillis();
-        FLog.d(TAG, String.format("sendCommand %s", firstCommand.getClass().getSimpleName()));
-
-        // 送信コマンドの途中で割り込まれないように　synchronize で同期化
-        synchronized (this) {
-            mCommand = firstCommand;
-
-            FLog.d(TAG, String.format("sendCommand start %s", firstCommand.getClass().getSimpleName()));
-
-            // 受信用パケットを初期化
-            if (firstCommand.getResponseTimeout() > 0) {
-                mResponse.clear();
-            }
-
-            if (mCancelling != null) {
-                mCancelling.countDown();
-
-                FLog.d(TAG, String.format("sendCommand cancelled(%d) %s", IncredistResult.STATUS_CANCELED, firstCommand.getClass().getSimpleName()));
-
-                return new IncredistResult(IncredistResult.STATUS_CANCELED);
-            }
-
-            do {
-                MFiCommand command = iterator.next();
-                int count = command.getPacketCount();
-                FLog.d(TAG, String.format(Locale.JAPANESE, "send %d packet(s)", count));
-                for (int i = 0; i < count; i++) {
-                    BluetoothGattConnection connection = mConnection;
-                    BluetoothGattCharacteristic writeCharacteristic = mWriteCharacteristic;
-                    if (connection == null || writeCharacteristic == null) {
-                        FLog.d(TAG, String.format("sendCommand released(%d) %s", IncredistResult.STATUS_RELEASED, firstCommand.getClass().getSimpleName()));
-                        return new IncredistResult(IncredistResult.STATUS_RELEASED);
-                    }
-                    ErrorLatch latch = new ErrorLatch();
-                    connection.writeCharacteristic(writeCharacteristic, command.getValueData(i), success -> {
-                        latch.mErrorCode = IncredistResult.STATUS_SUCCESS;
-                        latch.countDown();
-                    }, (errorCode, failure) -> {
-                        latch.mErrorCode = errorCode;
-                        latch.countDown();
-                    });
-
-                    try {
-                        if (!latch.await(MFI_TRANSPORT_TIMEOUT, TimeUnit.MILLISECONDS)) {
-                            FLog.w(TAG, "send timeout");
-                            latch.mErrorCode = IncredistResult.STATUS_SEND_TIMEOUT;
-                        }
-                    } catch (InterruptedException e) {
-                        FLog.w(TAG, "send interrupted");
-                        latch.mErrorCode = IncredistResult.STATUS_INTERRUPTED;
-                    }
-
-                    if (latch.mErrorCode != IncredistResult.STATUS_SUCCESS) {
-                        FLog.w(TAG, String.format(Locale.JAPANESE, "sendCommand error %d %s", latch.mErrorCode, command.getClass().getSimpleName()));
-                        return new IncredistResult(latch.mErrorCode);
-                    }
-                }
-            } while (iterator.hasNext());
-        }
-
-        if (firstCommand.getResponseTimeout() == 0) {
-            // 応答パケットがない場合は guardWait だけ待機して、 MFiNoResponse を結果とする
-            try {
-                Thread.sleep(firstCommand.getGuardWait());
-            } catch (InterruptedException ex) {
-                // ignore.
-            }
-
-            mCommand = null;
-            FLog.d(TAG, String.format("sendCommand has no response %s", firstCommand.getClass().getSimpleName()));
-            return firstCommand.parseResponse(new MFiNoResponse());
-        } else {
-            FLog.d(TAG, String.format("recv packet(s) for %s", firstCommand.getClass().getSimpleName()));
-
-            try {
-                synchronized (mResponse) {
-                    boolean continueReceive;
-                    do {
-                        continueReceive = false;
-                        do {
-                            long timeout = firstCommand.getResponseTimeout();
-                            FLog.d(TAG, String.format(Locale.JAPANESE, "recv wait %dmsec", timeout));
-
-                            if (timeout < 0) {
-                                mResponse.wait(); // タイムアウト指定なし
-                            } else {
-                                mResponse.wait(timeout);
-                            }
-
-                            if (mCommand.cancelable() && !mResponse.hasData() && mCancelling != null) {
-                                FLog.d(TAG, String.format("sendCommand canceled: %s", mCommand.getClass().getSimpleName()));
-                                mCommand = null;
-                                mCancelling.countDown();
-                                return new IncredistResult(IncredistResult.STATUS_CANCELED);
-                            }
-                        } while (mResponse.needMoreData());
-
-                        if (mResponse.isValid()) {
-                            FLog.d(TAG, "recv valid packet: " + LogUtil.hexString(mResponse.getData()));
-                            IncredistResult result = firstCommand.parseResponse(mResponse.copyInstance());
-                            if (result.status == IncredistResult.STATUS_CONTINUE_MULTIPLE_RESPONSE) {
-                                // 継続するパケットがある場合はパケット情報をクリアして次のデータを待つ
-                                mResponse.clear();
-                                continueReceive = true;
-                            } else {
-                                try {
-                                    Thread.sleep(firstCommand.getGuardWait());
-                                } catch (InterruptedException ex) {
-                                    // ignore.
-                                }
-                                long real = System.currentTimeMillis() - startTime;
-                                FLog.d(TAG, String.format(Locale.JAPANESE, "sendCommand result:%d wait:%d real:%d %s", result.status, firstCommand.getResponseTimeout(), real, mCommand.getClass().getSimpleName()));
-
-                                mCommand = null;
-                                if (result.status == IncredistResult.STATUS_SUCCESS) {
-                                    mResponse.clear();
-                                }
-                                return result;
-                            }
-                        }
-                    } while (continueReceive);
-                }
-            } catch (InterruptedException ex) {
-                // ignore.
-            }
-
-            try {
-                Thread.sleep(firstCommand.getGuardWait());
-            } catch (InterruptedException ex) {
-                // ignore.
-            }
-
-            FLog.w(TAG, String.format(Locale.JAPANESE, "sendCommand recv timeout(%d): %s %s", IncredistResult.STATUS_TIMEOUT, mCommand.getClass().getSimpleName(), LogUtil.hexString(mResponse.getData())));
-            mCommand = null;
-            return new IncredistResult(IncredistResult.STATUS_TIMEOUT);
-        }
-    }
-
-    /**
-     * 送受信用の characteristic を取得.
-     * 取得済みの場合はすぐに return する
-     */
-    private void findCharacteristics() {
-        if (mWriteCharacteristic != null && mNotifyCharacteristic != null) {
-            return;
-        }
-
-        BluetoothGattConnection connection = mConnection;
-
-        if (connection == null) {
-            return;
-        }
-        BluetoothGattService sendService = connection.findService(IncredistConstants.FS_INCREDIST_SEND_SERVICE_UUID_FULL);
-        FLog.d(TAG, String.format(Locale.JAPANESE, "sendService : %s", sendService != null ? sendService.getUuid().toString() : "(null)"));
-        if (sendService != null) {
-            mWriteCharacteristic = sendService.getCharacteristic(UUID.fromString(IncredistConstants.FS_INCREDIST_FFB2_CHARACTERISTICS_UUID_FULL));
-            FLog.d(TAG, String.format(Locale.JAPANESE, "mWriteCharacteristic : %s %d", mWriteCharacteristic != null ? mWriteCharacteristic.getUuid().toString() : "(null)",
-                    mWriteCharacteristic != null ? mWriteCharacteristic.getProperties() : -1));
-        }
-
-        BluetoothGattService recvService = mConnection.findService(IncredistConstants.FS_INCREDIST_RECEIVE_SERVICE_UUID_FULL);
-        FLog.d(TAG, String.format(Locale.JAPANESE, "recvService : %s", recvService != null ? recvService.getUuid().toString() : "(null)"));
-        if (recvService != null) {
-            mNotifyCharacteristic = recvService.getCharacteristic(UUID.fromString(IncredistConstants.FS_INCREDIST_FFA3_CHARACTERISTICS_UUID_FULL));
-            FLog.d(TAG, String.format(Locale.JAPANESE, "mNotifyCharacteristic : %s %d", mNotifyCharacteristic != null ? mNotifyCharacteristic.getUuid().toString() : "(null)",
-                    mNotifyCharacteristic != null ? mNotifyCharacteristic.getProperties() : -1));
-        }
-
-        connection.registerNotify(mNotifyCharacteristic, (success) -> {
-        }, (errorCode, failure) -> {
-        }, (notify) -> {
-            synchronized (mResponse) {
-                // BLE notify 受信時処理 : mResponse に append する
-                FLog.d(TAG, String.format(Locale.JAPANESE, "receive notify %d %s", notify.getValue().length, LogUtil.hexString(notify.getValue())));
-                mResponse.appendData(notify.getValue());
-                if (!mResponse.needMoreData()) {
-                    byte[] data = mResponse.getData();
-                    if (data != null) {
-                        FLog.d(TAG, String.format(Locale.JAPANESE, "recv notify MFi packet: %d %s", data.length, LogUtil.hexString(data)));
-                    } else {
-                        FLog.d(TAG, "recv buffer error..");
-                    }
-                    mResponse.notifyAll();
-                }
-            }
-        });
-    }
+    IncredistResult sendCommand(MFiCommand... commandList);
 
     /**
      * 受信待ち処理をキャンセル
@@ -309,37 +41,15 @@ public class MFiTransport {
      * @return キャンセル成功した場合は STATUS_SUCCESS, 失敗した場合はエラー結果を含む IncredistResult オブジェクト
      */
     @WorkerThread
-    public IncredistResult cancel() {
-        synchronized (mResponse) {
-            if (mCommand == null || !mCommand.cancelable()) {
-                return new IncredistResult(IncredistResult.STATUS_NOT_CANCELLABLE);
-            }
-
-            mCancelling = new CountDownLatch(1);
-            mResponse.notifyAll();
-        }
-
-        try {
-            boolean res = mCancelling.await(CANCEL_TIMEOUT, TimeUnit.MILLISECONDS);
-
-            if (res) {
-                return new IncredistResult(IncredistResult.STATUS_SUCCESS);
-            }
-        } catch (InterruptedException e) {
-            // ignore.
-        } finally {
-            mCancelling = null;
-        }
-
-        return new IncredistResult(IncredistResult.STATUS_CANCEL_FAILED);
-    }
+    IncredistResult cancel();
 
     /**
      * リソースを解放します
      */
-    public void release() {
-        mConnection = null;
-        mWriteCharacteristic = null;
-        mNotifyCharacteristic = null;
-    }
+    void release();
+
+    /**
+     * @return
+     */
+    boolean isBusy();
 }

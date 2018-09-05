@@ -1,6 +1,8 @@
 package jp.co.flight.incredist.android;
 
 import android.bluetooth.BluetoothGatt;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbInterface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -55,13 +57,25 @@ public class Incredist {
     private IncredistController mController;
 
     /**
-     * コンストラクタ. IncredistManager によって呼び出されます.
+     * BLE 用コンストラクタ. IncredistManager によって呼び出されます.
      *
      * @param connection Bluetooth ペリフェラルとの接続オブジェクト
+     * @param deviceName
      */
     Incredist(@NonNull IncredistManager manager, BluetoothGattConnection connection, String deviceName) {
         mManager = manager;
         mController = new IncredistController(connection, deviceName);
+    }
+
+    /**
+     * USB 用コンストラクタ.
+     *
+     * @param connection   UsbDeviceConnection オブジェクト
+     * @param usbInterface UsbInterface オブジェクト
+     */
+    public Incredist(@NonNull IncredistManager manager, UsbDeviceConnection connection, UsbInterface usbInterface) {
+        mManager = manager;
+        mController = new IncredistController(connection, usbInterface);
     }
 
     /**

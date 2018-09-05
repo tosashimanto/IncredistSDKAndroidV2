@@ -21,6 +21,8 @@ interface IncredistProtocolController {
     /**
      * 現在コマンドを実行中かどうかを取得
      *
+     * TODO 実際に必要なのは、コマンドが実行できるかどうかなのでメソッド名を変更
+     *
      * @return 現在コマンドを実行中の場合 true
      */
     boolean isBusy();

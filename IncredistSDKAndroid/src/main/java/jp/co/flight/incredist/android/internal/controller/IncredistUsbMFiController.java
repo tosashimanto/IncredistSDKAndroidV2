@@ -1,5 +1,8 @@
 package jp.co.flight.incredist.android.internal.controller;
 
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbEndpoint;
+import android.hardware.usb.UsbInterface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -7,10 +10,8 @@ import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.List;
 
-import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.exception.ParameterException;
-import jp.co.flight.incredist.android.internal.transport.mfi.BleMFiTransport;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiBootloaderVersionCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiDeviceInfoCommand;
@@ -35,6 +36,7 @@ import jp.co.flight.incredist.android.internal.transport.mfi.MFiSetRealTimeComma
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiStopCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTfpmxDisplayMessageCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
+import jp.co.flight.incredist.android.internal.transport.mfi.UsbMFiTransport;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.EmvSetupDataType;
 import jp.co.flight.incredist.android.model.EmvTagType;
@@ -44,12 +46,18 @@ import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.PinEntry;
 
 /**
- * BLE - MFi版 Incredist 用 Controller.
+ * USB - MFi版 Incredist 用 Controller.
  */
-public class IncredistMFiController implements IncredistProtocolController {
+public class IncredistUsbMFiController implements IncredistProtocolController {
 
     @Nullable
     private IncredistController mController;
+
+    @Nullable
+    private UsbDeviceConnection mConnection;
+
+    @Nullable
+    private UsbEndpoint mEndpoint;
 
     @Nullable
     private MFiTransport mMFiTransport;
@@ -57,13 +65,13 @@ public class IncredistMFiController implements IncredistProtocolController {
     /**
      * コンストラクタ
      *
-     * @param controller IncredistController オブジェクト
-     * @param connection BluetoothGattConnection オブジェクt
+     * @param controller   IncredistController オブジェクト
+     * @param usbInterface UsbInterface オブジェクt
      */
-    IncredistMFiController(@NonNull IncredistController controller, @NonNull BluetoothGattConnection connection) {
+    IncredistUsbMFiController(@NonNull IncredistController controller, @NonNull UsbDeviceConnection connection, @NonNull UsbInterface usbInterface) {
         mController = controller;
-        mMFiTransport = new BleMFiTransport(connection);
-        MFiCommand.setPacketLength(connection.getMtu() - 3);
+        mConnection = connection;
+        mMFiTransport = new UsbMFiTransport(connection, usbInterface);
     }
 
     /**

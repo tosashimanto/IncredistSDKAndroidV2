@@ -1,6 +1,8 @@
 package jp.co.flight.incredist.android.internal.controller;
 
 import android.bluetooth.BluetoothGatt;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbInterface;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -36,6 +38,7 @@ public class IncredistController {
 
     /**
      * 接続先Incredistデバイス名.
+     * TODO USB の時は?
      */
     private final String mDeviceName;
 
@@ -52,6 +55,7 @@ public class IncredistController {
     private HandlerThread mCancelHandlerThread;
     private Handler mCancelHandler;
 
+    //TODO mConnection に依存している処理は全部 protoController へ移動する
     @Nullable
     private BluetoothGattConnection mConnection;
 
@@ -68,9 +72,10 @@ public class IncredistController {
     }
 
     /**
-     * コンストラクタ.
+     * BLE 用コンストラクタ.
      *
      * @param connection Bluetooth ペリフェラルとの接続オブジェクト
+     * @param deviceName デバイス名
      */
     public IncredistController(@NonNull BluetoothGattConnection connection, String deviceName) {
         mConnection = connection;
@@ -78,6 +83,23 @@ public class IncredistController {
 
         // 最初は MFi のみ対応
         mProtoController = new IncredistMFiController(this, connection);
+        createThreads(mDeviceName);
+    }
+
+    /**
+     * USB 用コンストラクタ
+     *
+     * @param connection
+     * @param endpoint
+     */
+    public IncredistController(UsbDeviceConnection connection, UsbInterface usbInterface) {
+        mDeviceName = "USBIncredist";
+
+        mProtoController = new IncredistUsbMFiController(this, connection, usbInterface);
+        createThreads(mDeviceName);
+    }
+
+    private void createThreads(String deviceName) {
         final CountDownLatch latch = new CountDownLatch(3);
         mCommandHandlerThread = new HandlerThread(String.format("%s:%s:command", TAG, deviceName)) {
             @Override
