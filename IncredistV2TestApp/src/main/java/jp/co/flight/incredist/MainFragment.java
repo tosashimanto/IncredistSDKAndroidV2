@@ -3,6 +3,8 @@ package jp.co.flight.incredist;
 import android.Manifest;
 import android.content.Context;
 import android.databinding.DataBindingUtil;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -15,6 +17,9 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 import jp.co.flight.incredist.android.IncredistV2TestApp.R;
 import jp.co.flight.incredist.android.IncredistV2TestApp.databinding.FragmentMainBinding;
@@ -235,7 +240,31 @@ public class MainFragment extends Fragment
         mPresenter.emoneyBlink(isBlink, color, duration);
     }
 
+    public void usbDeviceList() {
+        Context context = getContext();
+        if (context != null) {
+            UsbManager usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
+            HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
+
+            mPresenter.addLog(String.format(Locale.US, "usb devicelist:%d", deviceList.size()));
+            for (Map.Entry<String, UsbDevice> entry : deviceList.entrySet()) {
+                UsbDevice device = entry.getValue();
+                mPresenter.addLog(String.format(Locale.US, "key:%s vid:%x pid:%x name:%s", entry.getKey(), device.getVendorId(), device.getProductId(), device.getProductName()));
+            }
+        }
+    }
+
+    public boolean checkUsbPermission(UsbDevice device) {
+        if (mListener != null) {
+            return mListener.checkUsbPermission(device);
+        } else {
+            return false;
+        }
+    }
+
     public interface OnFragmentInteractionListener {
         IncredistModel getModel();
+
+        boolean checkUsbPermission(UsbDevice device);
     }
 }

@@ -1,5 +1,6 @@
 package jp.co.flight.incredist;
 
+import android.hardware.usb.UsbDevice;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
@@ -30,13 +31,19 @@ import jp.co.flight.incredist.model.PinEntryDParam;
  * MainActivity 用 Presenter インタフェース.
  */
 public interface MainPresenter {
+    void onUsbDeviceList();
+
     void onStartScan();
 
     void onSelectDevice();
 
     void setSelectedDevice(String deviceName);
 
+    void onFindUsbDevice();
+
     void onConnect();
+
+    void onConnectUsb();
 
     void onGetDeviceInfo();
 
@@ -47,8 +54,6 @@ public interface MainPresenter {
     void onStop();
 
     void onCancel();
-
-    void onRelease();
 
     void onRestart();
 
@@ -147,6 +152,11 @@ public interface MainPresenter {
         }
 
         @Override
+        public void onUsbDeviceList() {
+            mFragment.usbDeviceList();
+        }
+
+        @Override
         public void onStartScan() {
             addLog("bleStartScan");
             mIncredist.bleStartScan((List<BluetoothPeripheral> scanResult) -> {
@@ -184,9 +194,35 @@ public interface MainPresenter {
         }
 
         @Override
+        public void onFindUsbDevice() {
+            addLog("findUsbDevice");
+            UsbDevice device = mIncredist.findUsbDevice();
+            if (device == null) {
+                addLog("UsbDevice is null");
+            } else {
+                addLog("found UsbDevice");
+            }
+        }
+
+        @Override
         public void onConnect() {
             addLog("connect");
             mIncredist.connect(mConnectionListener);
+        }
+
+        @Override
+        public void onConnectUsb() {
+            addLog("usbConenct");
+            UsbDevice device = mIncredist.getUsbDevice();
+            if (device == null) {
+                addLog("UsbDevice is null");
+            } else {
+                if (mFragment.checkUsbPermission(device)) {
+                    mIncredist.connect(device, mConnectionListener);
+                } else {
+                    addLog("UsbPermission failed");
+                }
+            }
         }
 
         @Override
@@ -232,16 +268,6 @@ public interface MainPresenter {
                 addLog("cancel success");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "cancel failure %d", errorCode));
-            });
-        }
-
-        @Override
-        public void onRelease() {
-            addLog("release");
-            mIncredist.release(() -> {
-                addLog("release success");
-            }, (errorCode) -> {
-                addLog(String.format(Locale.JAPANESE, "release failure %d", errorCode));
             });
         }
 

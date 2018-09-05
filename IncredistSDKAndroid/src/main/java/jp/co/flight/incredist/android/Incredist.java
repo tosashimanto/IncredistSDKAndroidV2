@@ -1,9 +1,12 @@
 package jp.co.flight.incredist.android;
 
 import android.bluetooth.BluetoothGatt;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbInterface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.EnumSet;
 
@@ -42,6 +45,7 @@ import jp.co.flight.incredist.android.model.ProductInfo;
 @SuppressWarnings({"WeakerAccess", "unused"}) // for public API.
 public class Incredist {
     private static final String TAG = "Incredist";
+    private WeakReference<IncredistManager.IncredistConnectionListener> mConnectionListenerRef;
     /**
      * 生成元の IncredistManager インスタンス.
      */
@@ -55,9 +59,10 @@ public class Incredist {
     private IncredistController mController;
 
     /**
-     * コンストラクタ. IncredistManager によって呼び出されます.
+     * BLE 用コンストラクタ. IncredistManager によって呼び出されます.
      *
      * @param connection Bluetooth ペリフェラルとの接続オブジェクト
+     * @param deviceName 接続先デバイス名
      */
     Incredist(@NonNull IncredistManager manager, BluetoothGattConnection connection, String deviceName) {
         mManager = manager;
@@ -65,20 +70,16 @@ public class Incredist {
     }
 
     /**
-     * Incredistとの接続を切断します.
+     * USB 用コンストラクタ.
+     *
+     * @param connection   UsbDeviceConnection オブジェクト
+     * @param usbInterface UsbInterface オブジェクト
+     * @param listener     接続情報通知用リスナ
      */
-    @Deprecated
-    public void disconnect(@Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction failure) {
-        if (mManager != null && mController != null) {
-            mManager.setupDisconnectV1(this, success, failure);
-            mController.disconnect(result -> {
-                if (result.status != IncredistResult.STATUS_SUCCESS) {
-                    if (failure != null) {
-                        failure.onFailure(result.status);
-                    }
-                }
-            });
-        }
+    public Incredist(@NonNull IncredistManager manager, UsbDeviceConnection connection, UsbInterface usbInterface, IncredistManager.IncredistConnectionListener listener) {
+        mManager = manager;
+        mController = new IncredistController(connection, usbInterface);
+        mConnectionListenerRef = new WeakReference<>(listener);
     }
 
     /**
@@ -86,9 +87,17 @@ public class Incredist {
      */
     public void disconnect() {
         if (mController != null) {
-            mController.cancel(result -> {
-                mController.disconnect(result2 -> {
-                    // コールバックでは特に処理不要
+            // コマンド実行中の場合があるので cancel を呼び出し、実行結果は無視して、続けて切断を行います
+            mController.cancel(resultIgnore -> {
+                mController.disconnect(result -> {
+                    if (result.status == IncredistResult.STATUS_SUCCESS) {
+                        mController.postCallback(() -> {
+                            IncredistManager.IncredistConnectionListener listener = mConnectionListenerRef.get();
+                            if (listener != null) {
+                                listener.onDisconnectIncredist(this);
+                            }
+                        });
+                    }
                 });
             });
         }
@@ -747,20 +756,6 @@ public class Incredist {
      */
     public void release() {
         if (mController != null) {
-            mController.close();
-            mController.release();
-        }
-
-        mController = null;
-        mManager = null;
-    }
-
-    /**
-     * Incredist との接続リソースを解放します
-     */
-    public void refreshAndRelease() {
-        if (mController != null) {
-            mController.refreshAndClose();
             mController.release();
         }
 

@@ -2,7 +2,12 @@ package jp.co.flight.incredist.android;
 
 import android.bluetooth.BluetoothGatt;
 import android.content.Context;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbInterface;
+import android.hardware.usb.UsbManager;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -26,9 +31,12 @@ import jp.co.flight.incredist.android.model.StatusCode;
 public class IncredistManager {
     private static final String TAG = "IncredistManager";
 
-    private final BluetoothCentral mCentral;
+    public static final int INCREDIST_PREMIUM_VENDOR_ID = 0x2925;
+    public static final int INCREDIST_PREMIUM_PRODUCT_ID = 0x7008;
 
-    InternalConnectionListenerV1 mConnectionListenerV1;
+    private final BluetoothCentral mCentral;
+    private final UsbManager mUsbManager;
+
     private IncredistConnectionListener mListener = null;
 
     /**
@@ -67,7 +75,10 @@ public class IncredistManager {
      */
     public IncredistManager(Context context) {
         FLog.i(TAG, String.format(Locale.JAPANESE, "new IncredistManager context:%s", context));
+
+        //TODO USB/BLE 共に必要な場合に生成する
         mCentral = new BluetoothCentral(context);
+        mUsbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
     }
 
     /**
@@ -124,6 +135,29 @@ public class IncredistManager {
     public void bleStopScan() {
         FLog.i(TAG, "bleStopScan");
         mCentral.stopScan();
+    }
+
+    /**
+     * USB 接続の Incredist を検索して返却します。
+     *
+     * 現状は、アプリケーションから単にこのメソッドを呼んだ場合は null が返却されるので、
+     * AndroidManifest に device_filter.xml を記述して Activity を起動させて UsbDevice を
+     * 取得させる必要がありそうです。ただ、一度取得した後ならば、本メソッドで再取得することは
+     * 可能であると考えられます(OS 仕様のため曖昧な記載となっていますが今後調査します)。
+     *
+     * @return UsbDevice オブジェクト
+     */
+    @Nullable
+    public UsbDevice findUsbIncredist() {
+        HashMap<String, UsbDevice> deviceList = mUsbManager.getDeviceList();
+        for (Map.Entry<String, UsbDevice> deviceEntry : deviceList.entrySet()) {
+            UsbDevice device = deviceEntry.getValue();
+            if (device.getVendorId() == INCREDIST_PREMIUM_VENDOR_ID && device.getProductId() == INCREDIST_PREMIUM_PRODUCT_ID) {
+                return device;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -423,70 +457,6 @@ public class IncredistManager {
         }
     }
 
-    /**
-     * Incredistデバイスに接続します.
-     *
-     * @param deviceName     Incredistデバイス名
-     * @param scanTimeout    BLEスキャン実行時のタイムアウト時間(単位
-     * @param connectTimeout 接続処理タイムアウト時間(単位 msec)
-     * @param success        接続成功時処理
-     * @param failure        接続失敗時処理
-     */
-    @Deprecated
-    public void connect(@NonNull String deviceName, long scanTimeout, long connectTimeout, @Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction failure) {
-        FLog.i(TAG, String.format(Locale.JAPANESE, "connect device:%s scanTimeout:%d connectTimeout:%d", deviceName, scanTimeout, connectTimeout));
-
-        // 接続中のペリフェラルの場合は直接 connectInternalV1 を呼び出す
-        List<BluetoothPeripheral> peripherals = mCentral.getConnectedPeripherals();
-        FLog.i(TAG, String.format(Locale.JAPANESE, "connected peripherals: %d", peripherals.size()));
-        for (BluetoothPeripheral peripheral : peripherals) {
-            if (peripheral.getDeviceName() != null && peripheral.getDeviceName().equals(deviceName)) {
-                FLog.i(TAG, String.format("found connected %s", peripheral.getDeviceAddress()));
-                connectInternalV1(peripheral, connectTimeout, success, failure);
-                return;
-            } else {
-                FLog.i(TAG, String.format("found connected another device %s", peripheral.getDeviceAddress()));
-            }
-        }
-
-        // デバイス名が一致したら停止するフィルタ
-        DeviceFilter filter = new DeviceFilter() {
-            @Override
-            public boolean isValid(String devName) {
-                boolean res = super.isValid(devName);
-                if (res && deviceName.equals(devName)) {
-                    mCentral.getHandler().post(() -> {
-                        bleStopScan();
-                    });
-                }
-
-                return res;
-            }
-        };
-
-        // BLE スキャンを実行してデバイス名が一致したら接続する
-        bleStartScanInternal(filter, scanTimeout, (peripheralMap) -> {
-            BluetoothPeripheral peripheral = peripheralMap.get(deviceName);
-            if (peripheral != null) {
-                connectInternalV1(peripheral, connectTimeout, success, failure);
-            } else {
-                Handler handler = mCentral.getHandler();
-                FLog.i(TAG, "connect device not found.");
-                handler.post(() -> {
-                    if (failure != null) {
-                        failure.onFailure(StatusCode.CONNECT_ERROR_NOT_FOUND);
-                    }
-                });
-            }
-        }, failure);
-    }
-
-    private void connectInternalV1(BluetoothPeripheral peripheral, long timeout, @Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction failure) {
-        Handler handler = mCentral.getHandler();
-        mConnectionListenerV1 = new InternalConnectionListenerV1(this, handler);
-        mConnectionListenerV1.startConnect(peripheral, timeout, success, failure);
-    }
-
     enum State {
         CONNECTING,         // 接続開始
         DISCOVERING,        // discoverService 開始
@@ -755,6 +725,22 @@ public class IncredistManager {
     }
 
     /**
+     * USB デバイスへ接続します
+     *
+     * @param device
+     * @param listener
+     */
+    public void connect(UsbDevice device, @Nullable IncredistConnectionListener listener) {
+        UsbDeviceConnection connection = mUsbManager.openDevice(device);
+        UsbInterface usbInterface = device.getInterface(0);
+
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(() -> {
+            listener.onConnectIncredist(new Incredist(this, connection, usbInterface, listener));
+        });
+    }
+
+    /**
      * API バージョンを取得します.
      *
      * @return バージョン文字列
@@ -789,18 +775,4 @@ public class IncredistManager {
         });
     }
 
-    /**
-     * Incredist との接続を切断します
-     */
-    @Deprecated
-    void setupDisconnectV1(Incredist incredist, OnSuccessFunction<Incredist> success, OnFailureFunction failure) {
-        mConnectionListenerV1.setupDisconnect(incredist, success, failure);
-    }
-
-    /**
-     * ConnectionListener の設定をクリアします
-     */
-    void resetConnectionListener() {
-        mConnectionListenerV1.clearListener();
-    }
 }

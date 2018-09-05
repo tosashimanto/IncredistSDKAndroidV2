@@ -21,6 +21,8 @@ interface IncredistProtocolController {
     /**
      * 現在コマンドを実行中かどうかを取得
      *
+     * TODO 実際に必要なのは、コマンドが実行できるかどうかなのでメソッド名を変更
+     *
      * @return 現在コマンドを実行中の場合 true
      */
     boolean isBusy();
@@ -222,7 +224,15 @@ interface IncredistProtocolController {
     void stop(IncredistController.Callback callback);
 
     /**
+     * Incredist との接続を切断します
+     *
+     * @param callback コールバック
+     */
+    void disconnect(IncredistController.Callback callback);
+
+    /**
      * オブジェクトを解放します
      */
     void release();
+
 }

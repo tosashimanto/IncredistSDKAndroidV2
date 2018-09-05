@@ -10,6 +10,7 @@ import java.util.List;
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.exception.ParameterException;
+import jp.co.flight.incredist.android.internal.transport.mfi.BleMFiTransport;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiBootloaderVersionCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiDeviceInfoCommand;
@@ -43,12 +44,14 @@ import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.PinEntry;
 
 /**
- * MFi版 Incredist 用 Controller.
+ * BLE - MFi版 Incredist 用 Controller.
  */
-public class IncredistMFiController implements IncredistProtocolController {
+public class IncredistBleMFiController implements IncredistProtocolController {
 
     @Nullable
     private IncredistController mController;
+
+    private BluetoothGattConnection mConnection;
 
     @Nullable
     private MFiTransport mMFiTransport;
@@ -59,9 +62,10 @@ public class IncredistMFiController implements IncredistProtocolController {
      * @param controller IncredistController オブジェクト
      * @param connection BluetoothGattConnection オブジェクt
      */
-    IncredistMFiController(@NonNull IncredistController controller, @NonNull BluetoothGattConnection connection) {
+    IncredistBleMFiController(@NonNull IncredistController controller, @NonNull BluetoothGattConnection connection) {
         mController = controller;
-        mMFiTransport = new MFiTransport(connection);
+        mConnection = connection;
+        mMFiTransport = new BleMFiTransport(connection);
         MFiCommand.setPacketLength(connection.getMtu() - 3);
     }
 
@@ -443,10 +447,23 @@ public class IncredistMFiController implements IncredistProtocolController {
     }
 
     /**
+     * 切断処理
+     *
+     * @param callback BLE の場合 OS から通知されるので使用しない
+     */
+    @Override
+    public void disconnect(IncredistController.Callback callback) {
+        mConnection.disconnect();
+    }
+
+    /**
      * オブジェクトを解放します
      */
     @Override
     public void release() {
+        mConnection.close();
+        mConnection = null;
+
         if (mMFiTransport != null) {
             mMFiTransport.release();
         }

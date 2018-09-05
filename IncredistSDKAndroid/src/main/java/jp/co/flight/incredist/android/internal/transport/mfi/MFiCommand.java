@@ -59,8 +59,18 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
      * @return パケット数
      */
     int getPacketCount() {
+        return getPacketCount(sPacketLength);
+    }
+
+    /**
+     * 送信するパケットの個数
+     *
+     * @param packetLength パケット分割時の最大長
+     * @return パケット数
+     */
+    int getPacketCount(int packetLength) {
         if (mMFiData != null) {
-            return mMFiData.length / sPacketLength + 1;
+            return mMFiData.length / packetLength + 1;
         } else {
             return 0;
         }
@@ -74,9 +84,21 @@ public abstract class MFiCommand extends MFiPacket implements IncredistCommand {
      */
     @Nullable
     byte[] getValueData(int count) {
-        if (mMFiData != null && count >= 0 && count < getPacketCount()) {
-            int from = count * sPacketLength;
-            int to = (count + 1) * sPacketLength;
+        return getValueData(count, sPacketLength);
+    }
+
+    /**
+     * 送信するパケットを取得します.
+     *
+     * @param count        何番目のパケットか
+     * @param packetLength パケット分割時の長さ
+     * @return 分割されたパケットデータ
+     */
+    @Nullable
+    byte[] getValueData(int count, int packetLength) {
+        if (mMFiData != null && count >= 0 && count < getPacketCount(packetLength)) {
+            int from = count * packetLength;
+            int to = (count + 1) * packetLength;
             if (mMFiData.length < to) {
                 to = mMFiData.length;
             }

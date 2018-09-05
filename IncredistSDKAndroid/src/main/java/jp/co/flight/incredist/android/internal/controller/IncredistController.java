@@ -1,6 +1,8 @@
 package jp.co.flight.incredist.android.internal.controller;
 
 import android.bluetooth.BluetoothGatt;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbInterface;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -36,6 +38,7 @@ public class IncredistController {
 
     /**
      * 接続先Incredistデバイス名.
+     * TODO USB の時は?
      */
     private final String mDeviceName;
 
@@ -52,6 +55,7 @@ public class IncredistController {
     private HandlerThread mCancelHandlerThread;
     private Handler mCancelHandler;
 
+    //TODO mConnection に依存している処理は全部 protoController へ移動する
     @Nullable
     private BluetoothGattConnection mConnection;
 
@@ -68,16 +72,35 @@ public class IncredistController {
     }
 
     /**
-     * コンストラクタ.
+     * BLE 用コンストラクタ.
      *
      * @param connection Bluetooth ペリフェラルとの接続オブジェクト
+     * @param deviceName デバイス名
      */
     public IncredistController(@NonNull BluetoothGattConnection connection, String deviceName) {
         mConnection = connection;
         mDeviceName = deviceName;
 
         // 最初は MFi のみ対応
-        mProtoController = new IncredistMFiController(this, connection);
+        mProtoController = new IncredistBleMFiController(this, connection);
+        createThreads(mDeviceName);
+    }
+
+    /**
+     * USB 用コンストラクタ
+     *
+     * @param connection   UsbDeviceConnnection オブジェクト
+     * @param usbInterface UsbInterface オブジェクト
+     * @param listener
+     */
+    public IncredistController(UsbDeviceConnection connection, UsbInterface usbInterface) {
+        mDeviceName = "USBIncredist";
+
+        mProtoController = new IncredistUsbMFiController(this, connection, usbInterface);
+        createThreads(mDeviceName);
+    }
+
+    private void createThreads(String deviceName) {
         final CountDownLatch latch = new CountDownLatch(3);
         mCommandHandlerThread = new HandlerThread(String.format("%s:%s:command", TAG, deviceName)) {
             @Override
@@ -439,35 +462,9 @@ public class IncredistController {
 
     /**
      * Incredist デバイスから切断します.
-     *
-     * @param callback コールバック
      */
-    public void disconnect(final Callback callback) {
-        postCommand(() -> {
-            if (mConnection != null) {
-                mConnection.disconnect();
-
-                callback.onResult(new IncredistResult(IncredistResult.STATUS_SUCCESS));
-            }
-        }, callback);
-    }
-
-    /**
-     * Incredist との接続を close します
-     */
-    public void close() {
-        if (mConnection != null) {
-            mConnection.close();
-        }
-    }
-
-    /**
-     * Incredist との接続を close します
-     */
-    public void refreshAndClose() {
-        if (mConnection != null) {
-            mConnection.refreshAndClose();
-        }
+    public void disconnect(IncredistController.Callback callback) {
+        mProtoController.disconnect(callback);
     }
 
     /**
