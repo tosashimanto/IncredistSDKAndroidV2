@@ -51,6 +51,8 @@ public class IncredistMFiController implements IncredistProtocolController {
     @Nullable
     private IncredistController mController;
 
+    private BluetoothGattConnection mConnection;
+
     @Nullable
     private MFiTransport mMFiTransport;
 
@@ -62,6 +64,7 @@ public class IncredistMFiController implements IncredistProtocolController {
      */
     IncredistMFiController(@NonNull IncredistController controller, @NonNull BluetoothGattConnection connection) {
         mController = controller;
+        mConnection = connection;
         mMFiTransport = new BleMFiTransport(connection);
         MFiCommand.setPacketLength(connection.getMtu() - 3);
     }
@@ -443,11 +446,19 @@ public class IncredistMFiController implements IncredistProtocolController {
         postMFiCommand(new MFiStopCommand(), callback);
     }
 
+    @Override
+    public void disconnect() {
+        mConnection.disconnect();
+    }
+
     /**
      * オブジェクトを解放します
      */
     @Override
     public void release() {
+        mConnection.close();
+        mConnection = null;
+
         if (mMFiTransport != null) {
             mMFiTransport.release();
         }

@@ -60,7 +60,7 @@ public class Incredist {
      * BLE 用コンストラクタ. IncredistManager によって呼び出されます.
      *
      * @param connection Bluetooth ペリフェラルとの接続オブジェクト
-     * @param deviceName
+     * @param deviceName 接続先デバイス名
      */
     Incredist(@NonNull IncredistManager manager, BluetoothGattConnection connection, String deviceName) {
         mManager = manager;
@@ -81,29 +81,10 @@ public class Incredist {
     /**
      * Incredistとの接続を切断します.
      */
-    @Deprecated
-    public void disconnect(@Nullable OnSuccessFunction<Incredist> success, @Nullable OnFailureFunction failure) {
-        if (mManager != null && mController != null) {
-            mManager.setupDisconnectV1(this, success, failure);
-            mController.disconnect(result -> {
-                if (result.status != IncredistResult.STATUS_SUCCESS) {
-                    if (failure != null) {
-                        failure.onFailure(result.status);
-                    }
-                }
-            });
-        }
-    }
-
-    /**
-     * Incredistとの接続を切断します.
-     */
     public void disconnect() {
         if (mController != null) {
             mController.cancel(result -> {
-                mController.disconnect(result2 -> {
-                    // コールバックでは特に処理不要
-                });
+                mController.disconnect();
             });
         }
     }
@@ -761,20 +742,6 @@ public class Incredist {
      */
     public void release() {
         if (mController != null) {
-            mController.close();
-            mController.release();
-        }
-
-        mController = null;
-        mManager = null;
-    }
-
-    /**
-     * Incredist との接続リソースを解放します
-     */
-    public void refreshAndRelease() {
-        if (mController != null) {
-            mController.refreshAndClose();
             mController.release();
         }
 

@@ -89,8 +89,8 @@ public class IncredistController {
     /**
      * USB 用コンストラクタ
      *
-     * @param connection
-     * @param endpoint
+     * @param connection   UsbDeviceConnnection オブジェクト
+     * @param usbInterface UsbInterface オブジェクト
      */
     public IncredistController(UsbDeviceConnection connection, UsbInterface usbInterface) {
         mDeviceName = "USBIncredist";
@@ -461,35 +461,9 @@ public class IncredistController {
 
     /**
      * Incredist デバイスから切断します.
-     *
-     * @param callback コールバック
      */
-    public void disconnect(final Callback callback) {
-        postCommand(() -> {
-            if (mConnection != null) {
-                mConnection.disconnect();
-
-                callback.onResult(new IncredistResult(IncredistResult.STATUS_SUCCESS));
-            }
-        }, callback);
-    }
-
-    /**
-     * Incredist との接続を close します
-     */
-    public void close() {
-        if (mConnection != null) {
-            mConnection.close();
-        }
-    }
-
-    /**
-     * Incredist との接続を close します
-     */
-    public void refreshAndClose() {
-        if (mConnection != null) {
-            mConnection.refreshAndClose();
-        }
+    public void disconnect() {
+        mProtoController.disconnect();
     }
 
     /**

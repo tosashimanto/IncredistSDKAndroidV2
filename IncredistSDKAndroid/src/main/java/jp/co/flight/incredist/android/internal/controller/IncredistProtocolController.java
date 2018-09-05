@@ -224,7 +224,13 @@ interface IncredistProtocolController {
     void stop(IncredistController.Callback callback);
 
     /**
+     * Incredist との接続を切断します
+     */
+    void disconnect();
+
+    /**
      * オブジェクトを解放します
      */
     void release();
+
 }

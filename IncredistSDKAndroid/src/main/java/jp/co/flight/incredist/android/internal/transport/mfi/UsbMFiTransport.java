@@ -193,7 +193,10 @@ public class UsbMFiTransport implements MFiTransport {
     public void release() {
         UsbDeviceConnection connection = mConnection;
         if (connection != null) {
-            connection.releaseInterface(mUsbInterface);
+            UsbInterface usbInterface = mUsbInterface;
+            if (usbInterface != null) {
+                connection.releaseInterface(usbInterface);
+            }
             connection.close();
         }
         mConnection = null;

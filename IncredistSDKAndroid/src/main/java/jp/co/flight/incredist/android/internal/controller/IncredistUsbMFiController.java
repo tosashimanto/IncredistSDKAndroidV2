@@ -1,7 +1,6 @@
 package jp.co.flight.incredist.android.internal.controller;
 
 import android.hardware.usb.UsbDeviceConnection;
-import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -57,7 +56,7 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
     private UsbDeviceConnection mConnection;
 
     @Nullable
-    private UsbEndpoint mEndpoint;
+    private UsbInterface mUsbInterface;
 
     @Nullable
     private MFiTransport mMFiTransport;
@@ -71,6 +70,7 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
     IncredistUsbMFiController(@NonNull IncredistController controller, @NonNull UsbDeviceConnection connection, @NonNull UsbInterface usbInterface) {
         mController = controller;
         mConnection = connection;
+        mUsbInterface = usbInterface;
         mMFiTransport = new UsbMFiTransport(connection, usbInterface);
     }
 
@@ -449,6 +449,21 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
     @Override
     public void stop(IncredistController.Callback callback) {
         postMFiCommand(new MFiStopCommand(), callback);
+    }
+
+    @Override
+    public void disconnect() {
+        UsbDeviceConnection connection = mConnection;
+        UsbInterface usbInterface = mUsbInterface;
+        if (connection != null) {
+            if (usbInterface != null) {
+                connection.releaseInterface(usbInterface);
+            }
+            connection.close();
+        }
+
+        mUsbInterface = null;
+        mConnection = null;
     }
 
     /**
