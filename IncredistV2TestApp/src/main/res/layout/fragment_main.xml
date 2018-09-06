@@ -195,7 +195,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="@{(view)->presenter.onGetDeviceInfo()}"
                     android:text="DeviceInfo"
-                    app:layout_constraintBottom_toTopOf="@+id/label_auto"
+                    app:layout_constraintBottom_toTopOf="@+id/button_bootloader_version"
                     app:layout_constraintEnd_toStartOf="@+id/button_product_info"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/button_stop" />
@@ -206,10 +206,21 @@
                     android:layout_height="wrap_content"
                     android:onClick="@{(view)->presenter.onGetProductInfo()}"
                     android:text="ProductInfo"
-                    app:layout_constraintBottom_toTopOf="@+id/label_auto"
-                    app:layout_constraintEnd_toStartOf="@+id/button_restart"
+                    app:layout_constraintBottom_toTopOf="@+id/button_bootloader_version"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/button_device_info"
                     app:layout_constraintTop_toBottomOf="@+id/button_stop" />
+
+                <Button
+                    android:id="@+id/button_bootloader_version"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{(view)->presenter.onGetBootloaderVersion()}"
+                    android:text="ProductInfo"
+                    app:layout_constraintBottom_toTopOf="@+id/label_auto"
+                    app:layout_constraintEnd_toStartOf="@+id/button_restart"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/button_device_info" />
 
                 <Button
                     android:id="@+id/button_restart"
@@ -219,8 +230,8 @@
                     android:text="Restart"
                     app:layout_constraintBottom_toTopOf="@+id/label_auto"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/button_product_info"
-                    app:layout_constraintTop_toBottomOf="@+id/button_stop" />
+                    app:layout_constraintStart_toEndOf="@+id/button_bootloader_version"
+                    app:layout_constraintTop_toBottomOf="@+id/button_device_info" />
 
                 <!-- auto -->
                 <android.support.v7.widget.AppCompatTextView

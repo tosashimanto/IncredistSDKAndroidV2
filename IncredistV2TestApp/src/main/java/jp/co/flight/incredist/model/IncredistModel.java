@@ -19,6 +19,7 @@ import jp.co.flight.incredist.android.IncredistV2TestApp.BR;
 import jp.co.flight.incredist.android.OnFailureFunction;
 import jp.co.flight.incredist.android.OnSuccessFunction;
 import jp.co.flight.incredist.android.OnSuccessVoidFunction;
+import jp.co.flight.incredist.android.model.BootloaderVersion;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.DeviceInfo;
 import jp.co.flight.incredist.android.model.EmvPacket;
@@ -52,6 +53,8 @@ public interface IncredistModel extends Observable {
     void getDeviceInfo(OnSuccessFunction<DeviceInfo> success, OnFailureFunction failure);
 
     void getProductInfo(OnSuccessFunction<ProductInfo> success, OnFailureFunction failure);
+
+    void getBootloaderVersion(OnSuccessFunction<BootloaderVersion> success, OnFailureFunction failure);
 
     void felicaOpen(boolean withLed, OnSuccessVoidFunction success, OnFailureFunction failure);
 
@@ -241,6 +244,15 @@ public interface IncredistModel extends Observable {
         public void getProductInfo(OnSuccessFunction<ProductInfo> success, OnFailureFunction failure) {
             if (mIncredist != null) {
                 mIncredist.getProductInfo(success, failure);
+            } else {
+                failure.onFailure(-1);
+            }
+        }
+
+        @Override
+        public void getBootloaderVersion(OnSuccessFunction<BootloaderVersion> success, OnFailureFunction failure) {
+            if (mIncredist != null) {
+                mIncredist.getBootloaderVersion(success, failure);
             } else {
                 failure.onFailure(-1);
             }
