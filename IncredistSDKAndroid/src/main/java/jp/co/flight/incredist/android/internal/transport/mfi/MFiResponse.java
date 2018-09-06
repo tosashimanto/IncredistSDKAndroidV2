@@ -61,14 +61,16 @@ public class MFiResponse extends MFiPacket {
                 mErrorCode = IncredistResult.STATUS_INVALID_RESPONSE_HEADER;
             }
         } else {
+            int copyLength;
             if (mAppendPos + datalength <= mMFiData.length) {
-                System.arraycopy(data, offset, mMFiData, mAppendPos, datalength);
-                mAppendPos += datalength;
-                mErrorCode = -1;
+                copyLength = datalength;
             } else {
-                // 受信サイズエラー(パケット長より多くのデータを受信)
-                mErrorCode = IncredistResult.STATUS_TOO_LARGE_RESPONSE;
+                copyLength = mMFiData.length - mAppendPos;
             }
+
+            System.arraycopy(data, offset, mMFiData, mAppendPos, copyLength);
+            mAppendPos += copyLength;
+            mErrorCode = -1;
         }
     }
 
