@@ -49,6 +49,8 @@ public interface MainPresenter {
 
     void onGetProductInfo();
 
+    void onGetBootloaderVersion();
+
     void onDisconnect();
 
     void onStop();
@@ -242,6 +244,16 @@ public interface MainPresenter {
                 addLog(String.format(Locale.JAPANESE, "serial: %s firm: %s type: %s", product.getSerialNumber(), product.getFirmwareVersion(), product.getProductType().name()));
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "getProductInfo failure %d", errorCode));
+            });
+        }
+
+        @Override
+        public void onGetBootloaderVersion() {
+            addLog("getBootloaderVersion");
+            mIncredist.getBootloaderVersion(info -> {
+                addLog(String.format(Locale.JAPANESE, "bootloader: %s firm rev: %s", info.getBootloaderVersion(), info.getFirmwareRevision()));
+            }, errorCode -> {
+                addLog(String.format(Locale.JAPANESE, "getBootloaderVersion failure %d", errorCode));
             });
         }
 
