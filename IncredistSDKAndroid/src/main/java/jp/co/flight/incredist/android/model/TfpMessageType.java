@@ -73,7 +73,28 @@ public enum TfpMessageType {
     IDCardError(73),           // iD このカードは ご利用できません（カード設定エラー）
     IDError(74),           // iD お取り扱いできません（その他エラー）
     IDVoidSalesError(75),           // iD 取消返品処理が 失敗しました（取消エラー）
-    EdyWaitMessage(76);// Edy しばらくお待ち下さい
+    EdyWaitMessage(76),// Edy しばらくお待ち下さい
+
+    // 77 〜 96 は WAONの為ポーティングしていません
+    QUICPayPayTouchCard(97),                // QUICPay 支払 カードタッチ待ち
+    QUICPayPayProcessing(98),               // QUICPay 支払 カード処理中
+    QUICPayTransactonRefused(99),           // QUICPay 取引拒否
+    QUICPayPlaceAgain(100),                 // QUICPay 再かざし待ち
+    QUICPayTimeout(101),                    // QUICPay タイムアウト
+    QUICPayDifferentCard(102),              // QUICPay 処理未了で別カードタッチ
+    QUICPayEnd(103),                        // QUICPay 処理未了で終了
+    QUICPayTerminalCheckError(104),         // QUICPay 端末チェックエラー
+    QUICPayConnectError(105),               // QUICPay 通信エラー
+    QUICPayDualCard(106),                   // QUICPay 複数枚検知
+    QUICPayConnecting(107),                 // QUICPay 通信中
+    QUICPayExpired(108),                    // QUICPay 有効期限切れ
+    QUICPayCardError(109),                  // QUICPay カード設定エラー
+    QUICPayAuthoriOtherCardTouch(110),      // QUICPay オーソリ後別カードタッチ
+    QUICPayError(111),                      // QUICPay その他エラー
+    QUICPayVoidSalesTouchCard(112),         // QUICPay 支払取消 カードタッチ待ち
+    QUICPayVoidSalesProcessing(113),        // QUICPay 支払取消 処理中
+    QUICPayVoidSalesError(114),             // QUICPay 支払取消 取消エラー
+    QUICPayCardHistoryTouchCard(115);       // QUICPay カード履歴照会 カードタッチ待ち
 
     private final int value;
 
