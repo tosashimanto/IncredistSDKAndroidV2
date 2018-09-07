@@ -732,12 +732,19 @@ public class IncredistManager {
      */
     public void connect(UsbDevice device, @Nullable IncredistConnectionListener listener) {
         UsbDeviceConnection connection = mUsbManager.openDevice(device);
-        UsbInterface usbInterface = device.getInterface(0);
 
         Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(() -> {
-            listener.onConnectIncredist(new Incredist(this, connection, usbInterface, listener));
-        });
+        if (connection != null) {
+            UsbInterface usbInterface = device.getInterface(0);
+
+            handler.post(() -> {
+                listener.onConnectIncredist(new Incredist(this, connection, usbInterface, listener));
+            });
+        } else {
+            handler.post(() -> {
+                listener.onConnectFailure(StatusCode.CONNECT_ERROR_NOT_FOUND);
+            });
+        }
     }
 
     /**
