@@ -63,4 +63,14 @@ public enum EmvMessageType {
     public int getValue() {
         return this.value;
     }
+
+    public static EmvMessageType getEnum(int value) {
+        for (EmvMessageType emvMessageType : EmvMessageType.values()) {
+            if (emvMessageType.getValue() == value) {
+                return emvMessageType;
+            }
+        }
+
+        return null;
+    }
 }
