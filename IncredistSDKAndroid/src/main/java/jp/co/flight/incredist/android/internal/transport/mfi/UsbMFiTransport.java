@@ -12,15 +12,26 @@ import android.support.annotation.WorkerThread;
 
 import java.nio.ByteBuffer;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.util.FLog;
 import jp.co.flight.incredist.android.internal.util.LogUtil;
 
+/**
+ * USB - MFi 版 Incredist との MFi パケット通信を行うユーティリティクラス.
+ * このクラスのメソッドはバックグラウンドスレッドで実行される前提なので同期処理として実装する.
+ */
 public class UsbMFiTransport implements MFiTransport {
     private static final String TAG = "UsbMFiTransport";
     private static final int MAX_PACKET_LENGTH = 64;
-    private static final long USB_TIMEOUT = 1000;
+    private static final long USB_TIMEOUT = 300;
+    private final ExecutorService mExecutor;
 
     @Nullable
     private UsbDeviceConnection mConnection;
@@ -37,12 +48,20 @@ public class UsbMFiTransport implements MFiTransport {
     private UsbRequest mReceiveRequest;
     private ByteBuffer mReceiveBuffer = ByteBuffer.allocate(MAX_PACKET_LENGTH);
 
-    private MFiResponse mResponse = new MFiResponse();
+    private final MFiResponse mResponse = new MFiResponse();
     private MFiCommand mCommand = null;
 
+    /**
+     * コンストラクタ.
+     *
+     * @param connection   UsbDeviceConnection オブジェクト
+     * @param usbInterface UsbInterface オブジェクト
+     */
     public UsbMFiTransport(@NonNull UsbDeviceConnection connection, @NonNull UsbInterface usbInterface) {
         mConnection = connection;
         mUsbInterface = usbInterface;
+
+        mExecutor = Executors.newCachedThreadPool();
 
         FLog.d(TAG, String.format(Locale.US, "proto:%d endpoints:%d", usbInterface.getInterfaceProtocol(), usbInterface.getEndpointCount()));
         for (int i = 0; i < usbInterface.getEndpointCount(); i++) {
@@ -72,7 +91,6 @@ public class UsbMFiTransport implements MFiTransport {
     @WorkerThread
     @Override
     public IncredistResult sendCommand(MFiCommand... commandList) {
-        //TODO NPE対策が必要
         if (commandList == null || commandList.length == 0) {
             return new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND);
         }
@@ -82,7 +100,9 @@ public class UsbMFiTransport implements MFiTransport {
         long startTime = System.currentTimeMillis();
         FLog.d(TAG, String.format("sendCommand %s", firstCommand.getClass().getSimpleName()));
 
-        sendRequests(commandList);
+        if (!sendRequests(commandList)) {
+            return new IncredistResult(IncredistResult.STATUS_SEND_TIMEOUT);
+        }
         byte[] buf = new byte[MAX_PACKET_LENGTH];
 
         mResponse.clear();
@@ -108,7 +128,13 @@ public class UsbMFiTransport implements MFiTransport {
                     do {
                         mReceiveBuffer.clear();
                         queueRequest(mReceiveRequest, mReceiveBuffer);
-                        UsbRequest request = mConnection.requestWait();
+                        UsbRequest request;
+                        try {
+                            request = requestWait(USB_TIMEOUT);
+                        } catch (TimeoutException ex) {
+                            mReceiveRequest.cancel();
+                            return new IncredistResult(IncredistResult.STATUS_TIMEOUT);
+                        }
 
                         if (request == mReceiveRequest) {
                             mReceiveBuffer.flip();
@@ -122,8 +148,6 @@ public class UsbMFiTransport implements MFiTransport {
                         } else {
                             FLog.d(TAG, String.format(Locale.US, "unknown request endpoint:%d", request.getEndpoint().getEndpointNumber()));
                         }
-
-                        request = null;
                     } while (mResponse.isEmpty() || mResponse.needMoreData());
 
                     if (mResponse.isValid()) {
@@ -171,7 +195,26 @@ public class UsbMFiTransport implements MFiTransport {
         }
     }
 
-    private void sendRequests(MFiCommand[] commandList) {
+    @SuppressWarnings("Convert2MethodRef")
+    private UsbRequest requestWait(long timeout) throws TimeoutException {
+        UsbDeviceConnection connection = mConnection;
+        if (connection == null) {
+            return null;
+        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            Future<UsbRequest> future = mExecutor.submit(() -> connection.requestWait());
+
+            try {
+                return future.get(timeout, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException | ExecutionException e) {
+                return null;
+            }
+        } else {
+            return connection.requestWait(timeout);
+        }
+    }
+
+    private boolean sendRequests(MFiCommand[] commandList) {
         FLog.d(TAG, String.format(Locale.US, "sendRequests commandList.length:%d", commandList.length));
         for (MFiCommand command : commandList) {
             int count = command.getPacketCount(MAX_PACKET_LENGTH);
@@ -183,20 +226,26 @@ public class UsbMFiTransport implements MFiTransport {
                 mSendBuffer.put(data);
                 queueRequest(mSendRequest, mSendBuffer);
 
-                //TODO タイムアウトパラメータが API26 以上
-                UsbRequest request = mConnection.requestWait();
-
+                UsbRequest request;
+                try {
+                    request = requestWait(USB_TIMEOUT);
+                } catch (TimeoutException ex) {
+                    mSendRequest.cancel();
+                    return false;
+                }
                 if (request != mSendRequest) {
                     FLog.d(TAG, "sendRequests request is not sendRequest");
-                    return;
+                    return false;
                 }
             }
         }
 
         // 正常に送信完了した場合
         FLog.d(TAG, "sendRequests completed");
+        return true;
     }
 
+    //TODO キャンセル処理未実装(電子マネーアプリでは必要ないはず)
     @Override
     public IncredistResult cancel() {
         return null;
