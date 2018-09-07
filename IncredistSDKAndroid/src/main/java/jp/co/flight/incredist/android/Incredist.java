@@ -27,6 +27,7 @@ import jp.co.flight.incredist.android.model.BootloaderVersion;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.DeviceInfo;
 import jp.co.flight.incredist.android.model.EmvKernelSettingStatus;
+import jp.co.flight.incredist.android.model.EmvMessageType;
 import jp.co.flight.incredist.android.model.EmvPacket;
 import jp.co.flight.incredist.android.model.EmvSetupDataType;
 import jp.co.flight.incredist.android.model.EmvTagType;
@@ -38,6 +39,7 @@ import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.MagCard;
 import jp.co.flight.incredist.android.model.PinEntry;
 import jp.co.flight.incredist.android.model.ProductInfo;
+import jp.co.flight.incredist.android.model.TfpMessageType;
 
 /**
  * Incredist API クラス.
@@ -245,6 +247,29 @@ public class Incredist {
     }
 
     /**
+     * EMV メッセージを表示します
+     *
+     * @param type    メッセージ番号
+     * @param message メッセージ文字列
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void emvDisplayMessage(EmvMessageType type, @Nullable String message, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        emvDisplayMessage(type.getValue(), message, success, failure);
+    }
+
+    /**
+     * EMV メッセージを表示します
+     *
+     * @param type    メッセージ番号
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void emvDisplayMessage(EmvMessageType type, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        emvDisplayMessage(type.getValue(), success, failure);
+    }
+
+    /**
      * TFP メッセージを表示します
      *
      * @param type    メッセージ番号
@@ -277,6 +302,29 @@ public class Incredist {
      */
     public void tfpDisplayMessage(int type, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
         tfpDisplayMessage(type, null, success, failure);
+    }
+
+    /**
+     * TFP メッセージを表示します
+     *
+     * @param type    メッセージ番号
+     * @param message メッセージ文字列
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void tfpDisplayMessage(TfpMessageType type, @Nullable String message, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        tfpDisplayMessage(type.getValue(), message, success, failure);
+    }
+
+    /**
+     * TFP メッセージを表示します
+     *
+     * @param type    メッセージ番号
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void tfpDisplayMessage(TfpMessageType type, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        tfpDisplayMessage(type.getValue(), success, failure);
     }
 
     /**
