@@ -94,10 +94,7 @@ public class Incredist {
                 mController.disconnect(result -> {
                     if (result.status == IncredistResult.STATUS_SUCCESS) {
                         mController.postCallback(() -> {
-                            IncredistManager.IncredistConnectionListener listener = mConnectionListenerRef.get();
-                            if (listener != null) {
-                                listener.onDisconnectIncredist(this);
-                            }
+                            notifyDisconnect();
                         });
                     }
                 });
@@ -800,12 +797,26 @@ public class Incredist {
     }
 
     /**
+     * 切断されたことを通知します
+     */
+    //package
+    void notifyDisconnect() {
+        IncredistManager.IncredistConnectionListener listener = mConnectionListenerRef.get();
+        if (listener != null && mController != null) {
+            mController.postCallback(() -> {
+                listener.onDisconnectIncredist(this);
+            });
+        }
+    }
+
+    /**
      * Incredist との接続リソースを解放します
      */
     public void release() {
         if (mController != null) {
             mController.release();
         }
+        mConnectionListenerRef.clear();
 
         mController = null;
         mManager = null;
