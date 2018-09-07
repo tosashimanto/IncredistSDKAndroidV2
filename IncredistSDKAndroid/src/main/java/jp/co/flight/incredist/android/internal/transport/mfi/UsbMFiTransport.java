@@ -87,58 +87,71 @@ public class UsbMFiTransport implements MFiTransport {
 
         mResponse.clear();
 
-        synchronized (mResponse) {
-            FLog.d(TAG, "sendCommand wait receive");
-            boolean continueReceive;
-            do {
-                continueReceive = false;
+        if (firstCommand.getResponseTimeout() == 0) {
+            // 応答パケットがない場合は guardWait だけ待機して、 MFiNoResponse を結果とする
+            try {
+                Thread.sleep(firstCommand.getGuardWait());
+            } catch (InterruptedException ex) {
+                // ignore.
+            }
 
+            mCommand = null;
+            FLog.d(TAG, String.format("sendCommand has no response %s", firstCommand.getClass().getSimpleName()));
+            return firstCommand.parseResponse(new MFiNoResponse());
+        } else {
+            synchronized (mResponse) {
+                FLog.d(TAG, String.format("sendCommand recv packet(s) for %s", firstCommand.getClass().getSimpleName()));
+                boolean continueReceive;
                 do {
-                    mReceiveBuffer.clear();
-                    queueRequest(mReceiveRequest, mReceiveBuffer);
-                    UsbRequest request = mConnection.requestWait();
+                    continueReceive = false;
 
-                    if (request == mReceiveRequest) {
-                        mReceiveBuffer.flip();
-                        int length = mReceiveBuffer.remaining();
-                        mReceiveBuffer.get(buf, 0, length);
-                        FLog.d(TAG, String.format(Locale.US, "sendCommand received length:%d data: %s", length, LogUtil.hexString(buf, 0, length)));
-                        mResponse.appendData(buf, 0, length);
-                    } else if (request == null) {
-                        // 受信エラー
-                        break;
-                    } else {
-                        FLog.d(TAG, String.format(Locale.US, "unknown request endpoint:%d", request.getEndpoint().getEndpointNumber()));
-                    }
+                    do {
+                        mReceiveBuffer.clear();
+                        queueRequest(mReceiveRequest, mReceiveBuffer);
+                        UsbRequest request = mConnection.requestWait();
 
-                    request = null;
-                } while (mResponse.isEmpty() || mResponse.needMoreData());
-
-                if (mResponse.isValid()) {
-                    FLog.d(TAG, "recv valid packet: " + LogUtil.hexString(mResponse.getData()));
-                    IncredistResult result = firstCommand.parseResponse(mResponse.copyInstance());
-                    if (result.status == IncredistResult.STATUS_CONTINUE_MULTIPLE_RESPONSE) {
-                        // 継続するパケットがある場合はパケット情報をクリアして次のデータを待つ
-                        mResponse.clear();
-                        continueReceive = true;
-                    } else {
-                        try {
-                            Thread.sleep(firstCommand.getGuardWait());
-                        } catch (InterruptedException ex) {
-                            // ignore.
+                        if (request == mReceiveRequest) {
+                            mReceiveBuffer.flip();
+                            int length = mReceiveBuffer.remaining();
+                            mReceiveBuffer.get(buf, 0, length);
+                            FLog.d(TAG, String.format(Locale.US, "sendCommand received length:%d data: %s", length, LogUtil.hexString(buf, 0, length)));
+                            mResponse.appendData(buf, 0, length);
+                        } else if (request == null) {
+                            // 受信エラー
+                            break;
+                        } else {
+                            FLog.d(TAG, String.format(Locale.US, "unknown request endpoint:%d", request.getEndpoint().getEndpointNumber()));
                         }
-                        long real = System.currentTimeMillis() - startTime;
-                        FLog.d(TAG, String.format(Locale.JAPANESE, "sendCommand result:%d wait:%d real:%d %s", result.status, firstCommand.getResponseTimeout(), real, mCommand.getClass().getSimpleName()));
 
-                        mCommand = null;
-                        if (result.status == IncredistResult.STATUS_SUCCESS) {
+                        request = null;
+                    } while (mResponse.isEmpty() || mResponse.needMoreData());
+
+                    if (mResponse.isValid()) {
+                        FLog.d(TAG, "recv valid packet: " + LogUtil.hexString(mResponse.getData()));
+                        IncredistResult result = firstCommand.parseResponse(mResponse.copyInstance());
+                        if (result.status == IncredistResult.STATUS_CONTINUE_MULTIPLE_RESPONSE) {
+                            // 継続するパケットがある場合はパケット情報をクリアして次のデータを待つ
                             mResponse.clear();
-                        }
-                        return result;
-                    }
-                }
+                            continueReceive = true;
+                        } else {
+                            try {
+                                Thread.sleep(firstCommand.getGuardWait());
+                            } catch (InterruptedException ex) {
+                                // ignore.
+                            }
+                            long real = System.currentTimeMillis() - startTime;
+                            FLog.d(TAG, String.format(Locale.JAPANESE, "sendCommand result:%d wait:%d real:%d %s", result.status, firstCommand.getResponseTimeout(), real, mCommand.getClass().getSimpleName()));
 
-            } while (continueReceive);
+                            mCommand = null;
+                            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                                mResponse.clear();
+                            }
+                            return result;
+                        }
+                    }
+
+                } while (continueReceive);
+            }
         }
 
         return new IncredistResult(IncredistResult.STATUS_FAILURE);

@@ -114,7 +114,7 @@ public class BleMFiTransport implements MFiTransport {
             if (mCancelling != null) {
                 mCancelling.countDown();
 
-                FLog.d(TAG, String.format("sendCommand cancelled(%d) %s", IncredistResult.STATUS_CANCELED, firstCommand.getClass().getSimpleName()));
+                FLog.d(TAG, String.format(Locale.US, "sendCommand cancelled(%d) %s", IncredistResult.STATUS_CANCELED, firstCommand.getClass().getSimpleName()));
 
                 return new IncredistResult(IncredistResult.STATUS_CANCELED);
             }
@@ -127,7 +127,7 @@ public class BleMFiTransport implements MFiTransport {
                     BluetoothGattConnection connection = mConnection;
                     BluetoothGattCharacteristic writeCharacteristic = mWriteCharacteristic;
                     if (connection == null || writeCharacteristic == null) {
-                        FLog.d(TAG, String.format("sendCommand released(%d) %s", IncredistResult.STATUS_RELEASED, firstCommand.getClass().getSimpleName()));
+                        FLog.d(TAG, String.format(Locale.US, "sendCommand released(%d) %s", IncredistResult.STATUS_RELEASED, firstCommand.getClass().getSimpleName()));
                         return new IncredistResult(IncredistResult.STATUS_RELEASED);
                     }
                     ErrorLatch latch = new ErrorLatch();
@@ -169,7 +169,7 @@ public class BleMFiTransport implements MFiTransport {
             FLog.d(TAG, String.format("sendCommand has no response %s", firstCommand.getClass().getSimpleName()));
             return firstCommand.parseResponse(new MFiNoResponse());
         } else {
-            FLog.d(TAG, String.format("recv packet(s) for %s", firstCommand.getClass().getSimpleName()));
+            FLog.d(TAG, String.format("sendCommand recv packet(s) for %s", firstCommand.getClass().getSimpleName()));
 
             try {
                 synchronized (mResponse) {
