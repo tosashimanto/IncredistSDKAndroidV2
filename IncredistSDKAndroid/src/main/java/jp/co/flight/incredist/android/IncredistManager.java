@@ -1,7 +1,10 @@
 package jp.co.flight.incredist.android;
 
 import android.bluetooth.BluetoothGatt;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbInterface;
@@ -16,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import jp.co.flight.android.bluetooth.le.BluetoothCentral;
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
@@ -39,6 +43,27 @@ public class IncredistManager {
     private final Context mAppContext;
 
     private IncredistConnectionListener mListener = null;
+
+    private WeakHashMap<IncredistDevice, Incredist> mConnectedDevices = new WeakHashMap<>();
+
+    // USB デバイス切断時のレシーバ
+    private BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action != null && action.equals(UsbManager.ACTION_USB_DEVICE_DETACHED)) {
+                UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                IncredistDevice incredistDevice = IncredistDevice.usbDevice(device);
+                Incredist incredist = mConnectedDevices.get(incredistDevice);
+                if (incredist != null) {
+                    incredist.notifyDisconnect();
+                    incredist.release();
+                    mConnectedDevices.remove(incredistDevice);
+                }
+            }
+        }
+    };
+    private boolean mUsbReceiverRegistered = false;
 
     /**
      * デバイス名によるフィルタ.
@@ -88,6 +113,13 @@ public class IncredistManager {
     public void createUsbManager() {
         if (mUsbManager == null) {
             mUsbManager = (UsbManager) mAppContext.getSystemService(Context.USB_SERVICE);
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+
+            if (!mUsbReceiverRegistered) {
+                mAppContext.registerReceiver(mUsbReceiver, intentFilter);
+                mUsbReceiverRegistered = true;
+            }
         }
     }
 
@@ -186,8 +218,8 @@ public class IncredistManager {
         DISCONNECTED        // 切断完了
     }
 
-    private class InternalConnectionListener implements BluetoothGattConnection.ConnectionListener {
-        private final String TAG = "InternalConnectionListener";
+    private class InternalBleConnectionListener implements BluetoothGattConnection.ConnectionListener {
+        private final String TAG = "InternalBleConnectionListener";
         private State mState = State.CONNECTING;
 
         private Handler mHandler;
@@ -236,7 +268,7 @@ public class IncredistManager {
             }
         };
 
-        InternalConnectionListener(Handler handler) {
+        InternalBleConnectionListener(Handler handler) {
             mHandler = handler;
         }
 
@@ -319,6 +351,9 @@ public class IncredistManager {
         private void afterOnConnect() {
             // 接続確立後の処理
             mIncredist = new Incredist(IncredistManager.this, mConnection, mPeripheral.getDeviceName());
+            IncredistDevice incredistDevice = IncredistDevice.bleDevice(mPeripheral.getDeviceName());
+            mConnectedDevices.put(incredistDevice, mIncredist);
+
             // まず sコマンドを送信する
             mIncredist.stop(() -> {
                 callOnConnected();
@@ -350,6 +385,8 @@ public class IncredistManager {
             FLog.d(TAG, "call onDisconnected");
             if (mListener != null && mIncredist != null) {
                 mListener.onDisconnectIncredist(mIncredist);
+
+                mConnectedDevices.remove(IncredistDevice.bleDevice(mIncredist.getDeviceName()));
             } else {
                 FLog.w(TAG, String.format("don't call onDisconnected, mListener=%x mIncredist=%x", System.identityHashCode(mListener), System.identityHashCode(mIncredist)));
             }
@@ -436,7 +473,7 @@ public class IncredistManager {
 
     private void connectInternal(BluetoothPeripheral peripheral, long timeout) {
         Handler handler = mCentral.getHandler();
-        InternalConnectionListener internalListener = new InternalConnectionListener(handler);
+        InternalBleConnectionListener internalListener = new InternalBleConnectionListener(handler);
         internalListener.startConnect(peripheral, timeout);
     }
 
@@ -461,7 +498,9 @@ public class IncredistManager {
             UsbInterface usbInterface = device.getInterface(0);
 
             handler.post(() -> {
-                listener.onConnectIncredist(new Incredist(this, connection, usbInterface, listener));
+                Incredist incredist = new Incredist(this, connection, usbInterface, listener);
+                mConnectedDevices.put(IncredistDevice.usbDevice(device), incredist);
+                listener.onConnectIncredist(incredist);
             });
         } else {
             handler.post(() -> {
@@ -486,6 +525,10 @@ public class IncredistManager {
         if (mCentral != null) {
             mCentral.release();
             mCentral = null;
+        }
+
+        if (mUsbReceiverRegistered) {
+            mAppContext.unregisterReceiver(mUsbReceiver);
         }
         mListener = null;
     }
