@@ -121,4 +121,14 @@ public enum TfpMessageType {
     public int getValue() {
         return this.value;
     }
+
+    public static TfpMessageType getEnum(int value) {
+        for (TfpMessageType tfpMessageType : TfpMessageType.values()) {
+            if (tfpMessageType.getValue() == value) {
+                return tfpMessageType;
+            }
+        }
+
+        return null;
+    }
 }

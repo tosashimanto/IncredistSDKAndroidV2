@@ -21,4 +21,14 @@ public enum LedColor {
     public byte getValue() {
         return (byte) mValue;
     }
+
+    public static LedColor getEnum(int value) {
+        for (LedColor ledColor : LedColor.values()) {
+            if (ledColor.getValue() == value) {
+                return ledColor;
+            }
+        }
+
+        return null;
+    }
 }
