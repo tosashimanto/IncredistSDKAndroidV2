@@ -139,6 +139,11 @@ public class UsbMFiTransport implements MFiTransport {
                         if (request == mReceiveRequest) {
                             mReceiveBuffer.flip();
                             int length = mReceiveBuffer.remaining();
+                            if (length == 0) {
+                                // USB の受信データが 0byte の場合は次のパケットを待つ
+                                continue;
+                            }
+
                             mReceiveBuffer.get(buf, 0, length);
                             FLog.d(TAG, String.format(Locale.US, "sendCommand received length:%d data: %s", length, LogUtil.hexString(buf, 0, length)));
                             mResponse.appendData(buf, 0, length);
