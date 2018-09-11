@@ -813,10 +813,15 @@ public class Incredist {
      * Incredist との接続リソースを解放します
      */
     public void release() {
-        if (mController != null) {
-            mController.release();
+        IncredistController controller = mController;
+        if (controller != null) {
+            controller.release();
         }
-        mConnectionListenerRef.clear();
+
+        WeakReference<IncredistManager.IncredistConnectionListener> connectionListenerRef = mConnectionListenerRef;
+        if (connectionListenerRef != null) {
+            connectionListenerRef.clear();
+        }
 
         mController = null;
         mManager = null;
