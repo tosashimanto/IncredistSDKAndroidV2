@@ -3,8 +3,8 @@ package jp.co.flight.incredist.android.model;
 public enum EmvSetupDataType {
     TerminalConfiguration('T'),
     Aid('A'),
-    ContactCapk('C'),
-    ContactlessCapk('L');
+    CapkForContactIc('C'),
+    CapkForContactlessIc('L');
 
     byte mData;
 
