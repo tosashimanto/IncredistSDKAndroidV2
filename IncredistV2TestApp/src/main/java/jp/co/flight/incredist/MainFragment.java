@@ -28,8 +28,8 @@ import jp.co.flight.incredist.android.model.EmvTagType;
 import jp.co.flight.incredist.android.model.EmvTransactionType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.LedColor;
-import jp.co.flight.incredist.model.IncredistModel;
 import jp.co.flight.incredist.model.PinEntryDParam;
+import jp.co.flight.incredist.model.TestAppIncredistModel;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.RuntimePermissions;
 
@@ -67,8 +67,8 @@ public class MainFragment extends Fragment
 
     private OnFragmentInteractionListener mListener;
     private FragmentMainBinding mBinding;
-    private IncredistModel mModel;
-    private MainPresenter.Impl mPresenter;
+    private TestAppIncredistModel mModel;
+    private TestAppPresenter.Impl mPresenter;
 
     public MainFragment() {
     }
@@ -92,7 +92,7 @@ public class MainFragment extends Fragment
         super.onActivityCreated(savedInstanceState);
 
         mModel = mListener.getModel();
-        mPresenter = new MainPresenter.Impl(this, mBinding, mModel);
+        mPresenter = new TestAppPresenter.Impl(this, mBinding, mModel);
 
         mBinding.setIncredist(mModel);
         mBinding.setPresenter(mPresenter);
@@ -263,7 +263,7 @@ public class MainFragment extends Fragment
     }
 
     public interface OnFragmentInteractionListener {
-        IncredistModel getModel();
+        TestAppIncredistModel getModel();
 
         boolean checkUsbPermission(UsbDevice device);
     }

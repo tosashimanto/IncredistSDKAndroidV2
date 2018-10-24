@@ -36,7 +36,7 @@ import jp.co.flight.incredist.android.model.ProductInfo;
 /**
  * Incredist テストプログラム用モデル.
  */
-public interface IncredistModel extends Observable {
+public interface TestAppIncredistModel extends Observable {
 
     void newIncredistObject();
 
@@ -115,7 +115,7 @@ public interface IncredistModel extends Observable {
 
     UsbDevice getUsbDevice();
 
-    class Impl extends BaseObservable implements IncredistModel {
+    class Impl extends BaseObservable implements TestAppIncredistModel {
         private static final String PREFERENCE_KEY_DEVICE_NAME = "device_name";
         private static final String PREFERENCE_KEY_EMV_MESSAGE_TYPE = "emv_message_type";
         private static final String PREFERENCE_KEY_EMV_MESSAGE_STRING = "emv_message_string";
@@ -146,7 +146,7 @@ public interface IncredistModel extends Observable {
             mTfpMessageString = sp.getString(PREFERENCE_KEY_TFP_MESSAGE_STRING, null);
         }
 
-        //-- methods from IncredistModel.
+        //-- methods from TestAppIncredistModel.
         @Override
         public void newIncredistObject() {
             mIncredistManager = new IncredistManager(mContext);

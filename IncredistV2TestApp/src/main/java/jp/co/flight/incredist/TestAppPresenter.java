@@ -24,13 +24,13 @@ import jp.co.flight.incredist.android.model.EmvTagType;
 import jp.co.flight.incredist.android.model.EmvTransactionType;
 import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.LedColor;
-import jp.co.flight.incredist.model.IncredistModel;
 import jp.co.flight.incredist.model.PinEntryDParam;
+import jp.co.flight.incredist.model.TestAppIncredistModel;
 
 /**
  * MainActivity 用 Presenter インタフェース.
  */
-public interface MainPresenter {
+public interface TestAppPresenter {
     void onUsbDeviceList();
 
     void onStartScan();
@@ -119,10 +119,10 @@ public interface MainPresenter {
     /**
      * MainActivity 用 Presenter 実体クラス.
      */
-    class Impl implements MainPresenter {
+    class Impl implements TestAppPresenter {
         private final MainFragment mFragment;
         private final FragmentMainBinding mBinding;
-        private final IncredistModel mModel;
+        private final TestAppIncredistModel mModel;
         private final Handler mMainThreadHandler;
 
         IncredistManager.IncredistConnectionListener mConnectionListener = new IncredistManager.IncredistConnectionListener() {
@@ -142,7 +142,7 @@ public interface MainPresenter {
             }
         };
 
-        Impl(MainFragment fragment, FragmentMainBinding binding, IncredistModel model) {
+        Impl(MainFragment fragment, FragmentMainBinding binding, TestAppIncredistModel model) {
             mFragment = fragment;
             mBinding = binding;
             mModel = model;
