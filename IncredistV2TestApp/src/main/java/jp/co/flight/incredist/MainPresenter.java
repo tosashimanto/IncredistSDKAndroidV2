@@ -122,7 +122,7 @@ public interface MainPresenter {
     class Impl implements MainPresenter {
         private final MainFragment mFragment;
         private final FragmentMainBinding mBinding;
-        private final IncredistModel mIncredist;
+        private final IncredistModel mModel;
         private final Handler mMainThreadHandler;
 
         IncredistManager.IncredistConnectionListener mConnectionListener = new IncredistManager.IncredistConnectionListener() {
@@ -145,12 +145,12 @@ public interface MainPresenter {
         Impl(MainFragment fragment, FragmentMainBinding binding, IncredistModel model) {
             mFragment = fragment;
             mBinding = binding;
-            mIncredist = model;
+            mModel = model;
 
-            mIncredist.newIncredistObject();
+            mModel.newIncredistObject();
             mMainThreadHandler = new Handler(Looper.getMainLooper());
 
-            addLog(String.format("%s:%s API:%s", BuildConfig.APPLICATION_ID, BuildConfig.VERSION_NAME, mIncredist.getApiVersion()));
+            addLog(String.format("%s:%s API:%s", BuildConfig.APPLICATION_ID, BuildConfig.VERSION_NAME, mModel.getApiVersion()));
         }
 
         @Override
@@ -161,7 +161,7 @@ public interface MainPresenter {
         @Override
         public void onStartScan() {
             addLog("bleStartScan");
-            mIncredist.bleStartScan((List<BluetoothPeripheral> scanResult) -> {
+            mModel.bleStartScan((List<BluetoothPeripheral> scanResult) -> {
                 addLog(String.format(Locale.JAPANESE, "bleStartScan result %d", scanResult.size()));
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "bleStartScan failure %d", errorCode));
@@ -171,7 +171,7 @@ public interface MainPresenter {
         @Override
         public void onSelectDevice() {
             addLog("selectDevice");
-            List<BluetoothPeripheral> peripherals = mIncredist.getDeviceList();
+            List<BluetoothPeripheral> peripherals = mModel.getDeviceList();
 
             if (peripherals == null) {
                 addLog("no device list");
@@ -192,13 +192,13 @@ public interface MainPresenter {
         @Override
         public void setSelectedDevice(String deviceName) {
             addLog(String.format("setSelectedDevice:%s", deviceName));
-            mIncredist.setSelectedDevice(deviceName);
+            mModel.setSelectedDevice(deviceName);
         }
 
         @Override
         public void onFindUsbDevice() {
             addLog("findUsbDevice");
-            UsbDevice device = mIncredist.findUsbDevice();
+            UsbDevice device = mModel.findUsbDevice();
             if (device == null) {
                 addLog("UsbDevice is null");
             } else {
@@ -209,18 +209,18 @@ public interface MainPresenter {
         @Override
         public void onConnect() {
             addLog("connect");
-            mIncredist.connect(mConnectionListener);
+            mModel.connect(mConnectionListener);
         }
 
         @Override
         public void onConnectUsb() {
             addLog("usbConenct");
-            UsbDevice device = mIncredist.getUsbDevice();
+            UsbDevice device = mModel.getUsbDevice();
             if (device == null) {
                 addLog("UsbDevice is null");
             } else {
                 if (mFragment.checkUsbPermission(device)) {
-                    mIncredist.connect(device, mConnectionListener);
+                    mModel.connect(device, mConnectionListener);
                 } else {
                     addLog("UsbPermission failed");
                 }
@@ -230,7 +230,7 @@ public interface MainPresenter {
         @Override
         public void onGetDeviceInfo() {
             addLog("getDeviceInfo");
-            mIncredist.getDeviceInfo(serial -> {
+            mModel.getDeviceInfo(serial -> {
                 addLog(String.format(Locale.JAPANESE, "serial: %s firm: %s", serial.getSerialNumber(), serial.getFirmwareVersion()));
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "getDeviceInfo failure %d", errorCode));
@@ -240,7 +240,7 @@ public interface MainPresenter {
         @Override
         public void onGetProductInfo() {
             addLog("getProductInfo");
-            mIncredist.getProductInfo(product -> {
+            mModel.getProductInfo(product -> {
                 addLog(String.format(Locale.JAPANESE, "serial: %s firm: %s type: %s", product.getSerialNumber(), product.getFirmwareVersion(), product.getProductType().name()));
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "getProductInfo failure %d", errorCode));
@@ -250,7 +250,7 @@ public interface MainPresenter {
         @Override
         public void onGetBootloaderVersion() {
             addLog("getBootloaderVersion");
-            mIncredist.getBootloaderVersion(info -> {
+            mModel.getBootloaderVersion(info -> {
                 addLog(String.format(Locale.JAPANESE, "bootloader: %s firm rev: %s", info.getBootloaderVersion(), info.getFirmwareRevision()));
             }, errorCode -> {
                 addLog(String.format(Locale.JAPANESE, "getBootloaderVersion failure %d", errorCode));
@@ -260,13 +260,13 @@ public interface MainPresenter {
         @Override
         public void onDisconnect() {
             addLog("disconnect");
-            mIncredist.disconnect();
+            mModel.disconnect();
         }
 
         @Override
         public void onStop() {
             addLog("stop");
-            mIncredist.stop(() -> {
+            mModel.stop(() -> {
                 addLog("stop success");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "stop failure %d", errorCode));
@@ -276,7 +276,7 @@ public interface MainPresenter {
         @Override
         public void onCancel() {
             addLog("cancel");
-            mIncredist.cancel(() -> {
+            mModel.cancel(() -> {
                 addLog("cancel success");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "cancel failure %d", errorCode));
@@ -286,7 +286,7 @@ public interface MainPresenter {
         @Override
         public void onRestart() {
             addLog("restart");
-            mIncredist.restart(() -> {
+            mModel.restart(() -> {
                 addLog("restart succeed");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "restart failure %d", errorCode));
@@ -296,7 +296,7 @@ public interface MainPresenter {
         @Override
         public void onAuto() {
             addLog("auto");
-            mIncredist.auto((serialNumber) -> {
+            mModel.auto((serialNumber) -> {
                 addLog(String.format(Locale.JAPANESE, "auto serial: %s", serialNumber));
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "auto serial failure %d", errorCode));
@@ -306,7 +306,7 @@ public interface MainPresenter {
         @Override
         public void onFelicaOpen() {
             addLog("felicaOpen");
-            mIncredist.felicaOpen(true, () -> {
+            mModel.felicaOpen(true, () -> {
                 addLog("felicaOpen success");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "felicaOpen failure %d", errorCode));
@@ -322,7 +322,7 @@ public interface MainPresenter {
         @Override
         public void felicaLedColor(LedColor color) {
             addLog("felicaLedColor");
-            mIncredist.felicaLedColor(color, () -> {
+            mModel.felicaLedColor(color, () -> {
                 addLog("felicaLedColor success");
             }, errorCode -> {
                 addLog(String.format(Locale.JAPANESE, "felicaLedColor failure %d", errorCode));
@@ -332,7 +332,7 @@ public interface MainPresenter {
         @Override
         public void onFelicaOpenWithoutLed() {
             addLog("felicaOpenWithoutLed");
-            mIncredist.felicaOpen(false, () -> {
+            mModel.felicaOpen(false, () -> {
                 addLog("felicaOpenWithoutLed success");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "felicaOpen failure %d", errorCode));
@@ -342,7 +342,7 @@ public interface MainPresenter {
         @Override
         public void onFelicaSend() {
             addLog("felicaSend");
-            mIncredist.felicaSendCommand(success -> {
+            mModel.felicaSendCommand(success -> {
                 addLog(String.format(Locale.JAPANESE, "felicaSend success status1:%d status2:%d result:%s",
                         success.getStatus1(), success.getStatus2(), hexString(success.getResultData())));
             }, (errorCode) -> {
@@ -353,7 +353,7 @@ public interface MainPresenter {
         @Override
         public void onFelicaClose() {
             addLog("felicaClose");
-            mIncredist.felicaClose(() -> {
+            mModel.felicaClose(() -> {
                 addLog("felicaClose success");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "felicaClose failure %d", errorCode));
@@ -381,7 +381,7 @@ public interface MainPresenter {
         @Override
         public void emvDisplayMessage(int type, String message) {
             addLog("emvDisplayMessage");
-            mIncredist.emvDisplayMessage(type, message, () -> {
+            mModel.emvDisplayMessage(type, message, () -> {
                 addLog("emvDisplayMessage success");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "emvDisplayMessage failure %d", errorCode));
@@ -391,7 +391,7 @@ public interface MainPresenter {
         @Override
         public void tfpDisplayMessage(int type, String message) {
             addLog("tfpMessage");
-            mIncredist.tfpDisplayMessage(type, message, () -> {
+            mModel.tfpDisplayMessage(type, message, () -> {
                 addLog("tfpMessage success");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "tfpMessage failure %d", errorCode));
@@ -401,7 +401,7 @@ public interface MainPresenter {
         @Override
         public void setLedColor(LedColor color, boolean isOn) {
             addLog("led");
-            mIncredist.setLedColor(color, isOn, () -> {
+            mModel.setLedColor(color, isOn, () -> {
                 addLog("led success");
             }, errorCode -> {
                 addLog(String.format(Locale.JAPANESE, "led failure %d", errorCode));
@@ -423,7 +423,7 @@ public interface MainPresenter {
         @Override
         public void scanCreditCard(EnumSet<CreditCardType> cardTypeSet, long amount, EmvTagType tagType, int aidSetting, EmvTransactionType transactionType, boolean fallback, long timeout) {
             addLog("credit");
-            mIncredist.scanCreditCard(cardTypeSet, amount, tagType, aidSetting, transactionType, fallback, timeout, (result) -> {
+            mModel.scanCreditCard(cardTypeSet, amount, tagType, aidSetting, transactionType, fallback, timeout, (result) -> {
                 addLog("credit emvsuccess");
             }, (magResult) -> {
                 addLog("credit magsuccess");
@@ -435,7 +435,7 @@ public interface MainPresenter {
         @Override
         public void onCheckCardStatus() {
             addLog("checkCardStatus");
-            mIncredist.checkCardStatus((inserted) -> {
+            mModel.checkCardStatus((inserted) -> {
                 addLog(String.format(Locale.JAPANESE, "checkCardStatus %s", inserted.name()));
             }, errorCode -> {
                 addLog(String.format(Locale.JAPANESE, "credit failure %d", errorCode));
@@ -445,7 +445,7 @@ public interface MainPresenter {
         @Override
         public void setEncryptionMode(EncryptionMode mode) {
             addLog("sdm");
-            mIncredist.setEncryptionMode(mode, () -> {
+            mModel.setEncryptionMode(mode, () -> {
                 addLog("sdm success");
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "sdm failure %d", errorCode));
@@ -455,7 +455,7 @@ public interface MainPresenter {
         @Override
         public void onMj2() {
             addLog("mj2");
-            mIncredist.scanMagnetic(20000, (magCard) -> {
+            mModel.scanMagnetic(20000, (magCard) -> {
                 addLog(String.format(Locale.JAPANESE, "mj2 success : %s", magCard.getCardType().name()));
 
                 addLog(String.format(Locale.JAPANESE, "  track1: %s", hexString(magCard.getDec1().getTrack1())));
@@ -474,7 +474,7 @@ public interface MainPresenter {
         @Override
         public void pinEntryD(PinEntryDParam param) {
             addLog("pind");
-            mIncredist.pinEntryD(param, (pinEntry) -> {
+            mModel.pinEntryD(param, (pinEntry) -> {
                 addLog(String.format(Locale.JAPANESE, "pind success ksn:%s pinData:%s", hexString(pinEntry.getKsn()), hexString(pinEntry.getPinData())));
             }, (errorCode) -> {
                 addLog(String.format(Locale.JAPANESE, "pind failure %d", errorCode));
@@ -485,7 +485,7 @@ public interface MainPresenter {
         @Override
         public void onRtcGetTime() {
             addLog("rtcGetTime");
-            mIncredist.rtcGetTime(cal -> {
+            mModel.rtcGetTime(cal -> {
                 SimpleDateFormat sdf = new SimpleDateFormat("yy/MM/dd HH:mm:ss", Locale.JAPANESE);
                 addLog(String.format(Locale.JAPANESE, "rtcGetTime success %s", sdf.format(cal.getTime())));
             }, errorCode -> {
@@ -501,7 +501,7 @@ public interface MainPresenter {
         @Override
         public void onRtcSetCurrent() {
             addLog("rtcSetCurrentTime");
-            mIncredist.rtcSetCurrentTime(() -> {
+            mModel.rtcSetCurrentTime(() -> {
                 addLog("rtcSetCurrentTime success");
             }, errorCode -> {
                 addLog(String.format(Locale.JAPANESE, "rtcSetCurrentTime failure %d", errorCode));
@@ -511,7 +511,7 @@ public interface MainPresenter {
         @Override
         public void setDateTime(Calendar cal) {
             addLog("rtcSetTime");
-            mIncredist.rtcSetTime(cal, () -> {
+            mModel.rtcSetTime(cal, () -> {
                 addLog("rtcSetTime success");
             }, errorCode -> {
                 addLog(String.format(Locale.JAPANESE, "rtcSetTime failure %d", errorCode));
@@ -526,7 +526,7 @@ public interface MainPresenter {
         @Override
         public void emoneyBlink(boolean isBlink, LedColor color, int duration) {
             addLog("emoneyBlink");
-            mIncredist.emoneyBlink(isBlink, color, duration, (isOn) -> {
+            mModel.emoneyBlink(isBlink, color, duration, (isOn) -> {
                 addLog(String.format(Locale.JAPANESE, "emoneyBlink success %s", isOn));
             }, errorCode -> {
                 addLog(String.format(Locale.JAPANESE, "emoneyBlink failure %d", errorCode));
