@@ -14,7 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import jp.co.flight.incredist.android.IncredistV2TestApp.R;
-import jp.co.flight.incredist.model.TestAppIncredistModel;
+import jp.co.flight.incredist.model.IncredistModel;
 
 public class MainActivity extends AppCompatActivity implements MainFragment.OnFragmentInteractionListener {
 
@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
 
     private PendingIntent mPermissionIntent;
 
-    private TestAppIncredistModel.Impl mModel;
+    private IncredistModel mModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
         IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
         registerReceiver(mUsbReceiver, filter);
 
-        mModel = new TestAppIncredistModel.Impl(this);
+        mModel = new IncredistModel(this);
 
         MainFragment fragment = MainFragment.newInstance();
         FragmentManager fm = getSupportFragmentManager();
@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
     }
 
     @Override
-    public TestAppIncredistModel getModel() {
+    public TestAppContract.Model getModel() {
         return mModel;
     }
 
