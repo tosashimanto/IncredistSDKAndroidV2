@@ -37,7 +37,7 @@ import permissions.dispatcher.RuntimePermissions;
  */
 @RuntimePermissions
 public class MainFragment extends Fragment
-        implements DeviceListDialogFragment.Listener, DisplayMessageDialogFragment.Listener,
+        implements TestAppContract.View, DeviceListDialogFragment.Listener, DisplayMessageDialogFragment.Listener,
         EncryptionSettingDialogFragment.Listener, PinEntryDParamDialogFragment.Listener,
         LedColorDialogFragment.Listener, DateTimeDialogFragment.Listener,
         CreditPaymentSettingDialogFragment.Listener, EmoneyBlinkDialogFragment.Listener {
@@ -121,7 +121,8 @@ public class MainFragment extends Fragment
         // do nothing.
     }
 
-    void showDeviceListDialog(ArrayList<String> devices) {
+    @Override
+    public void showDeviceListDialog(ArrayList<String> devices) {
         DialogFragment dialog = DeviceListDialogFragment.newInstance(devices);
         dialog.setTargetFragment(this, REQUEST_SELECT_DEVICE);
         dialog.show(getFragmentManager(), DIALOG_TAG_SELECT_DEVICE);
@@ -133,14 +134,16 @@ public class MainFragment extends Fragment
         mPresenter.addLog(deviceName);
     }
 
-    void showEmvDisplayMessageDialog() {
+    @Override
+    public void showEmvDisplayMessageDialog() {
         DialogFragment dialog = DisplayMessageDialogFragment.newInstance("EMV message",
                 mModel.getEmvMessageType(), mModel.getEmvMessageString());
         dialog.setTargetFragment(this, REQUEST_EMV_MESSAGE);
         dialog.show(getFragmentManager(), DIALOG_TAG_EMV_MESSAGE);
     }
 
-    void showTfpDisplayMessageDialog() {
+    @Override
+    public void showTfpDisplayMessageDialog() {
         DialogFragment dialog = DisplayMessageDialogFragment.newInstance("TFP message",
                 mModel.getTfpMessageType(), mModel.getTfpMessageString());
         dialog.setTargetFragment(this, REQUEST_TFP_MESSAGE);
@@ -163,6 +166,7 @@ public class MainFragment extends Fragment
         }
     }
 
+    @Override
     public void showEncryptSettingDialog() {
         DialogFragment dialog = EncryptionSettingDialogFragment.newInstance(null);
         dialog.setTargetFragment(this, REQUEST_ENCRYPTION);
@@ -174,6 +178,7 @@ public class MainFragment extends Fragment
         mPresenter.setEncryptionMode(mode);
     }
 
+    @Override
     public void showPinEntryDParamDialog() {
         DialogFragment dialog = PinEntryDParamDialogFragment.newInstance(null);
         dialog.setTargetFragment(this, REQUEST_PIN_D_PARAM);
@@ -185,12 +190,14 @@ public class MainFragment extends Fragment
         mPresenter.pinEntryD(param);
     }
 
+    @Override
     public void showSetLedColorDialog() {
         DialogFragment dialog = LedColorDialogFragment.newInstance(true);
         dialog.setTargetFragment(this, REQUEST_SET_LED_COLOR);
         dialog.show(getFragmentManager(), DIALOG_TAG_SET_LED_COLOR);
     }
 
+    @Override
     public void showFelicaLedColorDialog() {
         DialogFragment dialog = LedColorDialogFragment.newInstance(false);
         dialog.setTargetFragment(this, REQUEST_FELICA_LED_COLOR);
@@ -206,6 +213,7 @@ public class MainFragment extends Fragment
         }
     }
 
+    @Override
     public void showDateTimeDialog() {
         DialogFragment dialog = DateTimeDialogFragment.newInstance();
         dialog.setTargetFragment(this, REQUEST_DATETIME);
@@ -217,6 +225,7 @@ public class MainFragment extends Fragment
         mPresenter.setDateTime(cal);
     }
 
+    @Override
     public void showCreditSettingDialog() {
         DialogFragment dialog = CreditPaymentSettingDialogFragment.newInstance();
         dialog.setTargetFragment(this, REQUEST_CREDIT_SETTING);
@@ -228,6 +237,7 @@ public class MainFragment extends Fragment
         mPresenter.scanCreditCard(cardTypeSet, amount, tagType, aidSetting, transactionType, fallback, timeout);
     }
 
+    @Override
     public void showEmoneyBlinkDialog() {
         DialogFragment dialog = EmoneyBlinkDialogFragment.newInstance();
         dialog.setTargetFragment(this, REQUEST_EMONEY_BLINK);
@@ -239,6 +249,7 @@ public class MainFragment extends Fragment
         mPresenter.emoneyBlink(isBlink, color, duration);
     }
 
+    @Override
     public void usbDeviceList() {
         Context context = getContext();
         if (context != null) {
@@ -253,6 +264,7 @@ public class MainFragment extends Fragment
         }
     }
 
+    @Override
     public boolean checkUsbPermission(UsbDevice device) {
         if (mListener != null) {
             return mListener.checkUsbPermission(device);

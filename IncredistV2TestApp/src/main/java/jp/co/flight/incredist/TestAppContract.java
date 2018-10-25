@@ -4,6 +4,7 @@ import android.databinding.Bindable;
 import android.databinding.Observable;
 import android.hardware.usb.UsbDevice;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.List;
@@ -121,6 +122,32 @@ public interface TestAppContract {
 
     }
 
+    interface View {
+        void showDeviceListDialog(ArrayList<String> devices);
+
+        void showEmvDisplayMessageDialog();
+
+        void showTfpDisplayMessageDialog();
+
+        void showEncryptSettingDialog();
+
+        void showPinEntryDParamDialog();
+
+        void showSetLedColorDialog();
+
+        void showFelicaLedColorDialog();
+
+        void showDateTimeDialog();
+
+        void showCreditSettingDialog();
+
+        void showEmoneyBlinkDialog();
+
+        void usbDeviceList();
+
+        boolean checkUsbPermission(UsbDevice device);
+    }
+
     /**
      * Incredist テストプログラム用モデル.
      */
@@ -135,7 +162,7 @@ public interface TestAppContract {
         void connect(IncredistManager.IncredistConnectionListener listener);
 
         void connect(UsbDevice device, IncredistManager.IncredistConnectionListener connectionListener);
-    
+
         void disconnect();
 
         void getDeviceInfo(OnSuccessFunction<DeviceInfo> success, OnFailureFunction failure);

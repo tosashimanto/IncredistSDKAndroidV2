@@ -30,7 +30,7 @@ import jp.co.flight.incredist.model.PinEntryDParam;
  * MainActivity 用 Presenter 実体クラス.
  */
 public class MainPresenter implements TestAppContract.Presenter {
-    private final MainFragment mFragment;
+    private final TestAppContract.View mView;
     private final FragmentMainBinding mBinding;
     private final TestAppContract.Model mModel;
     private final Handler mMainThreadHandler;
@@ -52,8 +52,8 @@ public class MainPresenter implements TestAppContract.Presenter {
         }
     };
 
-    MainPresenter(MainFragment fragment, FragmentMainBinding binding, TestAppContract.Model model) {
-        mFragment = fragment;
+    MainPresenter(TestAppContract.View view, FragmentMainBinding binding, TestAppContract.Model model) {
+        mView = view;
         mBinding = binding;
         mModel = model;
 
@@ -65,7 +65,7 @@ public class MainPresenter implements TestAppContract.Presenter {
 
     @Override
     public void onUsbDeviceList() {
-        mFragment.usbDeviceList();
+        mView.usbDeviceList();
     }
 
     @Override
@@ -93,7 +93,7 @@ public class MainPresenter implements TestAppContract.Presenter {
             deviceNames.add(peripheral.getDeviceName());
         }
         if (peripherals.size() > 0) {
-            mFragment.showDeviceListDialog(deviceNames);
+            mView.showDeviceListDialog(deviceNames);
         } else {
             addLog("not scanned result.");
         }
@@ -129,7 +129,7 @@ public class MainPresenter implements TestAppContract.Presenter {
         if (device == null) {
             addLog("UsbDevice is null");
         } else {
-            if (mFragment.checkUsbPermission(device)) {
+            if (mView.checkUsbPermission(device)) {
                 mModel.connect(device, mConnectionListener);
             } else {
                 addLog("UsbPermission failed");
@@ -226,7 +226,7 @@ public class MainPresenter implements TestAppContract.Presenter {
     @Override
     public void onFelicaLedColor() {
         addLog("felica LED setting");
-        mFragment.showFelicaLedColorDialog();
+        mView.showFelicaLedColorDialog();
     }
 
     @Override
@@ -273,19 +273,19 @@ public class MainPresenter implements TestAppContract.Presenter {
     @Override
     public void onEmvMessage() {
         addLog("emvMessage setting");
-        mFragment.showEmvDisplayMessageDialog();
+        mView.showEmvDisplayMessageDialog();
     }
 
     @Override
     public void onTfpMessage() {
         addLog("tfpMessage setting");
-        mFragment.showTfpDisplayMessageDialog();
+        mView.showTfpDisplayMessageDialog();
     }
 
     @Override
     public void onSetLed() {
         addLog("led");
-        mFragment.showSetLedColorDialog();
+        mView.showSetLedColorDialog();
     }
 
     @Override
@@ -321,13 +321,13 @@ public class MainPresenter implements TestAppContract.Presenter {
     @Override
     public void onSdm() {
         addLog("sdm setting");
-        mFragment.showEncryptSettingDialog();
+        mView.showEncryptSettingDialog();
     }
 
     @Override
     public void onCredit() {
         addLog("credit setting");
-        mFragment.showCreditSettingDialog();
+        mView.showCreditSettingDialog();
     }
 
     @Override
@@ -378,7 +378,7 @@ public class MainPresenter implements TestAppContract.Presenter {
     @Override
     public void onPinD() {
         addLog("pind setting");
-        mFragment.showPinEntryDParamDialog();
+        mView.showPinEntryDParamDialog();
     }
 
     @Override
@@ -405,7 +405,7 @@ public class MainPresenter implements TestAppContract.Presenter {
 
     @Override
     public void onRtcSetTime() {
-        mFragment.showDateTimeDialog();
+        mView.showDateTimeDialog();
     }
 
     @Override
@@ -430,7 +430,7 @@ public class MainPresenter implements TestAppContract.Presenter {
 
     @Override
     public void onEmoneyBlink() {
-        mFragment.showEmoneyBlinkDialog();
+        mView.showEmoneyBlinkDialog();
     }
 
     @Override
