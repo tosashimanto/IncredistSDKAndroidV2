@@ -8,11 +8,11 @@
 
         <variable
             name="presenter"
-            type="jp.co.flight.incredist.MainPresenter" />
+            type="jp.co.flight.incredist.TestAppContract.Presenter" />
 
         <variable
             name="incredist"
-            type="jp.co.flight.incredist.model.IncredistModel" />
+            type="jp.co.flight.incredist.TestAppContract.Model" />
     </data>
 
     <android.support.constraint.ConstraintLayout

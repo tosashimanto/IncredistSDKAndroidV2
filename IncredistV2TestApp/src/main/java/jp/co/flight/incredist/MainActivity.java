@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
 
     private PendingIntent mPermissionIntent;
 
-    private IncredistModel.Impl mModel;
+    private IncredistModel mModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
         IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
         registerReceiver(mUsbReceiver, filter);
 
-        mModel = new IncredistModel.Impl(this);
+        mModel = new IncredistModel(this);
 
         MainFragment fragment = MainFragment.newInstance();
         FragmentManager fm = getSupportFragmentManager();
@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
     }
 
     @Override
-    public IncredistModel getModel() {
+    public TestAppContract.Model getModel() {
         return mModel;
     }
 
