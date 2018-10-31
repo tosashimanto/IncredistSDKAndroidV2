@@ -1,5 +1,7 @@
 package jp.co.flight.incredist.android.internal.util;
 
+import android.support.annotation.Nullable;
+
 /**
  * ログ用のユーティリティクラス
  */
@@ -18,11 +20,15 @@ public final class LogUtil {
      * @param bytes ダンプするデータ
      * @return 16進文字列
      */
-    public static String hexString(byte[] bytes) {
-        return hexString(bytes, 0, bytes.length);
+    public static String hexString(@Nullable byte[] bytes) {
+        if (bytes != null) {
+            return hexString(bytes, 0, bytes.length);
+        } else {
+            return "(no data)";
+        }
     }
-
-    public static String hexString(byte[] bytes, int offset, int length) {
+    
+    public static String hexString(@Nullable byte[] bytes, int offset, int length) {
         if (bytes != null) {
             StringBuilder sb = new StringBuilder();
 
