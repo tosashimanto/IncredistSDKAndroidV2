@@ -4,7 +4,8 @@ public enum EmvSetupDataType {
     TerminalConfiguration('T'),
     Aid('A'),
     CapkForContactIc('C'),
-    CapkForContactlessIc('L');
+    CapkForContactlessIc('L'),
+    FlexibleConfiguration('O');
 
     byte mData;
 
