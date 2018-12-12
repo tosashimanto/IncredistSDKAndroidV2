@@ -30,7 +30,9 @@ import jp.co.flight.incredist.android.internal.util.LogUtil;
 public class UsbMFiTransport implements MFiTransport {
     private static final String TAG = "UsbMFiTransport";
     private static final int MAX_PACKET_LENGTH = 64;
-    private static final long USB_TIMEOUT = 300;
+    private static final long USB_TIMEOUT = 5000;
+    private static final long SLEEP_INTERVAL = 100;
+
     private final ExecutorService mExecutor;
 
     @Nullable
@@ -126,12 +128,34 @@ public class UsbMFiTransport implements MFiTransport {
                     continueReceive = false;
 
                     do {
+                        long timeout = firstCommand.getResponseTimeout();
+                        if (timeout <= 0) {
+                            timeout = USB_TIMEOUT;
+                        }
+
+                        mReceiveBuffer.clear();
+                        for (int n = 0; n < MAX_PACKET_LENGTH; n++) {
+                            mReceiveBuffer.put((byte) 0x00);
+                        }
                         mReceiveBuffer.clear();
                         queueRequest(mReceiveRequest, mReceiveBuffer);
+
                         UsbRequest request;
                         try {
-                            request = requestWait(USB_TIMEOUT);
+                            FLog.d(TAG, "sendCommand " + firstCommand.getClass().getSimpleName());
+                            FLog.d(TAG, "requestWait(" + timeout + ")");
+                            while ((request = requestWait(timeout)) != mReceiveRequest) {
+                                if (request == null) {
+                                    break;
+                                }
+                                try {
+                                    Thread.sleep(SLEEP_INTERVAL);
+                                } catch (InterruptedException e) {
+                                    FLog.d(TAG, "InterruptedException:" + e.getMessage());
+                                }
+                            }
                         } catch (TimeoutException ex) {
+                            FLog.d(TAG, "TimeoutException");
                             mReceiveRequest.cancel();
                             return new IncredistResult(IncredistResult.STATUS_TIMEOUT);
                         }
@@ -227,24 +251,39 @@ public class UsbMFiTransport implements MFiTransport {
             FLog.d(TAG, String.format(Locale.US, "sendRequests packet count:%d", count));
             for (int i = 0; i < count; i++) {
                 byte[] data = command.getValueData(i, MAX_PACKET_LENGTH);
+                FLog.d(TAG, "sendRequest command[" + i + "] sendBuffer data=" + LogUtil.hexString(data));
+
+                //バッファの0x00クリア。
+                //clearメソッドはポインタ位置を０に戻すだけでバッファ内部はクリアしないことに注意
+                mSendBuffer.clear();
+                for (int n = 0; n < MAX_PACKET_LENGTH; n++) {
+                    mSendBuffer.put((byte) 0x00);
+                }
+                //バッファの0x00クリアによりポインタ位置がMAX_PACKET_LENGTHに移動したので改めてポインタ位置を０に戻す。
                 mSendBuffer.clear();
                 mSendBuffer.put(data);
                 queueRequest(mSendRequest, mSendBuffer);
 
                 UsbRequest request;
                 try {
-                    request = requestWait(USB_TIMEOUT);
+                    while ((request = requestWait(USB_TIMEOUT)) != mSendRequest) {
+                        if (request == null) {
+                            return false;
+                        }
+                        try {
+                            FLog.d(TAG, "sendRequests request is not sendRequest");
+                            Thread.sleep(SLEEP_INTERVAL);
+                        } catch (InterruptedException e) {
+                            FLog.d(TAG, "InterruptedException:" + e.getMessage());
+                        }
+                    }
                 } catch (TimeoutException ex) {
+                    FLog.d(TAG, "TimeoutException");
                     mSendRequest.cancel();
-                    return false;
-                }
-                if (request != mSendRequest) {
-                    FLog.d(TAG, "sendRequests request is not sendRequest");
                     return false;
                 }
             }
         }
-
         // 正常に送信完了した場合
         FLog.d(TAG, "sendRequests completed");
         return true;
