@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import jp.co.flight.android.bluetooth.le.BluetoothCentral;
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
@@ -44,7 +43,7 @@ public class IncredistManager {
 
     private IncredistConnectionListener mListener = null;
 
-    private WeakHashMap<IncredistDevice, Incredist> mConnectedDevices = new WeakHashMap<>();
+    private Map<IncredistDevice, Incredist> mConnectedDevices = new HashMap<>();
 
     // USB デバイス切断時のレシーバ
     private BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
