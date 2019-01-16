@@ -21,6 +21,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import jp.co.flight.incredist.android.internal.util.FLog;
+import jp.co.flight.incredist.android.internal.util.LogUtil;
 
 /**
  * Bluetooth デバイスとの接続クラス.
@@ -49,6 +50,12 @@ public class BluetoothGattConnection {
     private int mMtu = DEFAULT_MTU_LENGTH;
 
     private long mTimeout = 1000;  // SUPPRESS CHECKSTYLE MagicNumber
+
+    private boolean mIsSending = false;
+
+    public void setSending(boolean isSending) {
+        mIsSending = isSending;
+    }
 
     /**
      * 接続状態が変化した時のリスナ.
@@ -203,11 +210,18 @@ public class BluetoothGattConnection {
             }
         }
 
+        /**
+         * incredistからnotificationを受け取る。
+         *
+         * @param gatt
+         * @param characteristic
+         */
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
 
-            FLog.d(TAG, String.format(Locale.JAPANESE, "onCharacteristicChanged: %s length:%d", characteristic.getUuid().toString(), characteristic.getValue().length));
+            // TODO:パケット送信の途中、パケット送信終了後に連続でnotificationを受け取ることがあるため、それを制御する仕組みが必要。
+            FLog.d(TAG, String.format(Locale.JAPANESE, "onCharacteristicChanged: %s length:%d data: %s", characteristic.getUuid().toString(), characteristic.getValue().length, LogUtil.hexString(characteristic.getValue())));
             synchronized (this) {
                 if (mNotifyFunction != null) {
                     CharacteristicValue characteristicValue = new CharacteristicValue(characteristic.getUuid(), characteristic.getValue());

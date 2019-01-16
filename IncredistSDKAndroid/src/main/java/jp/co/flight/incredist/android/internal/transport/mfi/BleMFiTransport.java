@@ -49,6 +49,8 @@ public class BleMFiTransport implements MFiTransport {
      */
     private CountDownLatch mCancelling = null;
 
+    private boolean mIsSending = false;
+
     class ErrorLatch extends CountDownLatch {
         int mErrorCode;
 
@@ -119,10 +121,14 @@ public class BleMFiTransport implements MFiTransport {
                 return new IncredistResult(IncredistResult.STATUS_CANCELED);
             }
 
+            mIsSending = true;
             do {
                 MFiCommand command = iterator.next();
+
+                // パケット数取得
                 int count = command.getPacketCount();
                 FLog.d(TAG, String.format(Locale.JAPANESE, "send %d packet(s)", count));
+                // パケット数分incredistに送信
                 for (int i = 0; i < count; i++) {
                     BluetoothGattConnection connection = mConnection;
                     BluetoothGattCharacteristic writeCharacteristic = mWriteCharacteristic;
@@ -131,7 +137,10 @@ public class BleMFiTransport implements MFiTransport {
                         return new IncredistResult(IncredistResult.STATUS_RELEASED);
                     }
                     ErrorLatch latch = new ErrorLatch();
+
+                    // パケット送信。
                     connection.writeCharacteristic(writeCharacteristic, command.getValueData(i), success -> {
+                        // パケット送信時のコールバック。これは同期で返却されていることを確認。
                         latch.mErrorCode = IncredistResult.STATUS_SUCCESS;
                         latch.countDown();
                     }, (errorCode, failure) -> {
@@ -155,6 +164,7 @@ public class BleMFiTransport implements MFiTransport {
                     }
                 }
             } while (iterator.hasNext());
+            mIsSending = false;
         }
 
         if (firstCommand.getResponseTimeout() == 0) {
@@ -269,9 +279,14 @@ public class BleMFiTransport implements MFiTransport {
         }, (errorCode, failure) -> {
         }, (notify) -> {
             synchronized (mResponse) {
+
+                // onCharactaristicChangedが発生した時の処理
                 // BLE notify 受信時処理 : mResponse に append する
                 FLog.d(TAG, String.format(Locale.JAPANESE, "receive notify %d %s", notify.getValue().length, LogUtil.hexString(notify.getValue())));
                 mResponse.appendData(notify.getValue());
+
+                // 受信データがこれ以上存在しないと判断した場合、受信完了を通知
+                // TODO:ここの判定を見直す必要があるのではないのか？
                 if (!mResponse.needMoreData()) {
                     byte[] data = mResponse.getData();
                     if (data != null) {

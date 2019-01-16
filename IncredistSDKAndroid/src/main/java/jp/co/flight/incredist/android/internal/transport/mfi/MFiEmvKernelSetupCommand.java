@@ -108,9 +108,14 @@ public final class MFiEmvKernelSetupCommand extends MFiCommand {
         super(create2ndPayload(indexPacket, setupData));
     }
 
+    /**
+     * タイムアウト時間定義
+     * TODO:暫定的に時間を10倍に
+     * @return
+     */
     @Override
     public long getResponseTimeout() {
-        return 3000; // SUPPRESS CHECKSTYLE MagicNumber
+        return 3000 * 10; // SUPPRESS CHECKSTYLE MagicNumber
     }
 
     @NonNull
