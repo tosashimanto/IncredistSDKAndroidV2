@@ -15,6 +15,15 @@ public interface MFiTransport {
     IncredistResult sendCommand(MFiCommand... commandList);
 
     /**
+     * コマンドを送信し、レスポンスを受信して返却します.
+     *
+     * @param commandList 送信コマンド
+     * @return レスポンスの MFiパケット
+     */
+    @WorkerThread
+    IncredistResult sendEmvKernelSetupCommand(MFiCommand... commandList);
+
+    /**
      * 受信待ち処理をキャンセル
      *
      * キャンセルできるかどうかは MFiCommand によって異なる

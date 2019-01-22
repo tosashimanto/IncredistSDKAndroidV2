@@ -139,6 +139,45 @@ public class IncredistBleMFiController implements IncredistProtocolController {
     }
 
     /**
+     * 複数のMFiコマンドを送信(EmvKernelSetup専用)
+     *
+     * @param commandList 送信コマンドリスト
+     * @param callback    コールバック
+     */
+    private void postMFiEmvKernelSetupCommandList(@NonNull final List<? extends MFiCommand> commandList, final IncredistController.Callback callback) {
+        IncredistController controller3 = mController;
+        if (controller3 != null) {
+            controller3.postCommand(() -> {
+                IncredistController controller2 = mController;
+                MFiTransport transport = mMFiTransport;
+                if (controller2 != null && transport != null) {
+                    if (commandList.size() == 0) {
+                        controller2.postCallback(() -> {
+                            callback.onResult(new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND));
+                        });
+                        return;
+                    }
+
+                    MFiCommand command = commandList.get(0);
+                    final IncredistResult result = transport.sendEmvKernelSetupCommand(commandList.toArray(new MFiCommand[0]));
+
+                    if (result.status == IncredistResult.STATUS_CANCELED && command.cancelable()) {
+                        command.onCancelled(transport);
+                    }
+
+                    // sendCommand 処理中に release が呼ばれている場合があるので　controller を再チェックする
+                    IncredistController controller = mController;
+                    if (controller != null) {
+                        controller.postCallback(() -> {
+                            callback.onResult(result);
+                        });
+                    }
+                }
+            }, callback);
+        }
+    }
+
+    /**
      * コマンド処理中かどうかを返します
      *
      * @return 処理中の場合 true
@@ -366,7 +405,7 @@ public class IncredistBleMFiController implements IncredistProtocolController {
      */
     @Override
     public void emvKernelSetup(EmvSetupDataType type, byte[] setupData, IncredistController.Callback callback) {
-        postMFiCommandList(MFiEmvKernelSetupCommand.createCommandList(type, setupData), callback);
+        postMFiEmvKernelSetupCommandList(MFiEmvKernelSetupCommand.createCommandList(type, setupData), callback);
     }
 
     /**

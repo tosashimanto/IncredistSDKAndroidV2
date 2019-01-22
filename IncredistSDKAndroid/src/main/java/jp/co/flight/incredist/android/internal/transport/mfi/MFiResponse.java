@@ -8,7 +8,6 @@ import java.util.Locale;
 
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.util.FLog;
-import jp.co.flight.incredist.android.internal.util.LogUtil;
 
 /**
  * Incredist から返却された MFi パケット.
@@ -42,7 +41,6 @@ public class MFiResponse extends MFiPacket {
      * @param datalength データ長
      */
     synchronized void appendData(byte[] data, int offset, int datalength) {
-//        FLog.d(TAG, String.format(Locale.JAPANESE, "append before %s length %d", LogUtil.hexString(mMFiData), responseLength(data)));
         if (mMFiData == null) {
             // 最初のパケット
             int length = responseLength(data);
@@ -74,7 +72,6 @@ public class MFiResponse extends MFiPacket {
             mAppendPos += copyLength;
             mErrorCode = -1;
         }
-//        FLog.d(TAG, String.format(Locale.JAPANESE, "append after %s", LogUtil.hexString(mMFiData)));
     }
 
     /**

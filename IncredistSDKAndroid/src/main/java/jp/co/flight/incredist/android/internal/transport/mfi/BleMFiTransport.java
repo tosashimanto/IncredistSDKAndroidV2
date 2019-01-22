@@ -49,8 +49,6 @@ public class BleMFiTransport implements MFiTransport {
      */
     private CountDownLatch mCancelling = null;
 
-    private boolean mIsSending = false;
-
     class ErrorLatch extends CountDownLatch {
         int mErrorCode;
 
@@ -121,14 +119,10 @@ public class BleMFiTransport implements MFiTransport {
                 return new IncredistResult(IncredistResult.STATUS_CANCELED);
             }
 
-            mIsSending = true;
             do {
                 MFiCommand command = iterator.next();
-
-                // パケット数取得
                 int count = command.getPacketCount();
                 FLog.d(TAG, String.format(Locale.JAPANESE, "send %d packet(s)", count));
-                // パケット数分incredistに送信
                 for (int i = 0; i < count; i++) {
                     BluetoothGattConnection connection = mConnection;
                     BluetoothGattCharacteristic writeCharacteristic = mWriteCharacteristic;
@@ -137,10 +131,7 @@ public class BleMFiTransport implements MFiTransport {
                         return new IncredistResult(IncredistResult.STATUS_RELEASED);
                     }
                     ErrorLatch latch = new ErrorLatch();
-
-                    // パケット送信。
                     connection.writeCharacteristic(writeCharacteristic, command.getValueData(i), success -> {
-                        // パケット送信時のコールバック。これは同期で返却されていることを確認。
                         latch.mErrorCode = IncredistResult.STATUS_SUCCESS;
                         latch.countDown();
                     }, (errorCode, failure) -> {
@@ -164,7 +155,6 @@ public class BleMFiTransport implements MFiTransport {
                     }
                 }
             } while (iterator.hasNext());
-            mIsSending = false;
         }
 
         if (firstCommand.getResponseTimeout() == 0) {
@@ -245,6 +235,137 @@ public class BleMFiTransport implements MFiTransport {
         }
     }
 
+    @Override
+    public IncredistResult sendEmvKernelSetupCommand(MFiCommand... commandList) {
+        // MFiEmvKernelSetupCommand専用のメソッド
+
+
+        findCharacteristics();
+
+        if (commandList == null || commandList.length == 0) {
+            return new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND);
+        }
+
+        Iterator<MFiCommand> iterator = Arrays.asList(commandList).iterator();
+
+        // レスポンスの解析などは最初の引数のオブジェクトで実行する
+        MFiCommand firstCommand = commandList[0];
+
+        // 送信コマンドの途中で割り込まれないように　synchronize で同期化
+        synchronized (this) {
+            mCommand = firstCommand;
+
+            FLog.d(TAG, String.format("sendCommand start %s", firstCommand.getClass().getSimpleName()));
+
+            // 受信用パケットを初期化
+            if (firstCommand.getResponseTimeout() > 0) {
+                mResponse.clear();
+            }
+
+            if (mCancelling != null) {
+                mCancelling.countDown();
+
+                FLog.d(TAG, String.format(Locale.US, "sendCommand cancelled(%d) %s", IncredistResult.STATUS_CANCELED, firstCommand.getClass().getSimpleName()));
+
+                return new IncredistResult(IncredistResult.STATUS_CANCELED);
+            }
+
+            FLog.d(TAG, String.format(Locale.JAPANESE, "send %d iterator(s)", commandList.length));
+            while (iterator.hasNext()) {
+                MFiCommand command = iterator.next();
+                BluetoothGattConnection connection = mConnection;
+                if (connection == null) {
+                    FLog.d(TAG, String.format(Locale.US, "sendCommand released(%d) %s", IncredistResult.STATUS_RELEASED, firstCommand.getClass().getSimpleName()));
+                    return new IncredistResult(IncredistResult.STATUS_RELEASED);
+                }
+
+                // パケット数取得
+                int count = command.getPacketCount();
+                FLog.d(TAG, String.format(Locale.JAPANESE, "send %d packet(s)", count));
+                // パケット数分incredistに送信
+                for (int i = 0; i < count; i++) {
+                    ErrorLatch latch = new ErrorLatch();
+                    latch.mErrorCode = IncredistResult.STATUS_SUCCESS;
+                    BluetoothGattCharacteristic writeCharacteristic = mWriteCharacteristic;
+                    if (writeCharacteristic == null) {
+                        FLog.d(TAG, String.format(Locale.US, "sendCommand released(%d) %s", IncredistResult.STATUS_RELEASED, firstCommand.getClass().getSimpleName()));
+                        return new IncredistResult(IncredistResult.STATUS_RELEASED);
+                    }
+                    // パケット送信。
+                    connection.writeCharacteristic(writeCharacteristic, command.getValueData(i), success -> {
+                        // パケット送信時のコールバック。
+                        FLog.w(TAG, "send packet success");
+                        latch.mErrorCode = IncredistResult.STATUS_SUCCESS;
+                        latch.countDown();
+                    }, (errorCode, failure) -> {
+                        FLog.w(TAG, String.format(Locale.JAPANESE, "sendCommand error %d %s", latch.mErrorCode, command.getClass().getSimpleName()));
+                        latch.mErrorCode = errorCode;
+                        latch.countDown();
+                    });
+
+                    if (latch.mErrorCode != IncredistResult.STATUS_SUCCESS) {
+                        FLog.w(TAG, String.format(Locale.JAPANESE, "sendCommand error %d count:%d %s", latch.mErrorCode, i, command.getClass().getSimpleName()));
+                        return new IncredistResult(latch.mErrorCode);
+                    }
+
+                    try {
+                        if (!latch.await(MFI_TRANSPORT_TIMEOUT, TimeUnit.MILLISECONDS)) {
+                            FLog.w(TAG, String.format(Locale.JAPANESE, "sendCommand packet timeout. %d count:%d", latch.mErrorCode, i));
+                            latch.mErrorCode = IncredistResult.STATUS_SEND_TIMEOUT;
+                        }
+                    } catch (InterruptedException e) {
+                        FLog.w(TAG, "send interrupted");
+                        latch.mErrorCode = IncredistResult.STATUS_INTERRUPTED;
+                    }
+
+                    if (latch.mErrorCode != IncredistResult.STATUS_SUCCESS) {
+                        FLog.w(TAG, String.format(Locale.JAPANESE, "sendCommand error %d %s", latch.mErrorCode, command.getClass().getSimpleName()));
+                        return new IncredistResult(latch.mErrorCode);
+                    }
+                }
+
+                ErrorLatch notifyLatch = new ErrorLatch();
+                notifyLatch.mErrorCode = IncredistResult.STATUS_SUCCESS;
+
+                connection.setNotifyFunction((notify)->{
+
+                    // onCharactaristicChangedが発生した時の処理
+                    // BLE notify 受信時処理 : mResponse に append する
+                    FLog.d(TAG, String.format(Locale.JAPANESE, "receive notify %d %s", notify.getValue().length, LogUtil.hexString(notify.getValue())));
+                    mResponse.appendData(notify.getValue());
+                    notifyLatch.countDown();
+                });
+
+                try {
+                    if (!notifyLatch.await(5000, TimeUnit.MILLISECONDS)) {
+                        FLog.d(TAG, String.format(Locale.JAPANESE, "receive response timeout. iterator:%s", iterator.hasNext()));
+                        notifyLatch.mErrorCode = IncredistResult.STATUS_SEND_TIMEOUT;
+                    }
+                } catch (InterruptedException e) {
+                    FLog.w(TAG, "send interrupted");
+                    notifyLatch.mErrorCode = IncredistResult.STATUS_INTERRUPTED;
+                }
+
+                if (notifyLatch.mErrorCode == IncredistResult.STATUS_SUCCESS) {
+
+                    byte[] data = mResponse.getData();
+                    IncredistResult result = firstCommand.parseResponse(mResponse);
+
+                    FLog.d(TAG, String.format(Locale.JAPANESE, "receive success. data:%s iterator:%s", LogUtil.hexString(data), iterator.hasNext()));
+                    // 最終データの場合、responseをアプリに返却
+                    if (!iterator.hasNext()) {
+                        return result;
+                    } else {
+                        mResponse.clear();
+                    }
+                } else {
+                    return new IncredistResult(notifyLatch.mErrorCode);
+                }
+            }
+        }
+        return new IncredistResult(IncredistResult.STATUS_SUCCESS);
+    }
+
     /**
      * 送受信用の characteristic を取得.
      * 取得済みの場合はすぐに return する
@@ -286,7 +407,6 @@ public class BleMFiTransport implements MFiTransport {
                 mResponse.appendData(notify.getValue());
 
                 // 受信データがこれ以上存在しないと判断した場合、受信完了を通知
-                // TODO:ここの判定を見直す必要があるのではないのか？
                 if (!mResponse.needMoreData()) {
                     byte[] data = mResponse.getData();
                     if (data != null) {
