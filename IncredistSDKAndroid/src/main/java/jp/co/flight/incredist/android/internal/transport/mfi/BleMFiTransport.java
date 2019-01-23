@@ -92,6 +92,11 @@ public class BleMFiTransport implements MFiTransport {
             return new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND);
         }
 
+        // EMVカーネル設定の場合は別処理で対応する
+        if (commandList[0] instanceof MFiEmvKernelSetupCommand) {
+            return sendEmvKernelSetupCommand(commandList);
+        }
+
         Iterator<MFiCommand> iterator = Arrays.asList(commandList).iterator();
 
         // レスポンスの解析などは最初の引数のオブジェクトで実行する
@@ -235,16 +240,14 @@ public class BleMFiTransport implements MFiTransport {
         }
     }
 
-    @Override
-    public IncredistResult sendEmvKernelSetupCommand(MFiCommand... commandList) {
-        // MFiEmvKernelSetupCommand専用のメソッド
-
-
-        findCharacteristics();
-
-        if (commandList == null || commandList.length == 0) {
-            return new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND);
-        }
+    /**
+     * コマンドを送信し、レスポンスを受信して返却します.
+     * MFiEmvKernelSetupCommand専用のメソッド
+     *
+     * @param commandList 送信コマンド
+     * @return レスポンスの MFiパケット
+     */
+    private IncredistResult sendEmvKernelSetupCommand(MFiCommand... commandList) {
 
         Iterator<MFiCommand> iterator = Arrays.asList(commandList).iterator();
 

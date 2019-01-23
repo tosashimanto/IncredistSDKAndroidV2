@@ -210,11 +210,6 @@ public class UsbMFiTransport implements MFiTransport {
         return new IncredistResult(IncredistResult.STATUS_FAILURE);
     }
 
-    @Override
-    public IncredistResult sendEmvKernelSetupCommand(MFiCommand... commandList) {
-        return null;
-    }
-
     private void queueRequest(UsbRequest request, ByteBuffer buffer) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             FLog.d(TAG, String.format(Locale.US, "queue endpoint:%d with length", request.getEndpoint().getEndpointNumber()));
