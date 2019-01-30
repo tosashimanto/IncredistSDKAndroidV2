@@ -373,6 +373,15 @@ public class BluetoothGattConnection {
     }
 
     /**
+     * incredistからの通知コールバックを定義します。
+     *
+     * @param notifyFunction　コールバック
+     */
+    public void setNotifyFunction(OnSuccessFunction<CharacteristicValue> notifyFunction) {
+        mGattCallback.mNotifyFunction = notifyFunction;
+    }
+
+    /**
      * 指定した Characteristic からの通知受信を設定します.
      *
      * @param characteristic 通知元 Characteristic
