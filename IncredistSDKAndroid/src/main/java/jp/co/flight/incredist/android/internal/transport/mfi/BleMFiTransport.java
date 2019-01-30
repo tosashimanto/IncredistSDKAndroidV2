@@ -92,6 +92,7 @@ public class BleMFiTransport implements MFiTransport {
             return new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND);
         }
 
+        // ANDROID_SDK_DEV-34
         // EMVカーネル設定の場合は別処理で対応する
         if (commandList[0] instanceof MFiEmvKernelSetupCommand) {
             return sendEmvKernelSetupCommand(commandList);
@@ -305,11 +306,6 @@ public class BleMFiTransport implements MFiTransport {
                         latch.mErrorCode = errorCode;
                         latch.countDown();
                     });
-
-                    if (latch.mErrorCode != IncredistResult.STATUS_SUCCESS) {
-                        FLog.w(TAG, String.format(Locale.JAPANESE, "sendCommand error %d count:%d %s", latch.mErrorCode, i, command.getClass().getSimpleName()));
-                        return new IncredistResult(latch.mErrorCode);
-                    }
 
                     try {
                         if (!latch.await(MFI_TRANSPORT_TIMEOUT, TimeUnit.MILLISECONDS)) {
