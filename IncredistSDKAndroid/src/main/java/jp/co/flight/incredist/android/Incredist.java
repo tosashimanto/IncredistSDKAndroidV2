@@ -23,7 +23,6 @@ import jp.co.flight.incredist.android.internal.controller.result.IncredistResult
 import jp.co.flight.incredist.android.internal.controller.result.MagCardResult;
 import jp.co.flight.incredist.android.internal.controller.result.PinEntryResult;
 import jp.co.flight.incredist.android.internal.controller.result.RtcResult;
-import jp.co.flight.incredist.android.internal.util.FLog;
 import jp.co.flight.incredist.android.model.BootloaderVersion;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.DeviceInfo;
