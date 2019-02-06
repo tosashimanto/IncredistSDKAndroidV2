@@ -36,6 +36,7 @@ import jp.co.flight.incredist.android.internal.transport.mfi.MFiStopCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTfpmxDisplayMessageCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
 import jp.co.flight.incredist.android.internal.transport.mfi.UsbMFiTransport;
+import jp.co.flight.incredist.android.internal.util.FLog;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.EmvSetupDataType;
 import jp.co.flight.incredist.android.model.EmvTagType;
@@ -48,6 +49,7 @@ import jp.co.flight.incredist.android.model.PinEntry;
  * USB - MFi版 Incredist 用 Controller.
  */
 public class IncredistUsbMFiController implements IncredistProtocolController {
+    private static final String TAG = "IncredistUsbMFiController";
 
     @Nullable
     private IncredistController mController;
@@ -434,7 +436,10 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
                 if (controller != null && transport != null) {
                     final IncredistResult result = transport.cancel();
                     controller.postCallback(() -> {
-                        callback.onResult(result);
+                        FLog.d(TAG, "callback != null?:" + (callback != null));
+                        if (callback != null) {
+                            callback.onResult(result);
+                        }
                     });
                 }
             });

@@ -23,6 +23,7 @@ import jp.co.flight.incredist.android.internal.controller.result.IncredistResult
 import jp.co.flight.incredist.android.internal.controller.result.MagCardResult;
 import jp.co.flight.incredist.android.internal.controller.result.PinEntryResult;
 import jp.co.flight.incredist.android.internal.controller.result.RtcResult;
+import jp.co.flight.incredist.android.internal.util.FLog;
 import jp.co.flight.incredist.android.model.BootloaderVersion;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.DeviceInfo;
@@ -91,13 +92,18 @@ public class Incredist {
         if (mController != null) {
             // コマンド実行中の場合があるので cancel を呼び出し、実行結果は無視して、続けて切断を行います
             mController.cancel(resultIgnore -> {
-                mController.disconnect(result -> {
-                    if (result.status == IncredistResult.STATUS_SUCCESS) {
-                        mController.postCallback(() -> {
-                            notifyDisconnect();
-                        });
-                    }
-                });
+                //cancelの後タイミングによってはmController = nullとなる可能性
+                FLog.d(TAG, "mController != null?:" + (mController != null));
+                if (mController != null) {
+
+                    mController.disconnect(result -> {
+                        if (result.status == IncredistResult.STATUS_SUCCESS) {
+                            mController.postCallback(() -> {
+                                notifyDisconnect();
+                            });
+                        }
+                    });
+                }
             });
         }
     }
