@@ -91,6 +91,7 @@ public class Incredist {
         if (mController != null) {
             // コマンド実行中の場合があるので cancel を呼び出し、実行結果は無視して、続けて切断を行います
             mController.cancel(resultIgnore -> {
+
                 mController.disconnect(result -> {
                     if (result.status == IncredistResult.STATUS_SUCCESS) {
                         mController.postCallback(() -> {
