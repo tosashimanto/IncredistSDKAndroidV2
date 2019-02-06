@@ -92,18 +92,14 @@ public class Incredist {
         if (mController != null) {
             // コマンド実行中の場合があるので cancel を呼び出し、実行結果は無視して、続けて切断を行います
             mController.cancel(resultIgnore -> {
-                //cancelの後タイミングによってはmController = nullとなる可能性
-                FLog.d(TAG, "mController != null?:" + (mController != null));
-                if (mController != null) {
 
-                    mController.disconnect(result -> {
-                        if (result.status == IncredistResult.STATUS_SUCCESS) {
-                            mController.postCallback(() -> {
-                                notifyDisconnect();
-                            });
-                        }
-                    });
-                }
+                mController.disconnect(result -> {
+                    if (result.status == IncredistResult.STATUS_SUCCESS) {
+                        mController.postCallback(() -> {
+                            notifyDisconnect();
+                        });
+                    }
+                });
             });
         }
     }
