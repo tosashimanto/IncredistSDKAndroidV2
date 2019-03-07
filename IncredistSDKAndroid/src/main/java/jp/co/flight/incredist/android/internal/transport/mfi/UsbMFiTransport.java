@@ -289,10 +289,10 @@ public class UsbMFiTransport implements MFiTransport {
         return true;
     }
 
-    //TODO キャンセル処理未実装(電子マネーアプリでは必要ないはず)
+    //ANDROID_GMO-533
     @Override
     public IncredistResult cancel() {
-        return null;
+        return new IncredistResult(IncredistResult.STATUS_SUCCESS);
     }
 
     @Override
