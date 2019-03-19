@@ -2,12 +2,14 @@ package jp.co.flight.incredist.android.internal.controller;
 
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbInterface;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.logging.Handler;
 
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.exception.ParameterException;
@@ -86,23 +88,27 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
         IncredistController controller2 = mController;
         if (controller2 != null) {
             controller2.postCommand(() -> {
-                MFiTransport transport = mMFiTransport;
-                if (mController != null && transport != null) {
-                    final IncredistResult result = transport.sendCommand(command);
+                handleCommand(command, callback);
+            }, callback, command instanceof MFiStopCommand);
+        }
+    }
 
-                    if (result.status == IncredistResult.STATUS_CANCELED && command.cancelable()) {
-                        command.onCancelled(transport);
-                    }
+    private void handleCommand(final MFiCommand command, final IncredistController.Callback callback) {
+        MFiTransport transport = mMFiTransport;
+        if (mController != null && transport != null) {
+            final IncredistResult result = transport.sendCommand(command);
 
-                    // sendCommand 処理中に release が呼ばれている場合があるので　controller を再チェックする
-                    IncredistController controller = mController;
-                    if (controller != null) {
-                        controller.postCallback(() -> {
-                            callback.onResult(result);
-                        });
-                    }
-                }
-            }, callback);
+            if (result.status == IncredistResult.STATUS_CANCELED && command.cancelable()) {
+                command.onCancelled(transport);
+            }
+
+            // sendCommand 処理中に release が呼ばれている場合があるので　controller を再チェックする
+            IncredistController controller = mController;
+            if (controller != null) {
+                controller.postCallback(() -> {
+                    callback.onResult(result);
+                });
+            }
         }
     }
 

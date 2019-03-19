@@ -22,6 +22,7 @@ import java.util.concurrent.TimeoutException;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.util.FLog;
 import jp.co.flight.incredist.android.internal.util.LogUtil;
+import jp.co.flight.incredist.android.model.StatusCode;
 
 /**
  * USB - MFi 版 Incredist との MFi パケット通信を行うユーティリティクラス.
@@ -292,7 +293,7 @@ public class UsbMFiTransport implements MFiTransport {
     //ANDROID_GMO-533
     @Override
     public IncredistResult cancel() {
-        return new IncredistResult(IncredistResult.STATUS_SUCCESS);
+        return new IncredistResult(StatusCode.STATUS_SUCCESS);
     }
 
     @Override

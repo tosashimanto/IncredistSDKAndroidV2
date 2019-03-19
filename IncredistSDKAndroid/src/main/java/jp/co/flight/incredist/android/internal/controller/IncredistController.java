@@ -5,7 +5,6 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbInterface;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -54,6 +53,8 @@ public class IncredistController {
     private Handler mCallbackHandler;
     private HandlerThread mCancelHandlerThread;
     private Handler mCancelHandler;
+    private HandlerThread mStopHandlerThread;
+    private Handler mStopHandler;
 
     //TODO mConnection に依存している処理は全部 protoController へ移動する
     @Nullable
@@ -91,7 +92,6 @@ public class IncredistController {
      *
      * @param connection   UsbDeviceConnnection オブジェクト
      * @param usbInterface UsbInterface オブジェクト
-     * @param listener
      */
     public IncredistController(UsbDeviceConnection connection, UsbInterface usbInterface) {
         mDeviceName = "USBIncredist";
@@ -101,7 +101,7 @@ public class IncredistController {
     }
 
     private void createThreads(String deviceName) {
-        final CountDownLatch latch = new CountDownLatch(3);
+        final CountDownLatch latch = new CountDownLatch(4);
         mCommandHandlerThread = new HandlerThread(String.format("%s:%s:command", TAG, deviceName)) {
             @Override
             protected void onLooperPrepared() {
@@ -132,11 +132,66 @@ public class IncredistController {
         };
         mCancelHandlerThread.start();
 
+        mStopHandlerThread = new HandlerThread(String.format("%s:%s:stop", TAG, deviceName)) {
+            @Override
+            protected void onLooperPrepared() {
+                super.onLooperPrepared();
+                mStopHandler = new Handler(this.getLooper());
+                latch.countDown();
+            }
+        };
+        mStopHandlerThread.start();
+
         try {
             latch.await();
         } catch (InterruptedException e) {
             // ignore.
         }
+    }
+
+    private Handler createCallbackHandlerThread(String deviceName) {
+        final CountDownLatch latch = new CountDownLatch(1);
+        mCallbackHandlerThread = new HandlerThread(String.format("%s:%s:callback", TAG, deviceName)) {
+            @Override
+            protected void onLooperPrepared() {
+                super.onLooperPrepared();
+                mCallbackHandler = new Handler(this.getLooper());
+                latch.countDown();
+            }
+        };
+        mCallbackHandlerThread.start();
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            // ignore.
+        }
+
+        return mCallbackHandler;
+    }
+
+    private Handler createCancelHandlerThread(String deviceName) {
+        final CountDownLatch latch = new CountDownLatch(1);
+        mCancelHandlerThread = new HandlerThread(String.format("%s:%s:cancel", TAG, deviceName)) {
+            @Override
+            protected void onLooperPrepared() {
+                super.onLooperPrepared();
+                mCancelHandler = new Handler(this.getLooper());
+                latch.countDown();
+            }
+        };
+        mCancelHandlerThread.start();
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            // ignore.
+        }
+        return mCancelHandler;
+    }
+
+    void postCommand(Runnable r, Callback callback) {
+        postCommand(r, callback, false);
     }
 
     /**
@@ -146,8 +201,11 @@ public class IncredistController {
      *
      * @param r 処理内容の Runnable インスタンス
      */
-    void postCommand(Runnable r, Callback callback) {
-        Handler handler = mCommandHandler;
+    void postCommand(Runnable r, Callback callback, boolean isStopCommand) {
+
+        // stopコマンドの場合にはstopコマンド用のスレッドで実行
+        Handler handler = isStopCommand ? mStopHandler : mCommandHandler;
+
         if (handler != null) {
             if (mProtoController.isBusy()) {
                 // すでに他の処理が実行中の場合
@@ -176,7 +234,7 @@ public class IncredistController {
     public void postCallback(Runnable runnable) {
         Handler handler = mCallbackHandler;
         if (handler == null) {
-            handler = new Handler(Looper.getMainLooper());
+            handler = createCallbackHandlerThread(mDeviceName);
         }
 
         handler.post(runnable);
@@ -190,7 +248,7 @@ public class IncredistController {
     public void postCancel(Runnable runnable) {
         Handler handler = mCancelHandler;
         if (handler == null) {
-            handler = new Handler(Looper.getMainLooper());
+            handler = createCancelHandlerThread(mDeviceName);
         }
 
         handler.post(runnable);
@@ -498,9 +556,19 @@ public class IncredistController {
             }
         }
 
+        handlerThread = mStopHandlerThread;
+        if (handlerThread != null) {
+            if (handlerThread.quitSafely()) {
+                mStopHandlerThread = null;
+            } else {
+                return false;
+            }
+        }
+
         mCommandHandler = null;
         mCancelHandler = null;
         mCancelHandler = null;
+        mStopHandler = null;
 
         mProtoController.release();
         mConnection = null;
