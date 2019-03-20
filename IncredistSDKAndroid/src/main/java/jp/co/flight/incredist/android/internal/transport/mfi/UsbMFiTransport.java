@@ -22,7 +22,6 @@ import java.util.concurrent.TimeoutException;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.util.FLog;
 import jp.co.flight.incredist.android.internal.util.LogUtil;
-import jp.co.flight.incredist.android.model.StatusCode;
 
 /**
  * USB - MFi 版 Incredist との MFi パケット通信を行うユーティリティクラス.
@@ -290,10 +289,10 @@ public class UsbMFiTransport implements MFiTransport {
         return true;
     }
 
-    //ANDROID_GMO-533
+    //TODO キャンセル処理未実装(電子マネーアプリでは必要ないはず)
     @Override
     public IncredistResult cancel() {
-        return new IncredistResult(StatusCode.STATUS_SUCCESS);
+        return null;
     }
 
     @Override

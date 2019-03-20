@@ -2,14 +2,12 @@ package jp.co.flight.incredist.android.internal.controller;
 
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbInterface;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.logging.Handler;
 
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.exception.ParameterException;
@@ -87,9 +85,11 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
     private void postMFiCommand(final MFiCommand command, final IncredistController.Callback callback) {
         IncredistController controller2 = mController;
         if (controller2 != null) {
-            controller2.postCommand(() -> {
-                handleCommand(command, callback);
-            }, callback, command instanceof MFiStopCommand);
+            controller2.postCommand(
+                    () -> handleCommand(command, callback),
+                    callback,
+                    command instanceof MFiStopCommand);  // ANDROID_SDK_DEV-36 stopコマンド対応
+
         }
     }
 

@@ -5,6 +5,7 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbInterface;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -149,47 +150,6 @@ public class IncredistController {
         }
     }
 
-    private Handler createCallbackHandlerThread(String deviceName) {
-        final CountDownLatch latch = new CountDownLatch(1);
-        mCallbackHandlerThread = new HandlerThread(String.format("%s:%s:callback", TAG, deviceName)) {
-            @Override
-            protected void onLooperPrepared() {
-                super.onLooperPrepared();
-                mCallbackHandler = new Handler(this.getLooper());
-                latch.countDown();
-            }
-        };
-        mCallbackHandlerThread.start();
-
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            // ignore.
-        }
-
-        return mCallbackHandler;
-    }
-
-    private Handler createCancelHandlerThread(String deviceName) {
-        final CountDownLatch latch = new CountDownLatch(1);
-        mCancelHandlerThread = new HandlerThread(String.format("%s:%s:cancel", TAG, deviceName)) {
-            @Override
-            protected void onLooperPrepared() {
-                super.onLooperPrepared();
-                mCancelHandler = new Handler(this.getLooper());
-                latch.countDown();
-            }
-        };
-        mCancelHandlerThread.start();
-
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            // ignore.
-        }
-        return mCancelHandler;
-    }
-
     void postCommand(Runnable r, Callback callback) {
         postCommand(r, callback, false);
     }
@@ -200,10 +160,13 @@ public class IncredistController {
      * すでに他の処理が実行中の場合 STATUS_BUSY としてコールバックを呼び出します.
      *
      * @param r 処理内容の Runnable インスタンス
+     * @param callback　コールバック
+     * @param isStopCommand true:stopコマンド実行時
+     *                      false:stopコマンド以外実行時
      */
     void postCommand(Runnable r, Callback callback, boolean isStopCommand) {
 
-        // stopコマンドの場合にはstopコマンド用のスレッドで実行
+        // ANDROID_SDK_DEV-36 stopコマンドの場合にはstopコマンド用のスレッドで実行
         Handler handler = isStopCommand ? mStopHandler : mCommandHandler;
 
         if (handler != null) {
@@ -234,7 +197,7 @@ public class IncredistController {
     public void postCallback(Runnable runnable) {
         Handler handler = mCallbackHandler;
         if (handler == null) {
-            handler = createCallbackHandlerThread(mDeviceName);
+            handler = new Handler(Looper.getMainLooper());
         }
 
         handler.post(runnable);
@@ -248,7 +211,7 @@ public class IncredistController {
     public void postCancel(Runnable runnable) {
         Handler handler = mCancelHandler;
         if (handler == null) {
-            handler = createCancelHandlerThread(mDeviceName);
+            handler = new Handler(Looper.getMainLooper());
         }
 
         handler.post(runnable);
