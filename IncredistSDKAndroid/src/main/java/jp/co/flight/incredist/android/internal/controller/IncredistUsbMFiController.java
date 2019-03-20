@@ -85,24 +85,36 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
     private void postMFiCommand(final MFiCommand command, final IncredistController.Callback callback) {
         IncredistController controller2 = mController;
         if (controller2 != null) {
-            controller2.postCommand(() -> {
-                MFiTransport transport = mMFiTransport;
-                if (mController != null && transport != null) {
-                    final IncredistResult result = transport.sendCommand(command);
+            // ANDROID_SDK_DEV-36 stopコマンドの場合のみ呼び出しを変える
+            if (command instanceof MFiStopCommand) {
+                controller2.postStopCommand(
+                        () -> handleCommand(command, callback),
+                        callback);
+            } else {
+                controller2.postCommand(
+                        () -> handleCommand(command, callback),
+                        callback);
+            }
 
-                    if (result.status == IncredistResult.STATUS_CANCELED && command.cancelable()) {
-                        command.onCancelled(transport);
-                    }
+        }
+    }
 
-                    // sendCommand 処理中に release が呼ばれている場合があるので　controller を再チェックする
-                    IncredistController controller = mController;
-                    if (controller != null) {
-                        controller.postCallback(() -> {
-                            callback.onResult(result);
-                        });
-                    }
-                }
-            }, callback);
+    private void handleCommand(final MFiCommand command, final IncredistController.Callback callback) {
+        MFiTransport transport = mMFiTransport;
+        if (mController != null && transport != null) {
+            final IncredistResult result = transport.sendCommand(command);
+
+            if (result.status == IncredistResult.STATUS_CANCELED && command.cancelable()) {
+                command.onCancelled(transport);
+            }
+
+            // sendCommand 処理中に release が呼ばれている場合があるので　controller を再チェックする
+            IncredistController controller = mController;
+            if (controller != null) {
+                controller.postCallback(() -> {
+                    callback.onResult(result);
+                });
+            }
         }
     }
 

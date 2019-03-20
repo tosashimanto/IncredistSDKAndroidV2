@@ -54,6 +54,8 @@ public class IncredistController {
     private Handler mCallbackHandler;
     private HandlerThread mCancelHandlerThread;
     private Handler mCancelHandler;
+    private HandlerThread mStopHandlerThread;
+    private Handler mStopHandler;
 
     //TODO mConnection に依存している処理は全部 protoController へ移動する
     @Nullable
@@ -91,7 +93,6 @@ public class IncredistController {
      *
      * @param connection   UsbDeviceConnnection オブジェクト
      * @param usbInterface UsbInterface オブジェクト
-     * @param listener
      */
     public IncredistController(UsbDeviceConnection connection, UsbInterface usbInterface) {
         mDeviceName = "USBIncredist";
@@ -101,7 +102,7 @@ public class IncredistController {
     }
 
     private void createThreads(String deviceName) {
-        final CountDownLatch latch = new CountDownLatch(3);
+        final CountDownLatch latch = new CountDownLatch(4);
         mCommandHandlerThread = new HandlerThread(String.format("%s:%s:command", TAG, deviceName)) {
             @Override
             protected void onLooperPrepared() {
@@ -132,6 +133,16 @@ public class IncredistController {
         };
         mCancelHandlerThread.start();
 
+        mStopHandlerThread = new HandlerThread(String.format("%s:%s:stop", TAG, deviceName)) {
+            @Override
+            protected void onLooperPrepared() {
+                super.onLooperPrepared();
+                mStopHandler = new Handler(this.getLooper());
+                latch.countDown();
+            }
+        };
+        mStopHandlerThread.start();
+
         try {
             latch.await();
         } catch (InterruptedException e) {
@@ -145,9 +156,45 @@ public class IncredistController {
      * すでに他の処理が実行中の場合 STATUS_BUSY としてコールバックを呼び出します.
      *
      * @param r 処理内容の Runnable インスタンス
+     * @param callback　コールバック
      */
     void postCommand(Runnable r, Callback callback) {
         Handler handler = mCommandHandler;
+
+        if (handler != null) {
+            if (mProtoController.isBusy()) {
+                // すでに他の処理が実行中の場合
+                postCallback(() -> {
+                    callback.onResult(new IncredistResult(STATUS_BUSY));
+                });
+                return;
+            }
+
+            if (handler.post(r)) {
+                return;
+            }
+        }
+        if (callback != null) {
+            postCallback(() -> {
+                callback.onResult(new IncredistResult(STATUS_FAILED_EXECUTION));
+            });
+        }
+    }
+
+    /**
+     * Command 送受信用の HandlerThread で処理を実行します. (stopコマンド専用)
+     *
+     * @param r 処理内容の Runnable インスタンス
+     * @param callback　コールバック
+     */
+    void postStopCommand(Runnable r, Callback callback) {
+
+        // ANDROID_SDK_DEV-36 stopコマンドの場合にはstopコマンド用のスレッドで実行
+        // カード読み取り待ちの状態でstopコマンドを送信しても実行されないことが確認された。
+        // 正確には、カード読み取りのタイムアウトが返却されたタイミングで実行されるため、
+        // それを回避するためにstop用のスレッドで実行する。
+        Handler handler = mStopHandler;
+
         if (handler != null) {
             if (mProtoController.isBusy()) {
                 // すでに他の処理が実行中の場合
@@ -498,9 +545,19 @@ public class IncredistController {
             }
         }
 
+        handlerThread = mStopHandlerThread;
+        if (handlerThread != null) {
+            if (handlerThread.quitSafely()) {
+                mStopHandlerThread = null;
+            } else {
+                return false;
+            }
+        }
+
         mCommandHandler = null;
         mCancelHandler = null;
         mCancelHandler = null;
+        mStopHandler = null;
 
         mProtoController.release();
         mConnection = null;
