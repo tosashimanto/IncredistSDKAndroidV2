@@ -150,10 +150,6 @@ public class IncredistController {
         }
     }
 
-    void postCommand(Runnable r, Callback callback) {
-        postCommand(r, callback, false);
-    }
-
     /**
      * Command 送受信用の HandlerThread で処理を実行します. 実行できなかった場合、
      * 実行失敗(STATUS_FAILED_EXECUTION) としてコールバックを呼び出します.
@@ -161,16 +157,43 @@ public class IncredistController {
      *
      * @param r 処理内容の Runnable インスタンス
      * @param callback　コールバック
-     * @param isStopCommand true:stopコマンド実行時
-     *                      false:stopコマンド以外実行時
      */
-    void postCommand(Runnable r, Callback callback, boolean isStopCommand) {
+    void postCommand(Runnable r, Callback callback) {
+        Handler handler = mCommandHandler;
+
+        if (handler != null) {
+            if (mProtoController.isBusy()) {
+                // すでに他の処理が実行中の場合
+                postCallback(() -> {
+                    callback.onResult(new IncredistResult(STATUS_BUSY));
+                });
+                return;
+            }
+
+            if (handler.post(r)) {
+                return;
+            }
+        }
+        if (callback != null) {
+            postCallback(() -> {
+                callback.onResult(new IncredistResult(STATUS_FAILED_EXECUTION));
+            });
+        }
+    }
+
+    /**
+     * Command 送受信用の HandlerThread で処理を実行します. (stopコマンド専用)
+     *
+     * @param r 処理内容の Runnable インスタンス
+     * @param callback　コールバック
+     */
+    void postStopCommand(Runnable r, Callback callback) {
 
         // ANDROID_SDK_DEV-36 stopコマンドの場合にはstopコマンド用のスレッドで実行
         // カード読み取り待ちの状態でstopコマンドを送信しても実行されないことが確認された。
         // 正確には、カード読み取りのタイムアウトが返却されたタイミングで実行されるため、
         // それを回避するためにstop用のスレッドで実行する。
-        Handler handler = isStopCommand ? mStopHandler : mCommandHandler;
+        Handler handler = mStopHandler;
 
         if (handler != null) {
             if (mProtoController.isBusy()) {

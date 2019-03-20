@@ -85,10 +85,16 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
     private void postMFiCommand(final MFiCommand command, final IncredistController.Callback callback) {
         IncredistController controller2 = mController;
         if (controller2 != null) {
-            controller2.postCommand(
-                    () -> handleCommand(command, callback),
-                    callback,
-                    command instanceof MFiStopCommand);  // ANDROID_SDK_DEV-36 stopコマンド対応
+            // ANDROID_SDK_DEV-36 stopコマンドの場合のみ呼び出しを変える
+            if (command instanceof MFiStopCommand) {
+                controller2.postStopCommand(
+                        () -> handleCommand(command, callback),
+                        callback);
+            } else {
+                controller2.postCommand(
+                        () -> handleCommand(command, callback),
+                        callback);
+            }
 
         }
     }
