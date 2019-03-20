@@ -167,6 +167,9 @@ public class IncredistController {
     void postCommand(Runnable r, Callback callback, boolean isStopCommand) {
 
         // ANDROID_SDK_DEV-36 stopコマンドの場合にはstopコマンド用のスレッドで実行
+        // カード読み取り待ちの状態でstopコマンドを送信しても実行されないことが確認された。
+        // 正確には、カード読み取りのタイムアウトが返却されたタイミングで実行されるため、
+        // それを回避するためにstop用のスレッドで実行する。
         Handler handler = isStopCommand ? mStopHandler : mCommandHandler;
 
         if (handler != null) {
