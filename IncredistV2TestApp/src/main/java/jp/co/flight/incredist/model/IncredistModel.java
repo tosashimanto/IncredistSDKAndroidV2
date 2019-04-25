@@ -279,6 +279,15 @@ public class IncredistModel extends BaseObservable implements TestAppContract.Mo
     }
 
     @Override
+    public void pinEntryI( OnSuccessFunction<PinEntry.Result> success, OnFailureFunction failure) {
+        if (mIncredist != null) {
+            mIncredist.pinEntryI(PinEntry.Type.ISO9564, success, failure);
+        } else {
+            failure.onFailure(-1);
+        }
+    }
+
+    @Override
     public void setLedColor(LedColor color, boolean isOn, OnSuccessVoidFunction success, OnFailureFunction failure) {
         if (mIncredist != null) {
             mIncredist.setLedColor(color, isOn, success, failure);

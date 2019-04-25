@@ -462,8 +462,19 @@
                     android:onClick="@{(view)->presenter.onPinD()}"
                     android:text="PIND"
                     app:layout_constraintBottom_toBottomOf="@+id/button_sdm"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/button_mag_pini"
                     app:layout_constraintStart_toEndOf="@+id/button_mag_mj2"
+                    app:layout_constraintTop_toTopOf="@+id/button_sdm" />
+
+                <Button
+                    android:id="@+id/button_mag_pini"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{(view)->presenter.onPinI()}"
+                    android:text="PINI"
+                    app:layout_constraintBottom_toBottomOf="@+id/button_sdm"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/button_mag_pind"
                     app:layout_constraintTop_toTopOf="@+id/button_sdm" />
 
                 <!-- rtc -->

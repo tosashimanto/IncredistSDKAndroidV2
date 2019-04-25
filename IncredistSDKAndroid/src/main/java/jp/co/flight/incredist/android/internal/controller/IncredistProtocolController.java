@@ -68,7 +68,7 @@ interface IncredistProtocolController {
     void setEncryptionMode(EncryptionMode mode, IncredistController.Callback callback);
 
     /**
-     * PIN入力を行います
+     * PIN入力を行います(D向け)
      *
      * @param pinType  PIN入力タイプ
      * @param pinMode  PIN暗号化モード
@@ -81,6 +81,14 @@ interface IncredistProtocolController {
      * @param callback コールバック
      */
     void pinEntryD(PinEntry.Type pinType, PinEntry.Mode pinMode, PinEntry.MaskMode mask, int min, int max, PinEntry.Alignment align, int line, long timeout, IncredistController.Callback callback);
+
+    /**
+     * PIN入力を行います(iD向け)
+     *
+     * @param pinType  PIN入力タイプ
+     * @param callback コールバック
+     */
+    void pinEntryI(PinEntry.Type pinType, IncredistController.Callback callback);
 
     /**
      * 磁気カードを読み取ります

@@ -27,6 +27,7 @@ import jp.co.flight.incredist.android.internal.transport.mfi.MFiFelicaOpenWithou
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiFelicaSendCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiGetRealTimeCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiPinEntryDCommand;
+import jp.co.flight.incredist.android.internal.transport.mfi.MFiPinEntryICommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiScanCreditCardCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiScanMagneticCard2Command;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiSetEncryptionModeCommand;
@@ -228,7 +229,7 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
     }
 
     /**
-     * PIN 入力を行います
+     * PIN 入力を行います(D向け)
      *
      * @param pinType  PIN入力タイプ
      * @param pinMode  PIN暗号化モード
@@ -244,6 +245,26 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
     public void pinEntryD(PinEntry.Type pinType, PinEntry.Mode pinMode, PinEntry.MaskMode mask, int min, int max, PinEntry.Alignment align, int line, long timeout, IncredistController.Callback callback) {
         try {
             postMFiCommand(new MFiPinEntryDCommand(pinType, pinMode, mask, min, max, align, line, timeout), callback);
+        } catch (ParameterException ex) {
+            IncredistController controller = mController;
+            if (controller != null) {
+                controller.postCallback(() -> {
+                    callback.onResult(new IncredistResult(IncredistResult.STATUS_PARAMETER_ERROR));
+                });
+            }
+        }
+    }
+
+    /**
+     * PIN 入力を行います(iD向け)
+     *
+     * @param pinType  PIN入力タイプ
+     * @param callback コールバック
+     */
+    @Override
+    public void pinEntryI(PinEntry.Type pinType, IncredistController.Callback callback) {
+        try {
+            postMFiCommand(new MFiPinEntryICommand(pinType), callback);
         } catch (ParameterException ex) {
             IncredistController controller = mController;
             if (controller != null) {

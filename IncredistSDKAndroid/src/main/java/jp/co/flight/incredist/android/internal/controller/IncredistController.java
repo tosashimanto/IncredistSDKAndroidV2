@@ -316,7 +316,7 @@ public class IncredistController {
     }
 
     /**
-     * PIN 入力を行います
+     * PIN 入力を行います(D向け)
      *
      * @param pinType  PIN入力タイプ
      * @param pinMode  PIN暗号化モード
@@ -330,6 +330,16 @@ public class IncredistController {
      */
     public void pinEntryD(PinEntry.Type pinType, PinEntry.Mode pinMode, PinEntry.MaskMode mask, int min, int max, PinEntry.Alignment align, int line, long timeout, Callback callback) {
         mProtoController.pinEntryD(pinType, pinMode, mask, min, max, align, line, timeout, callback);
+    }
+
+    /**
+     * PIN 入力を行います(iD向け)
+     *
+     * @param pinType  PIN入力タイプ
+     * @param callback コールバック
+     */
+    public void pinEntryI(PinEntry.Type pinType, Callback callback) {
+        mProtoController.pinEntryI(pinType, callback);
     }
 
     /**
