@@ -380,6 +380,30 @@ public class Incredist {
     }
 
     /**
+     * PIN入力を行います(I向け)
+     *
+     * @param pinType PIN入力タイプ
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void pinEntryI(PinEntry.Type pinType,
+                          @Nullable OnSuccessFunction<PinEntry.Result> success, @Nullable OnFailureFunction failure) {
+        if (mController != null) {
+            mController.pinEntryI(pinType, result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof PinEntryResult) {
+                    if (success != null) {
+                        success.onSuccess(new PinEntry.Result((PinEntryResult) result));
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
      * 磁気カード読み取り
      *
      * @param timeout タイムアウト時間(msec)

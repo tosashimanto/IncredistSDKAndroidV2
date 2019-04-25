@@ -393,6 +393,23 @@ public class MainPresenter implements TestAppContract.Presenter {
     }
 
     @Override
+    public void onPinI() {
+        addLog("pini setting");
+        pinEntryI();
+    }
+
+    @Override
+    public void pinEntryI() {
+        addLog("pini");
+        mModel.pinEntryI((pinEntry) -> {
+            addLog(String.format(Locale.JAPANESE, "pini success ksn:%s pinData:%s", hexString(pinEntry.getKsn()), hexString(pinEntry.getPinData())));
+        }, (errorCode) -> {
+            addLog(String.format(Locale.JAPANESE, "pini failure %d", errorCode));
+        });
+
+    }
+
+    @Override
     public void onRtcGetTime() {
         addLog("rtcGetTime");
         mModel.rtcGetTime(cal -> {

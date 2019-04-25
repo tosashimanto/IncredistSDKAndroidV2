@@ -105,6 +105,10 @@ public interface TestAppContract {
 
         void pinEntryD(PinEntryDParam setting);
 
+        void onPinI();
+
+        void pinEntryI();
+
         void onRtcGetTime();
 
         void onRtcSetTime();
@@ -188,6 +192,8 @@ public interface TestAppContract {
         void scanMagnetic(long timeout, OnSuccessFunction<DecodedMagCard> success, OnFailureFunction failure);
 
         void pinEntryD(PinEntryDParam setting, OnSuccessFunction<PinEntry.Result> success, OnFailureFunction failure);
+
+        void pinEntryI( OnSuccessFunction<PinEntry.Result> success, OnFailureFunction failure);
 
         void setLedColor(LedColor color, boolean isOn, OnSuccessVoidFunction success, OnFailureFunction failure);
 
