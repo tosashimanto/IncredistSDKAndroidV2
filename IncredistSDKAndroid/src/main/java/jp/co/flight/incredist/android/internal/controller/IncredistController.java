@@ -333,7 +333,7 @@ public class IncredistController {
     }
 
     /**
-     * PIN 入力を行います(I向け)
+     * PIN 入力を行います(iD用)
      *
      * @param pinType  PIN入力タイプ
      * @param callback コールバック
