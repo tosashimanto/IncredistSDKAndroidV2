@@ -83,7 +83,7 @@ interface IncredistProtocolController {
     void pinEntryD(PinEntry.Type pinType, PinEntry.Mode pinMode, PinEntry.MaskMode mask, int min, int max, PinEntry.Alignment align, int line, long timeout, IncredistController.Callback callback);
 
     /**
-     * PIN入力を行います(iD用)
+     * PIN入力を行います(iD向け)
      *
      * @param pinType  PIN入力タイプ
      * @param callback コールバック

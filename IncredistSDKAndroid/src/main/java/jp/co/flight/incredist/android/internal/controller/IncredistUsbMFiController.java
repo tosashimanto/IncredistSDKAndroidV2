@@ -256,7 +256,7 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
     }
 
     /**
-     * PIN 入力を行います(iD用)
+     * PIN 入力を行います(iD向け)
      *
      * @param pinType  PIN入力タイプ
      * @param callback コールバック

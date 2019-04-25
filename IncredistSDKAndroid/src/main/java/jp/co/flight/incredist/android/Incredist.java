@@ -380,7 +380,7 @@ public class Incredist {
     }
 
     /**
-     * PIN入力を行います(iD用)
+     * PIN入力を行います(iD向け)
      *
      * @param pinType PIN入力タイプ
      * @param success 成功時処理

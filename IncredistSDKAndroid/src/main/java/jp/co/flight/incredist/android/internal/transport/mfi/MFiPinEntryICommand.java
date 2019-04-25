@@ -10,7 +10,7 @@ import jp.co.flight.incredist.android.internal.exception.ParameterException;
 import jp.co.flight.incredist.android.model.PinEntry;
 
 /**
- * MFi版 PIN入力(iD用)送信コマンド
+ * MFi版 PIN入力(iD向け)送信コマンド
  * なお、本コマンドは IncredistPremium では対応していない
  */
 public class MFiPinEntryICommand extends MFiCommand {
