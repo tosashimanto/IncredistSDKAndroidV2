@@ -488,19 +488,26 @@ public class IncredistManager {
      * @param listener リスナ
      */
     public void connect(UsbDevice device, @Nullable IncredistConnectionListener listener) {
-        createUsbManager();
-
-        UsbDeviceConnection connection = mUsbManager.openDevice(device);
 
         Handler handler = new Handler(Looper.getMainLooper());
-        if (connection != null) {
-            UsbInterface usbInterface = device.getInterface(0);
+        if (device != null) {
+            createUsbManager();
+            UsbDeviceConnection connection = mUsbManager.openDevice(device);
 
-            handler.post(() -> {
-                Incredist incredist = new Incredist(this, connection, usbInterface, listener);
-                mConnectedDevices.put(IncredistDevice.usbDevice(device), incredist);
-                listener.onConnectIncredist(incredist);
-            });
+            if (connection != null) {
+                UsbInterface usbInterface = device.getInterface(0);
+
+                handler.post(() -> {
+                    Incredist incredist = new Incredist(this, connection, usbInterface, listener);
+                    mConnectedDevices.put(IncredistDevice.usbDevice(device), incredist);
+                    listener.onConnectIncredist(incredist);
+                });
+            } else {
+                handler.post(() -> {
+                    listener.onConnectFailure(StatusCode.CONNECT_ERROR_NOT_FOUND);
+                });
+            }
+
         } else {
             handler.post(() -> {
                 listener.onConnectFailure(StatusCode.CONNECT_ERROR_NOT_FOUND);
