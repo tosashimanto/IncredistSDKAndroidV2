@@ -45,6 +45,8 @@ public class IncredistManager {
 
     private Map<IncredistDevice, Incredist> mConnectedDevices = new HashMap<>();
 
+    private UsbDeviceConnection mUsbDeviceConnection;
+
     // USB デバイス切断時のレシーバ
     private BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         @Override
@@ -492,13 +494,12 @@ public class IncredistManager {
         Handler handler = new Handler(Looper.getMainLooper());
         if (device != null) {
             createUsbManager();
-            UsbDeviceConnection connection = mUsbManager.openDevice(device);
-
-            if (connection != null) {
+            mUsbDeviceConnection = mUsbManager.openDevice(device);
+            if (mUsbDeviceConnection != null) {
                 UsbInterface usbInterface = device.getInterface(0);
 
                 handler.post(() -> {
-                    Incredist incredist = new Incredist(this, connection, usbInterface, listener);
+                    Incredist incredist = new Incredist(this, mUsbDeviceConnection, usbInterface, listener);
                     mConnectedDevices.put(IncredistDevice.usbDevice(device), incredist);
                     listener.onConnectIncredist(incredist);
                 });
@@ -535,7 +536,14 @@ public class IncredistManager {
 
         if (mUsbReceiverRegistered) {
             mAppContext.unregisterReceiver(mUsbReceiver);
+            mUsbReceiverRegistered = false;
         }
+
+        if (mUsbDeviceConnection != null) {
+            mUsbDeviceConnection.close();
+            mUsbDeviceConnection = null;
+        }
+
         mListener = null;
     }
 
