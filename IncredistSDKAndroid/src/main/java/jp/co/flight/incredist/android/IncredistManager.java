@@ -114,13 +114,15 @@ public class IncredistManager {
     public void createUsbManager() {
         if (mUsbManager == null) {
             mUsbManager = (UsbManager) mAppContext.getSystemService(Context.USB_SERVICE);
+        }
+
+        // ANDROID_SDK_DEV-40
+        if (!mUsbReceiverRegistered) {
             IntentFilter intentFilter = new IntentFilter();
             intentFilter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
 
-            if (!mUsbReceiverRegistered) {
-                mAppContext.registerReceiver(mUsbReceiver, intentFilter);
-                mUsbReceiverRegistered = true;
-            }
+            mAppContext.registerReceiver(mUsbReceiver, intentFilter);
+            mUsbReceiverRegistered = true;
         }
     }
 
