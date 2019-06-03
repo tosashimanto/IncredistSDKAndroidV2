@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -496,12 +497,13 @@ public class IncredistManager {
         Handler handler = new Handler(Looper.getMainLooper());
         if (device != null) {
             createUsbManager();
-            mUsbDeviceConnection = mUsbManager.openDevice(device);
-            if (mUsbDeviceConnection != null) {
+            UsbDeviceConnection connection = mUsbManager.openDevice(device);
+
+            if (connection != null) {
                 UsbInterface usbInterface = device.getInterface(0);
 
                 handler.post(() -> {
-                    Incredist incredist = new Incredist(this, mUsbDeviceConnection, usbInterface, listener);
+                    Incredist incredist = new Incredist(this, connection, usbInterface, listener);
                     mConnectedDevices.put(IncredistDevice.usbDevice(device), incredist);
                     listener.onConnectIncredist(incredist);
                 });
@@ -540,12 +542,6 @@ public class IncredistManager {
             mAppContext.unregisterReceiver(mUsbReceiver);
             mUsbReceiverRegistered = false;
         }
-
-        if (mUsbDeviceConnection != null) {
-            mUsbDeviceConnection.close();
-            mUsbDeviceConnection = null;
-        }
-
         mListener = null;
     }
 
