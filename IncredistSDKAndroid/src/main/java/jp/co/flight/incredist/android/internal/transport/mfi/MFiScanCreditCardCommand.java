@@ -241,7 +241,7 @@ public class MFiScanCreditCardCommand extends MFiCommand {
                 int track2Length = data[15] & 0xff;
                 int track3Length = data[16] & 0xff;  // 通常 0のはず
 
-                if (data.length > 17 + track1Length + track2Length + 18) {
+                if (data.length >= 17 + track1Length + track2Length + 18) {
                     int offset = 17;
 
                     byte[] track1 = Arrays.copyOfRange(data, offset, offset + track1Length);
@@ -275,7 +275,12 @@ public class MFiScanCreditCardCommand extends MFiCommand {
                             result.maskedCardNo = BytesUtils.getMaskedCardNo(reducedPanValidity, 0, reducedPanValidity.length);
                             result.expirationDate = BytesUtils.getExpirationDate(reducedPanValidity, 0, reducedPanValidity.length);
                             result.serviceCode = BytesUtils.toAsciiString(serviceCode, 0, serviceCode.length);
-                            result.cardHolderName = BytesUtils.toAsciiString(cardHolderName, 1, cardHolderName.length - 2);
+                            // 銀聯処理の場合JIS1が存在しないためcardHolderNameが0になるため場合分け
+                            if(cardHolderName.length > 0) {
+                                result.cardHolderName = BytesUtils.toAsciiString(cardHolderName, 1, cardHolderName.length - 2);
+                            } else{
+                                result.cardHolderName = BytesUtils.toAsciiString(cardHolderName, 0, 0);
+                            }
                         }
 
                         return result;
