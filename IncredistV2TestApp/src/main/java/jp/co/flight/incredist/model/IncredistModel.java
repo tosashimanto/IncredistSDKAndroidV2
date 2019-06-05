@@ -18,6 +18,7 @@ import jp.co.flight.incredist.android.IncredistV2TestApp.BR;
 import jp.co.flight.incredist.android.OnFailureFunction;
 import jp.co.flight.incredist.android.OnSuccessFunction;
 import jp.co.flight.incredist.android.OnSuccessVoidFunction;
+import jp.co.flight.incredist.android.model.PinEntryResult;
 import jp.co.flight.incredist.android.model.BootloaderVersion;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.DeviceInfo;
@@ -267,7 +268,7 @@ public class IncredistModel extends BaseObservable implements TestAppContract.Mo
     }
 
     @Override
-    public void pinEntryD(PinEntryDParam setting, OnSuccessFunction<PinEntry.Result> success, OnFailureFunction failure) {
+    public void pinEntryD(PinEntryDParam setting, OnSuccessFunction<PinEntryResult> success, OnFailureFunction failure) {
         if (mIncredist != null) {
             PinEntry.Mode pinMode = PinEntry.Mode.values()[setting.getPinMode()];
             int min = (pinMode == PinEntry.Mode.DebitScramble) ? setting.getLength() : 1;
@@ -279,9 +280,11 @@ public class IncredistModel extends BaseObservable implements TestAppContract.Mo
     }
 
     @Override
-    public void pinEntryI( OnSuccessFunction<PinEntry.Result> success, OnFailureFunction failure) {
+    public void pinEntryI( OnSuccessFunction<PinEntryResult> success, OnFailureFunction failure) {
         if (mIncredist != null) {
-            mIncredist.pinEntryI(PinEntry.Type.ISO9564, success, failure);
+            PinEntry entry = new PinEntry();
+            entry.setType(PinEntry.Type.PlainText);
+            mIncredist.pinEntryI(entry, success, failure);
         } else {
             failure.onFailure(-1);
         }

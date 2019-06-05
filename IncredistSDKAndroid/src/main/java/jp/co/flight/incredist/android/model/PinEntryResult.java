@@ -1,4 +1,9 @@
-package jp.co.flight.incredist.android.internal.controller.result;
+package jp.co.flight.incredist.android.model;
+
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 
 /**
  * PIN入力結果
@@ -18,5 +23,13 @@ public class PinEntryResult extends IncredistResult {
 
         this.ksn = ksn;
         this.pinData = pinData;
+    }
+
+    public byte[] getPinData() {
+        return pinData;
+    }
+
+    public byte[] getKsn() {
+        return ksn;
     }
 }

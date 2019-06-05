@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 import java.util.Arrays;
 
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
-import jp.co.flight.incredist.android.internal.controller.result.PinEntryResult;
+import jp.co.flight.incredist.android.model.PinEntryResult;
 import jp.co.flight.incredist.android.internal.exception.ParameterException;
 import jp.co.flight.incredist.android.model.PinEntry;
 

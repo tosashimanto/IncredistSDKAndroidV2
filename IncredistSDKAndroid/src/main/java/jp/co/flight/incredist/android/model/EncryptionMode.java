@@ -104,6 +104,39 @@ public class EncryptionMode implements Parcelable {
         mIsPin = isPin;
     }
 
+    public EncryptionMode(byte keyNumber, byte cipherMethod, byte blockCipherMode,
+                          byte dsConstant, byte paddingMode, byte paddingValue, boolean isPin) {
+        mKeyNumber = keyNumber;
+
+        for( CipherMethod x : CipherMethod.values() ) {
+            if( x.getValue() == cipherMethod ) {
+                mCipherMethod = x;
+                break;
+            }
+        }
+        for( BlockCipherMode x : BlockCipherMode.values() ) {
+            if( x.getValue() == blockCipherMode ) {
+                mBlockCipherMode = x;
+                break;
+            }
+        }
+        for( DsConstant x : DsConstant.values() ) {
+            if( x.getValue() == dsConstant ) {
+                mDsConstant = x;
+                break;
+            }
+        }
+        for( PaddingMode x : PaddingMode.values() ) {
+            if( x.getValue() == paddingMode ) {
+                mPaddingMode = x;
+                break;
+            }
+        }
+
+        mPaddingValue = paddingValue;
+        mIsPin = isPin;
+    }
+
     public void setKeyNumber(byte keyNumber) {
         mKeyNumber = keyNumber;
     }
@@ -203,23 +236,23 @@ public class EncryptionMode implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeByte(this.mKeyNumber);
-        dest.writeInt(this.mCipherMethod == null ? -1 : this.mCipherMethod.ordinal());
-        dest.writeInt(this.mBlockCipherMode == null ? -1 : this.mBlockCipherMode.ordinal());
-        dest.writeInt(this.mDsConstant == null ? -1 : this.mDsConstant.ordinal());
-        dest.writeInt(this.mPaddingMode == null ? -1 : this.mPaddingMode.ordinal());
+        dest.writeByte(this.mCipherMethod == null ? -1 : this.mCipherMethod.getValue());
+        dest.writeByte(this.mBlockCipherMode == null ? -1 : this.mBlockCipherMode.getValue());
+        dest.writeByte(this.mDsConstant == null ? -1 : this.mDsConstant.getValue());
+        dest.writeByte(this.mPaddingMode == null ? -1 : this.mPaddingMode.getValue());
         dest.writeByte(this.mPaddingValue);
         dest.writeByte(this.mIsPin ? (byte) 1 : (byte) 0);
     }
 
     protected EncryptionMode(Parcel in) {
         this.mKeyNumber = in.readByte();
-        int tmpCipherMethod = in.readInt();
+        byte tmpCipherMethod = in.readByte();
         this.mCipherMethod = tmpCipherMethod == -1 ? null : CipherMethod.values()[tmpCipherMethod];
-        int tmpBlockCipherMode = in.readInt();
+        byte tmpBlockCipherMode = in.readByte();
         this.mBlockCipherMode = tmpBlockCipherMode == -1 ? null : BlockCipherMode.values()[tmpBlockCipherMode];
-        int tmpDsConstant = in.readInt();
+        byte tmpDsConstant = in.readByte();
         this.mDsConstant = tmpDsConstant == -1 ? null : DsConstant.values()[tmpDsConstant];
-        int tmpPaddingMode = in.readInt();
+        byte tmpPaddingMode = in.readByte();
         this.mPaddingMode = tmpPaddingMode == -1 ? null : PaddingMode.values()[tmpPaddingMode];
         this.mPaddingValue = in.readByte();
         this.mIsPin = in.readByte() != 0;

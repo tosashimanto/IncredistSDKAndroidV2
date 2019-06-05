@@ -5,6 +5,7 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbInterface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.Calendar;
@@ -21,7 +22,8 @@ import jp.co.flight.incredist.android.internal.controller.result.EmvCheckKernelS
 import jp.co.flight.incredist.android.internal.controller.result.EmvResult;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.controller.result.MagCardResult;
-import jp.co.flight.incredist.android.internal.controller.result.PinEntryResult;
+import jp.co.flight.incredist.android.internal.util.LogUtil;
+import jp.co.flight.incredist.android.model.PinEntryResult;
 import jp.co.flight.incredist.android.internal.controller.result.RtcResult;
 import jp.co.flight.incredist.android.model.BootloaderVersion;
 import jp.co.flight.incredist.android.model.CreditCardType;
@@ -363,12 +365,12 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void pinEntryD(PinEntry.Type pinType, PinEntry.Mode pinMode, PinEntry.MaskMode mask, int min, int max, PinEntry.Alignment align, int line, long timeout,
-                          @Nullable OnSuccessFunction<PinEntry.Result> success, @Nullable OnFailureFunction failure) {
+                          @Nullable OnSuccessFunction<PinEntryResult> success, @Nullable OnFailureFunction failure) {
         if (mController != null) {
             mController.pinEntryD(pinType, pinMode, mask, min, max, align, line, timeout, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof PinEntryResult) {
                     if (success != null) {
-                        success.onSuccess(new PinEntry.Result((PinEntryResult) result));
+                        success.onSuccess((PinEntryResult)result);
                     }
                 } else {
                     if (failure != null) {
@@ -382,17 +384,16 @@ public class Incredist {
     /**
      * PIN入力を行います(iD向け)
      *
-     * @param pinType PIN入力タイプ
+     * @param entry PIN入力タイプを含むType
      * @param success 成功時処理
      * @param failure 失敗時処理
      */
-    public void pinEntryI(PinEntry.Type pinType,
-                          @Nullable OnSuccessFunction<PinEntry.Result> success, @Nullable OnFailureFunction failure) {
+    public void pinEntryI(PinEntry entry, @Nullable OnSuccessFunction<PinEntryResult> success, @Nullable OnFailureFunction failure) {
         if (mController != null) {
-            mController.pinEntryI(pinType, result -> {
+            mController.pinEntryI(entry.getType(), result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof PinEntryResult) {
                     if (success != null) {
-                        success.onSuccess(new PinEntry.Result((PinEntryResult) result));
+                        success.onSuccess((PinEntryResult)result);
                     }
                 } else {
                     if (failure != null) {

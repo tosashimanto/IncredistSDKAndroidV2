@@ -14,6 +14,7 @@ import jp.co.flight.incredist.android.IncredistManager;
 import jp.co.flight.incredist.android.OnFailureFunction;
 import jp.co.flight.incredist.android.OnSuccessFunction;
 import jp.co.flight.incredist.android.OnSuccessVoidFunction;
+import jp.co.flight.incredist.android.model.PinEntryResult;
 import jp.co.flight.incredist.android.model.BootloaderVersion;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.DeviceInfo;
@@ -25,7 +26,6 @@ import jp.co.flight.incredist.android.model.FelicaCommandResult;
 import jp.co.flight.incredist.android.model.ICCardStatus;
 import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.MagCard;
-import jp.co.flight.incredist.android.model.PinEntry;
 import jp.co.flight.incredist.android.model.ProductInfo;
 import jp.co.flight.incredist.model.DecodedMagCard;
 import jp.co.flight.incredist.model.PinEntryDParam;
@@ -191,9 +191,9 @@ public interface TestAppContract {
 
         void scanMagnetic(long timeout, OnSuccessFunction<DecodedMagCard> success, OnFailureFunction failure);
 
-        void pinEntryD(PinEntryDParam setting, OnSuccessFunction<PinEntry.Result> success, OnFailureFunction failure);
+        void pinEntryD(PinEntryDParam setting, OnSuccessFunction<PinEntryResult> success, OnFailureFunction failure);
 
-        void pinEntryI( OnSuccessFunction<PinEntry.Result> success, OnFailureFunction failure);
+        void pinEntryI( OnSuccessFunction<PinEntryResult> success, OnFailureFunction failure);
 
         void setLedColor(LedColor color, boolean isOn, OnSuccessVoidFunction success, OnFailureFunction failure);
 
