@@ -230,16 +230,24 @@ public class UsbMFiTransport implements MFiTransport {
         if (connection == null) {
             return null;
         }
+        // ANDROID_GMO-595　Long.MAX_VALUEが指定された場合はタイムアウト無しとする
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             Future<UsbRequest> future = mExecutor.submit(() -> connection.requestWait());
-
             try {
-                return future.get(timeout, TimeUnit.MILLISECONDS);
+                if (timeout == Long.MAX_VALUE) {
+                    return future.get();
+                } else {
+                    return future.get(timeout, TimeUnit.MILLISECONDS);
+                }
             } catch (InterruptedException | ExecutionException e) {
                 return null;
             }
         } else {
-            return connection.requestWait(timeout);
+            if (timeout == Long.MAX_VALUE) {
+                return connection.requestWait();
+            } else {
+                return connection.requestWait(timeout);
+            }
         }
     }
 
