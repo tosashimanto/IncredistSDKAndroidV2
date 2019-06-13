@@ -528,47 +528,6 @@ public class IncredistController {
      * Incredist デバイスとの接続を破棄します.
      */
     public boolean release() {
-        HandlerThread handlerThread = mCommandHandlerThread;
-        if (handlerThread != null) {
-            if (handlerThread.quitSafely()) {
-                mCommandHandlerThread = null;
-            } else {
-                return false;
-            }
-        }
-
-        handlerThread = mCallbackHandlerThread;
-        if (handlerThread != null) {
-            if (handlerThread.quitSafely()) {
-                mCallbackHandlerThread = null;
-            } else {
-                return false;
-            }
-        }
-
-        handlerThread = mCancelHandlerThread;
-        if (handlerThread != null) {
-            if (handlerThread.quitSafely()) {
-                mCancelHandlerThread = null;
-            } else {
-                return false;
-            }
-        }
-
-        handlerThread = mStopHandlerThread;
-        if (handlerThread != null) {
-            if (handlerThread.quitSafely()) {
-                mStopHandlerThread = null;
-            } else {
-                return false;
-            }
-        }
-
-        mCommandHandler = null;
-        mCancelHandler = null;
-        mCancelHandler = null;
-        mStopHandler = null;
-
         mProtoController.release();
         mConnection = null;
 
