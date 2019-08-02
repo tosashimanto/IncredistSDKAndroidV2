@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.List;
 
+import jp.co.flight.incredist.android.Incredist;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.exception.ParameterException;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiBootloaderVersionCommand;
@@ -28,6 +29,7 @@ import jp.co.flight.incredist.android.internal.transport.mfi.MFiFelicaSendComman
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiGetRealTimeCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiPinEntryDCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiPinEntryICommand;
+import jp.co.flight.incredist.android.internal.transport.mfi.MFiScanBarcodeCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiScanCreditCardCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiScanMagneticCard2Command;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiSetEncryptionModeCommand;
@@ -284,6 +286,11 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
     @Override
     public void scanMagneticCard(long timeout, IncredistController.Callback callback) {
         postMFiCommand(new MFiScanMagneticCard2Command(timeout), callback);
+    }
+
+    @Override
+    public void scanBarcode(long timeout, IncredistController.Callback callback){
+        postMFiCommand(new MFiScanBarcodeCommand(timeout), callback);
     }
 
     /**

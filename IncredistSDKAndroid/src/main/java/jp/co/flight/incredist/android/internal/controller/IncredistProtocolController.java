@@ -99,6 +99,14 @@ interface IncredistProtocolController {
     void scanMagneticCard(long timeout, IncredistController.Callback callback);
 
     /**
+     * バーコードを読み取ります
+     *
+     * @param timeout  タイムアウト時間(msec)
+     * @param callback コールバック
+     */
+    void scanBarcode(long timeout, IncredistController.Callback callback);
+
+    /**
      * 決済用にクレジットカード(EMV 接触・非接触 と磁気カード)を読み取ります
      *
      * @param cardTypeSet     カード種別

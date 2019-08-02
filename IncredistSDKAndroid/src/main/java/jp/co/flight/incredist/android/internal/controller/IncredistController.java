@@ -353,6 +353,16 @@ public class IncredistController {
     }
 
     /**
+     * バーコードを読み取ります
+     *
+     * @param timeout  タイムアウト時間(msec)
+     * @param callback コールバック
+     */
+    public void scanBarcode(long timeout, Callback callback) {
+        mProtoController.scanBarcode(timeout, callback);
+    }
+
+    /**
      * 決済用にクレジットカード(EMV 接触・非接触 と磁気カード)を読み取ります
      *
      * @param cardTypeSet     カード種別

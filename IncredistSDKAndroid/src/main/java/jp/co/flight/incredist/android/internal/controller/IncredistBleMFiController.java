@@ -28,6 +28,7 @@ import jp.co.flight.incredist.android.internal.transport.mfi.MFiFelicaSendComman
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiGetRealTimeCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiPinEntryDCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiPinEntryICommand;
+import jp.co.flight.incredist.android.internal.transport.mfi.MFiScanBarcodeCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiScanCreditCardCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiScanMagneticCard2Command;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiSetEncryptionModeCommand;
@@ -265,6 +266,17 @@ public class IncredistBleMFiController implements IncredistProtocolController {
     @Override
     public void scanMagneticCard(long timeout, IncredistController.Callback callback) {
         postMFiCommand(new MFiScanMagneticCard2Command(timeout), callback);
+    }
+
+    /**
+     * バーコードを読み取ります
+     *
+     * @param timeout  タイムアウト時間(msec)
+     * @param callback コールバック
+     */
+    @Override
+    public void scanBarcode(long timeout, IncredistController.Callback callback) {
+        postMFiCommand(new MFiScanBarcodeCommand(timeout), callback);
     }
 
     /**
