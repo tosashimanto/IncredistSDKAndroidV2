@@ -2,6 +2,7 @@ package jp.co.flight.incredist.android.internal.transport.mfi;
 
 import android.support.annotation.NonNull;
 
+import jp.co.flight.incredist.android.internal.controller.result.BarcodeResult;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 
 /**
@@ -37,6 +38,8 @@ public class MFiScanBarcodeCommand extends MFiCommand {
     protected IncredistResult parseMFiResponse(MFiResponse response) {
         byte[] data = response.getData();
 
-        return new IncredistResult(IncredistResult.STATUS_INVALID_RESPONSE);
+        BarcodeResult result = new BarcodeResult();
+        result.content = data;
+        return result;
     }
 }

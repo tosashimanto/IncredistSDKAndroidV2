@@ -7,7 +7,7 @@ import jp.co.flight.incredist.android.model.Barcode;
  */
 public class BarcodeResult extends IncredistResult {
 
-    String content;
+    public byte[] content;
 
     public BarcodeResult() {
         super(IncredistResult.STATUS_SUCCESS);

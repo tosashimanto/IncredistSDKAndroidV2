@@ -7,14 +7,17 @@ package jp.co.flight.incredist.android.model;
 @SuppressWarnings("unused")
 public class Barcode {
 
-    String content;
+    private byte[] mContent;
 
-    public Barcode(String content) {
-        this.content = content;
+    public Barcode(byte[] content) {
+        this.mContent = content;
     }
 
     protected Barcode(Barcode barcode) {
-        String content = barcode.content;
+        byte[] content = barcode.mContent;
     }
 
+    public byte[] getContent() {
+        return mContent;
+    }
 }
