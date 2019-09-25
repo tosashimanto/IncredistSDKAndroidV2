@@ -22,6 +22,7 @@ import jp.co.flight.incredist.android.internal.controller.result.EmvCheckKernelS
 import jp.co.flight.incredist.android.internal.controller.result.EmvResult;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.controller.result.MagCardResult;
+import jp.co.flight.incredist.android.internal.util.FLog;
 import jp.co.flight.incredist.android.internal.util.LogUtil;
 import jp.co.flight.incredist.android.model.PinEntryResult;
 import jp.co.flight.incredist.android.internal.controller.result.RtcResult;
@@ -69,6 +70,7 @@ public class Incredist {
      * @param deviceName 接続先デバイス名
      */
     Incredist(@NonNull IncredistManager manager, BluetoothGattConnection connection, String deviceName) {
+        FLog.d(TAG,"");
         mManager = manager;
         mController = new IncredistController(connection, deviceName);
     }
@@ -81,6 +83,7 @@ public class Incredist {
      * @param listener     接続情報通知用リスナ
      */
     public Incredist(@NonNull IncredistManager manager, UsbDeviceConnection connection, UsbInterface usbInterface, IncredistManager.IncredistConnectionListener listener) {
+        FLog.d(TAG,"");
         mManager = manager;
         mController = new IncredistController(connection, usbInterface);
         mConnectionListenerRef = new WeakReference<>(listener);
@@ -90,6 +93,7 @@ public class Incredist {
      * Incredistとの接続を切断します.
      */
     public void disconnect() {
+        FLog.d(TAG,"");
         if (mController != null) {
             // コマンド実行中の場合があるので cancel を呼び出し、実行結果は無視して、続けて切断を行います
             mController.cancel(resultIgnore -> {
@@ -111,6 +115,7 @@ public class Incredist {
      * @return Incredistデバイス名
      */
     public String getDeviceName() {
+        FLog.d(TAG,"");
         if (mController != null) {
             return mController.getDeviceName();
         } else {
@@ -138,6 +143,7 @@ public class Incredist {
      * @param failure 取得失敗時の処理
      */
     public void getSerialNumber(@Nullable OnSuccessFunction<String> success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.getDeviceInfo(result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof DeviceInfoResult) {
@@ -160,6 +166,7 @@ public class Incredist {
      * @param failure 取得失敗時の処理
      */
     public void getDeviceInfo(@Nullable OnSuccessFunction<DeviceInfo> success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.getDeviceInfo(result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof DeviceInfoResult) {
@@ -182,6 +189,7 @@ public class Incredist {
      * @param failure 取得失敗時の処理
      */
     public void getProductInfo(@Nullable OnSuccessFunction<ProductInfo> success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         getDeviceInfo((deviceInfo) -> {
             if (success != null) {
                 success.onSuccess(new ProductInfo(deviceInfo));
@@ -196,6 +204,7 @@ public class Incredist {
      * @param failure 取得失敗時の処理
      */
     public void getBootloaderVersion(@Nullable OnSuccessFunction<BootloaderVersion> success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.getBootloaderVersion(result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof BootloaderVersionResult) {
@@ -220,6 +229,7 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void emvDisplayMessage(int type, @Nullable String message, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,message);
         if (mController != null) {
             mController.emvDisplayMessage(type, message, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS) {
@@ -243,6 +253,7 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void emvDisplayMessage(int type, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         emvDisplayMessage(type, null, success, failure);
     }
 
@@ -255,6 +266,7 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void emvDisplayMessage(EmvMessageType type, @Nullable String message, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,message);
         emvDisplayMessage(type.getValue(), message, success, failure);
     }
 
@@ -266,6 +278,7 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void emvDisplayMessage(EmvMessageType type, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,Integer.toString(type.getValue()));
         emvDisplayMessage(type.getValue(), success, failure);
     }
 
@@ -278,6 +291,7 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void tfpDisplayMessage(int type, @Nullable String message, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,Integer.toString(type));
         if (mController != null) {
             mController.tfpDisplayMessage(type, message, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS) {
@@ -301,6 +315,7 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void tfpDisplayMessage(int type, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,Integer.toString(type));
         tfpDisplayMessage(type, null, success, failure);
     }
 
@@ -313,6 +328,7 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void tfpDisplayMessage(TfpMessageType type, @Nullable String message, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,Integer.toString(type.getValue()));
         tfpDisplayMessage(type.getValue(), message, success, failure);
     }
 
@@ -324,6 +340,7 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void tfpDisplayMessage(TfpMessageType type, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,Integer.toString(type.getValue()));
         tfpDisplayMessage(type.getValue(), success, failure);
     }
 
@@ -335,6 +352,7 @@ public class Incredist {
      * @param failure 設定失敗時処理
      */
     public void setEncryptionMode(EncryptionMode mode, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.setEncryptionMode(mode, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS) {
@@ -366,6 +384,7 @@ public class Incredist {
      */
     public void pinEntryD(PinEntry.Type pinType, PinEntry.Mode pinMode, PinEntry.MaskMode mask, int min, int max, PinEntry.Alignment align, int line, long timeout,
                           @Nullable OnSuccessFunction<PinEntryResult> success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.pinEntryD(pinType, pinMode, mask, min, max, align, line, timeout, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof PinEntryResult) {
@@ -389,6 +408,7 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void pinEntryI(PinEntry entry, @Nullable OnSuccessFunction<PinEntryResult> success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.pinEntryI(entry.getType(), result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof PinEntryResult) {
@@ -412,6 +432,7 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void scanMagneticCard(long timeout, @Nullable OnSuccessFunction<MagCard> success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.scanMagneticCard(timeout, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof MagCardResult) {
@@ -446,6 +467,7 @@ public class Incredist {
                                @Nullable OnSuccessFunction<EmvPacket> emvSuccess,
                                @Nullable OnSuccessFunction<MagCard> magSuccess,
                                @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.scanCreditCard(cardTypeSet, amount, tagType, aidSetting, transactionType, fallback, timeout, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS) {
@@ -476,6 +498,7 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void setLedColor(LedColor color, boolean isOn, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.setLedColor(color, isOn, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS) {
@@ -499,6 +522,7 @@ public class Incredist {
      * @param failure 設定失敗時の処理
      */
     public void felicaOpen(boolean withLed, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.felicaOpen(withLed, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS) {
@@ -521,6 +545,7 @@ public class Incredist {
      * @param failure 設定失敗時の処理
      */
     public void felicaOpen(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         felicaOpen(true, success, failure);
     }
 
@@ -532,6 +557,7 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void felicaLedColor(LedColor color, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.felicaLedColor(color, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS) {
@@ -556,6 +582,7 @@ public class Incredist {
      * @param failure       送信失敗時の処理
      */
     public void felicaSendCommand(byte[] felicaCommand, int wait, @Nullable OnSuccessFunction<FelicaCommandResult> success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.felicaSendCommand(felicaCommand, wait, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof jp.co.flight.incredist.android.internal.controller.result.FelicaCommandResult) {
@@ -579,6 +606,7 @@ public class Incredist {
      * @param failure 設定失敗時の処理
      */
     public void felicaClose(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.felicaClose(result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS) {
@@ -601,6 +629,7 @@ public class Incredist {
      * @param failure 取得失敗時の処理
      */
     public void rtcGetTime(@Nullable OnSuccessFunction<Calendar> success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.rtcGetTime(result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof RtcResult) {
@@ -624,6 +653,7 @@ public class Incredist {
      * @param failure 設定失敗時処理
      */
     public void rtcSetTime(Calendar cal, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.rtcSetTime(cal, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS) {
@@ -646,6 +676,7 @@ public class Incredist {
      * @param failure 設定失敗時処理
      */
     public void rtcSetCurrentTime(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.rtcSetCurrentTime(result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS) {
@@ -670,6 +701,7 @@ public class Incredist {
      * @param failure   失敗時処理
      */
     public void emvKernelSetup(EmvSetupDataType type, byte[] setupData, @Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.emvKernelSetup(type, setupData, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS) {
@@ -694,6 +726,7 @@ public class Incredist {
      * @param failure  失敗時処理
      */
     public void emvCheckKernelSetting(EmvSetupDataType type, byte[] hashData, @Nullable OnSuccessFunction<EmvKernelSettingStatus> success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.emvCheckKernelSetting(type, hashData, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof EmvCheckKernelSettingResult) {
@@ -717,6 +750,7 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void emvSendArc(byte[] arcData, @Nullable OnSuccessFunction<EmvPacket> success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.emvSendArc(arcData, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof EmvArcResult) {
@@ -740,6 +774,7 @@ public class Incredist {
      * @param failure 失敗時処理
      */
     public void emvCheckCardStatus(@Nullable OnSuccessFunction<ICCardStatus> success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.emvCheckCardStatus(result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof CardStatusResult) {
@@ -763,6 +798,7 @@ public class Incredist {
      * @param duration 点灯時間(msec)
      */
     public void emoneyBlink(boolean isBlink, LedColor color, int duration, OnSuccessFunction<Boolean> success, OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.emoneyBlink(isBlink, color, duration, result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof BlinkResult) {
@@ -785,6 +821,7 @@ public class Incredist {
      * @param failure キャンセル失敗時の処理
      */
     public void cancel(OnSuccessVoidFunction success, OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.cancel(result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS) {
@@ -807,6 +844,7 @@ public class Incredist {
      * @param failure 設定失敗時の処理
      */
     public void stop(@Nullable OnSuccessVoidFunction success, @Nullable OnFailureFunction failure) {
+        FLog.d(TAG,"");
         if (mController != null) {
             mController.stop(result -> {
                 if (result.status == IncredistResult.STATUS_SUCCESS) {
@@ -827,6 +865,7 @@ public class Incredist {
      */
     //package
     void notifyDisconnect() {
+        FLog.d(TAG,"");
         IncredistManager.IncredistConnectionListener listener = mConnectionListenerRef.get();
         if (listener != null && mController != null) {
             mController.postCallback(() -> {
