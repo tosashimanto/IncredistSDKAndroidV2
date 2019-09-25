@@ -12,6 +12,7 @@ import android.support.annotation.WorkerThread;
 
 import java.nio.ByteBuffer;
 import java.util.Locale;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -50,9 +51,12 @@ public class UsbMFiTransport implements MFiTransport {
     private UsbRequest mReceiveRequest;
     private ByteBuffer mReceiveBuffer = ByteBuffer.allocate(MAX_PACKET_LENGTH);
 
+    //ANDROID_TFPS-1127 クラッシュ抑止
     private final MFiResponse mResponse = new MFiResponse();
     private MFiCommand mCommand = null;
 
+    private Future<UsbRequest> mFuture = null;
+    private boolean mIsReleasing = false ;
     /**
      * コンストラクタ.
      *
@@ -64,7 +68,7 @@ public class UsbMFiTransport implements MFiTransport {
         mUsbInterface = usbInterface;
 
         mExecutor = Executors.newCachedThreadPool();
-
+        mIsReleasing = false;
         FLog.d(TAG, String.format(Locale.US, "proto:%d endpoints:%d", usbInterface.getInterfaceProtocol(), usbInterface.getEndpointCount()));
         for (int i = 0; i < usbInterface.getEndpointCount(); i++) {
             UsbEndpoint endpoint = usbInterface.getEndpoint(i);
@@ -93,6 +97,11 @@ public class UsbMFiTransport implements MFiTransport {
     @WorkerThread
     @Override
     public IncredistResult sendCommand(MFiCommand... commandList) {
+        FLog.d(TAG,"");
+        //ANDROID_TFPS-1127 クラッシュ抑止
+        if( mIsReleasing ) {
+            return new IncredistResult(IncredistResult.STATUS_RELEASED );
+        }
         if (commandList == null || commandList.length == 0) {
             return new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND);
         }
@@ -173,6 +182,7 @@ public class UsbMFiTransport implements MFiTransport {
                             mResponse.appendData(buf, 0, length);
                         } else if (request == null) {
                             // 受信エラー
+                            FLog.d(TAG,"Error requestWait returns null");
                             break;
                         } else {
                             FLog.d(TAG, String.format(Locale.US, "unknown request endpoint:%d", request.getEndpoint().getEndpointNumber()));
@@ -211,6 +221,11 @@ public class UsbMFiTransport implements MFiTransport {
     }
 
     private void queueRequest(UsbRequest request, ByteBuffer buffer) {
+        //ANDROID_TFPS-1127 クラッシュ抑止
+        if( mIsReleasing ) {
+            return ;
+        }
+        FLog.d(TAG,"");
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             FLog.d(TAG, String.format(Locale.US, "queue endpoint:%d with length", request.getEndpoint().getEndpointNumber()));
             if (!request.queue(buffer, MAX_PACKET_LENGTH)) {
@@ -226,20 +241,29 @@ public class UsbMFiTransport implements MFiTransport {
 
     @SuppressWarnings("Convert2MethodRef")
     private UsbRequest requestWait(long timeout) throws TimeoutException {
+        FLog.d(TAG,"");
+        //ANDROID_TFPS-1127
+        if( mIsReleasing ) {
+            return null ;
+        }
         UsbDeviceConnection connection = mConnection;
         if (connection == null) {
             return null;
         }
         // ANDROID_GMO-595　Long.MAX_VALUEが指定された場合はタイムアウト無しとする
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            Future<UsbRequest> future = mExecutor.submit(() -> connection.requestWait());
+            //ANDROID_TFPS-1127 クラッシュ抑止
+            mFuture = mExecutor.submit(() -> connection.requestWait());
             try {
                 if (timeout == Long.MAX_VALUE) {
-                    return future.get();
+                    return mFuture.get();
                 } else {
-                    return future.get(timeout, TimeUnit.MILLISECONDS);
+                    return mFuture.get(timeout, TimeUnit.MILLISECONDS);
                 }
             } catch (InterruptedException | ExecutionException e) {
+                return null;
+            } catch ( CancellationException c ) {
+                FLog.d(TAG,"Futrue get Canceled");
                 return null;
             }
         } else {
@@ -253,6 +277,10 @@ public class UsbMFiTransport implements MFiTransport {
 
     private boolean sendRequests(MFiCommand[] commandList) {
         FLog.d(TAG, String.format(Locale.US, "sendRequests commandList.length:%d", commandList.length));
+        //ANDROID_TFPS-1127 クラッシュ抑止
+        if( mIsReleasing ) {
+            return false ;
+        }
         for (MFiCommand command : commandList) {
             int count = command.getPacketCount(MAX_PACKET_LENGTH);
 
@@ -305,6 +333,13 @@ public class UsbMFiTransport implements MFiTransport {
 
     @Override
     public void release() {
+        FLog.d(TAG,"");
+
+        //ANDROID_TFPS-1127 クラッシュ抑止
+        mIsReleasing = true ;
+        if( mFuture != null ) {
+            mFuture.cancel(true);
+        }
         UsbDeviceConnection connection = mConnection;
         if (connection != null) {
             UsbInterface usbInterface = mUsbInterface;
@@ -313,6 +348,15 @@ public class UsbMFiTransport implements MFiTransport {
             }
             connection.close();
         }
+        //ANDROID_TFPS-1127 クラッシュ抑止
+        mSendRequest.cancel();
+        mSendRequest.close();
+        mSendBuffer.clear();
+        mReceiveBuffer.clear();
+        mFuture = null ;
+        mReceiveRequest.cancel();
+        mReceiveRequest.close();
+
         mConnection = null;
         mSendEndpoint = null;
         mReceiveEndpoint = null;

@@ -878,9 +878,11 @@ public class Incredist {
      * Incredist との接続リソースを解放します
      */
     public void release() {
-        IncredistController controller = mController;
-        if (controller != null) {
-            controller.release();
+        FLog.d(TAG,"");
+        //ANDROID_TFPS-1127 クラッシュ抑止
+        if (mController != null) {
+            mController.release();
+            mController = null;
         }
 
         WeakReference<IncredistManager.IncredistConnectionListener> connectionListenerRef = mConnectionListenerRef;
@@ -888,7 +890,6 @@ public class Incredist {
             connectionListenerRef.clear();
         }
 
-        mController = null;
         mManager = null;
     }
 

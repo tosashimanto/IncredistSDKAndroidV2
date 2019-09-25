@@ -522,10 +522,13 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
     @Override
     public void release() {
         if (mMFiTransport != null) {
+            //ANDROID_TFPS-1127 クラッシュ抑止
+            mMFiTransport.cancel();
             mMFiTransport.release();
         }
         mController = null;
         mMFiTransport = null;
+
     }
 
 }
