@@ -41,22 +41,13 @@ public class UsbMFiTransport implements MFiTransport {
     @Nullable
     private UsbInterface mUsbInterface;
 
-    @Nullable
-    private UsbEndpoint mSendEndpoint;
     private UsbRequest mSendRequest;
-    private ByteBuffer mSendBuffer = ByteBuffer.allocate(MAX_PACKET_LENGTH);
-
-    @Nullable
-    private UsbEndpoint mReceiveEndpoint;
     private UsbRequest mReceiveRequest;
-    private ByteBuffer mReceiveBuffer = ByteBuffer.allocate(MAX_PACKET_LENGTH);
-
-    //ANDROID_TFPS-1127 クラッシュ抑止
-    private final MFiResponse mResponse = new MFiResponse();
-    private MFiCommand mCommand = null;
 
     private Future<UsbRequest> mFuture = null;
     private boolean mIsReleasing = false ;
+
+    private Object mLockObj = new Object();
     /**
      * コンストラクタ.
      *
@@ -76,13 +67,13 @@ public class UsbMFiTransport implements MFiTransport {
             FLog.d(TAG, String.format(Locale.US, "endpoint:%d type:%d direction:%d", endpoint.getEndpointNumber(), endpoint.getType(), endpoint.getDirection()));
             if (endpoint.getType() == UsbConstants.USB_ENDPOINT_XFER_INT) {
                 if (endpoint.getDirection() == UsbConstants.USB_DIR_IN) {
-                    mReceiveEndpoint = endpoint;
+                    UsbEndpoint receiveEndpoint = endpoint;
                     mReceiveRequest = new UsbRequest();
-                    mReceiveRequest.initialize(mConnection, mReceiveEndpoint);
+                    mReceiveRequest.initialize(mConnection, receiveEndpoint);
                 } else if (endpoint.getDirection() == UsbConstants.USB_DIR_OUT) {
-                    mSendEndpoint = endpoint;
+                    UsbEndpoint sendEndpoint = endpoint;
                     mSendRequest = new UsbRequest();
-                    mSendRequest.initialize(mConnection, mSendEndpoint);
+                    mSendRequest.initialize(mConnection, sendEndpoint);
                 }
             }
         }
@@ -105,19 +96,13 @@ public class UsbMFiTransport implements MFiTransport {
         if (commandList == null || commandList.length == 0) {
             return new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND);
         }
-
         MFiCommand firstCommand = commandList[0];
-        mCommand = firstCommand;
+        MFiCommand command = firstCommand;
         long startTime = System.currentTimeMillis();
         FLog.d(TAG, String.format("sendCommand %s", firstCommand.getClass().getSimpleName()));
-
         if (!sendRequests(commandList)) {
             return new IncredistResult(IncredistResult.STATUS_SEND_TIMEOUT);
         }
-        byte[] buf = new byte[MAX_PACKET_LENGTH];
-
-        mResponse.clear();
-
         if (firstCommand.getResponseTimeout() == 0) {
             // 応答パケットがない場合は guardWait だけ待機して、 MFiNoResponse を結果とする
             try {
@@ -125,98 +110,99 @@ public class UsbMFiTransport implements MFiTransport {
             } catch (InterruptedException ex) {
                 // ignore.
             }
-
-            mCommand = null;
+            command = null;
             FLog.d(TAG, String.format("sendCommand has no response %s", firstCommand.getClass().getSimpleName()));
             return firstCommand.parseResponse(new MFiNoResponse());
         } else {
-            synchronized (mResponse) {
-                FLog.d(TAG, String.format("sendCommand recv packet(s) for %s", firstCommand.getClass().getSimpleName()));
-                boolean continueReceive;
+            FLog.d(TAG, String.format("sendCommand recv packet(s) for %s", firstCommand.getClass().getSimpleName()));
+            boolean continueReceive;
+            do {
+                MFiResponse response = new MFiResponse();
+                response.clear();
                 do {
                     continueReceive = false;
+                    long timeout = firstCommand.getResponseTimeout();
+                    if (timeout <= 0) {
+                        timeout = USB_TIMEOUT;
+                    }
+                    ByteBuffer receiveBuffer = ByteBuffer.allocate(MAX_PACKET_LENGTH);
+                    receiveBuffer.clear();
+                    for (int n = 0; n < MAX_PACKET_LENGTH; n++) {
+                        receiveBuffer.put((byte) 0x00);
+                    }
+                    receiveBuffer.clear();
 
-                    do {
-                        long timeout = firstCommand.getResponseTimeout();
-                        if (timeout <= 0) {
-                            timeout = USB_TIMEOUT;
-                        }
-
-                        mReceiveBuffer.clear();
-                        for (int n = 0; n < MAX_PACKET_LENGTH; n++) {
-                            mReceiveBuffer.put((byte) 0x00);
-                        }
-                        mReceiveBuffer.clear();
-                        queueRequest(mReceiveRequest, mReceiveBuffer);
-
-                        UsbRequest request;
-                        try {
-                            FLog.d(TAG, "sendCommand " + firstCommand.getClass().getSimpleName());
-                            FLog.d(TAG, "requestWait(" + timeout + ")");
-                            while ((request = requestWait(timeout)) != mReceiveRequest) {
-                                if (request == null) {
-                                    break;
-                                }
-                                try {
-                                    Thread.sleep(SLEEP_INTERVAL);
-                                } catch (InterruptedException e) {
-                                    FLog.d(TAG, "InterruptedException:" + e.getMessage());
-                                }
+                    // ANDROID_TFPS-1196
+                    synchronized (mLockObj) {
+                        queueRequest(mReceiveRequest, receiveBuffer);
+                    }
+                    UsbRequest request;
+                    try {
+                        FLog.d(TAG, "sendCommand " + firstCommand.getClass().getSimpleName());
+                        FLog.d(TAG, "requestWait(" + timeout + ")");
+                        while ((request = requestWait(timeout)) != mReceiveRequest) {
+                            if (request == null) {
+                                break;
                             }
-                        } catch (TimeoutException ex) {
-                            FLog.d(TAG, "TimeoutException");
-                            mReceiveRequest.cancel();
-                            return new IncredistResult(IncredistResult.STATUS_TIMEOUT);
-                        }
-
-                        if (request == mReceiveRequest) {
-                            mReceiveBuffer.flip();
-                            int length = mReceiveBuffer.remaining();
-                            if (length == 0) {
-                                // USB の受信データが 0byte の場合は次のパケットを待つ
-                                continue;
-                            }
-
-                            mReceiveBuffer.get(buf, 0, length);
-                            FLog.d(TAG, String.format(Locale.US, "sendCommand received length:%d data: %s", length, LogUtil.hexString(buf, 0, length)));
-                            mResponse.appendData(buf, 0, length);
-                        } else if (request == null) {
-                            // 受信エラー
-                            FLog.d(TAG,"Error requestWait returns null");
-                            break;
-                        } else {
-                            FLog.d(TAG, String.format(Locale.US, "unknown request endpoint:%d", request.getEndpoint().getEndpointNumber()));
-                        }
-                    } while (mResponse.isEmpty() || mResponse.needMoreData());
-
-                    if (mResponse.isValid()) {
-                        FLog.d(TAG, "recv valid packet: " + LogUtil.hexString(mResponse.getData()));
-                        IncredistResult result = firstCommand.parseResponse(mResponse.copyInstance());
-                        if (result.status == IncredistResult.STATUS_CONTINUE_MULTIPLE_RESPONSE) {
-                            // 継続するパケットがある場合はパケット情報をクリアして次のデータを待つ
-                            mResponse.clear();
-                            continueReceive = true;
-                        } else {
                             try {
-                                Thread.sleep(firstCommand.getGuardWait());
-                            } catch (InterruptedException ex) {
-                                // ignore.
+                                Thread.sleep(SLEEP_INTERVAL);
+                            } catch (InterruptedException e) {
+                                FLog.d(TAG, "InterruptedException:" + e.getMessage());
                             }
-                            long real = System.currentTimeMillis() - startTime;
-                            FLog.d(TAG, String.format(Locale.JAPANESE, "sendCommand result:%d wait:%d real:%d %s", result.status, firstCommand.getResponseTimeout(), real, mCommand.getClass().getSimpleName()));
-
-                            mCommand = null;
-                            if (result.status == IncredistResult.STATUS_SUCCESS) {
-                                mResponse.clear();
-                            }
-                            return result;
                         }
+                    } catch (TimeoutException ex) {
+                        FLog.d(TAG, "TimeoutException");
+                        mReceiveRequest.cancel();
+                        return new IncredistResult(IncredistResult.STATUS_TIMEOUT);
                     }
 
-                } while (continueReceive);
-            }
-        }
+                    if (request == mReceiveRequest) {
+                        receiveBuffer.flip();
+                        int length = receiveBuffer.remaining();
+                        if (length == 0) {
+                            // USB の受信データが 0byte の場合は次のパケットを待つ
+                            continue;
+                        }
 
+                        byte[] buf = new byte[MAX_PACKET_LENGTH];
+                        receiveBuffer.get(buf, 0, length);
+                        FLog.d(TAG, String.format(Locale.US, "sendCommand received length:%d data: %s", length, LogUtil.hexString(buf, 0, length)));
+                        response.appendData(buf, 0, length);
+                    } else if (request == null) {
+                        // 受信エラー
+                        FLog.d(TAG, "Error requestWait returns null");
+                        break;
+                    } else {
+                        FLog.d(TAG, String.format(Locale.US, "unknown request endpoint:%d", request.getEndpoint().getEndpointNumber()));
+                    }
+                } while (response.isEmpty() || response.needMoreData());
+
+                if (response.isValid()) {
+                    FLog.d(TAG, "recv valid packet: " + LogUtil.hexString(response.getData()));
+                    IncredistResult result = firstCommand.parseResponse(response.copyInstance());
+                    if (result.status == IncredistResult.STATUS_CONTINUE_MULTIPLE_RESPONSE) {
+                        // 継続するパケットがある場合はパケット情報をクリアして次のデータを待つ
+                        response.clear();
+                        continueReceive = true;
+                    } else {
+                        try {
+                            Thread.sleep(firstCommand.getGuardWait());
+                        } catch (InterruptedException ex) {
+                            // ignore.
+                        }
+                        long real = System.currentTimeMillis() - startTime;
+                        FLog.d(TAG, String.format(Locale.JAPANESE, "sendCommand result:%d wait:%d real:%d %s", result.status, firstCommand.getResponseTimeout(), real, command.getClass().getSimpleName()));
+
+                        command = null;
+                        if (result.status == IncredistResult.STATUS_SUCCESS) {
+                            response.clear();
+                        }
+                        return result;
+                    }
+                }
+
+            } while (continueReceive);
+        }
         return new IncredistResult(IncredistResult.STATUS_FAILURE);
     }
 
@@ -291,15 +277,19 @@ public class UsbMFiTransport implements MFiTransport {
 
                 //バッファの0x00クリア。
                 //clearメソッドはポインタ位置を０に戻すだけでバッファ内部はクリアしないことに注意
-                mSendBuffer.clear();
+                ByteBuffer sendBuffer = ByteBuffer.allocate(MAX_PACKET_LENGTH);
+                sendBuffer.clear();
                 for (int n = 0; n < MAX_PACKET_LENGTH; n++) {
-                    mSendBuffer.put((byte) 0x00);
+                    sendBuffer.put((byte) 0x00);
                 }
                 //バッファの0x00クリアによりポインタ位置がMAX_PACKET_LENGTHに移動したので改めてポインタ位置を０に戻す。
-                mSendBuffer.clear();
-                mSendBuffer.put(data);
-                queueRequest(mSendRequest, mSendBuffer);
+                sendBuffer.clear();
+                sendBuffer.put(data);
 
+                // ANDROID_TFPS-1196
+                synchronized (mLockObj) {
+                    queueRequest(mSendRequest, sendBuffer);
+                }
                 UsbRequest request;
                 try {
                     while ((request = requestWait(USB_TIMEOUT)) != mSendRequest) {
@@ -334,33 +324,28 @@ public class UsbMFiTransport implements MFiTransport {
     @Override
     public void release() {
         FLog.d(TAG,"");
-
-        //ANDROID_TFPS-1127 クラッシュ抑止
-        mIsReleasing = true ;
-        if( mFuture != null ) {
+        if (mFuture != null) {
             mFuture.cancel(true);
         }
-        UsbDeviceConnection connection = mConnection;
-        if (connection != null) {
-            UsbInterface usbInterface = mUsbInterface;
-            if (usbInterface != null) {
-                connection.releaseInterface(usbInterface);
+        // ANDROID_TFPS-1196
+        synchronized (mLockObj) {
+            //ANDROID_TFPS-1127 クラッシュ抑止
+            mIsReleasing = true;
+            UsbDeviceConnection connection = mConnection;
+            if (connection != null) {
+                UsbInterface usbInterface = mUsbInterface;
+                if (usbInterface != null) {
+                    connection.releaseInterface(usbInterface);
+                }
+                connection.close();
             }
-            connection.close();
+            //ANDROID_TFPS-1127 クラッシュ抑止
+            mSendRequest.cancel();
+            mReceiveRequest.cancel();
+            mFuture = null;
+            mConnection = null;
+            mUsbInterface = null;
         }
-        //ANDROID_TFPS-1127 クラッシュ抑止
-        mSendRequest.cancel();
-        mSendRequest.close();
-        mSendBuffer.clear();
-        mReceiveBuffer.clear();
-        mFuture = null ;
-        mReceiveRequest.cancel();
-        mReceiveRequest.close();
-
-        mConnection = null;
-        mSendEndpoint = null;
-        mReceiveEndpoint = null;
-        mUsbInterface = null;
     }
 
     @Override
