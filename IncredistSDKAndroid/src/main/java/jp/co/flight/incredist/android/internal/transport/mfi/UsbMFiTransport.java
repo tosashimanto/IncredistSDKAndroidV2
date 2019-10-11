@@ -48,8 +48,9 @@ public class UsbMFiTransport implements MFiTransport {
 
     private Future<UsbRequest> mFuture = null;
     private boolean mIsReleasing = false ;
-
+    
     // ANDROID_TFPS-1196
+    private boolean mLoopBreak = false ;
     private static final Object mLockObj = new Object();
     /**
      * コンストラクタ.
@@ -58,6 +59,8 @@ public class UsbMFiTransport implements MFiTransport {
      * @param usbInterface UsbInterface オブジェクト
      */
     public UsbMFiTransport(@NonNull UsbDeviceConnection connection, @NonNull UsbInterface usbInterface) {
+        FLog.d(TAG, "");
+        mLoopBreak = false ;
         mConnection = connection;
         mUsbInterface = usbInterface;
 
@@ -93,13 +96,12 @@ public class UsbMFiTransport implements MFiTransport {
     @Override
     public IncredistResult sendCommand(MFiCommand... commandList) {
         FLog.d(TAG,"");
+        mLoopBreak = false ;
         //ANDROID_TFPS-1127 クラッシュ抑止
         if( mIsReleasing ) {
-            FLog.d(TAG,"");
             return new IncredistResult(IncredistResult.STATUS_RELEASED );
         }
         if (commandList == null || commandList.length == 0) {
-            FLog.d(TAG,"");
             return new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND);
         }
         MFiCommand firstCommand = commandList[0];
@@ -107,13 +109,11 @@ public class UsbMFiTransport implements MFiTransport {
         long startTime = System.currentTimeMillis();
         FLog.d(TAG, String.format("sendCommand %s", firstCommand.getClass().getSimpleName()));
         if (!sendRequests(commandList)) {
-            FLog.d(TAG, "");
             return new IncredistResult(IncredistResult.STATUS_SEND_TIMEOUT);
         }
         if (firstCommand.getResponseTimeout() == 0) {
             // 応答パケットがない場合は guardWait だけ待機して、 MFiNoResponse を結果とする
             try {
-                FLog.d(TAG, "");
                 Thread.sleep(firstCommand.getGuardWait());
             } catch (InterruptedException ex) {
                 // ignore.
@@ -131,11 +131,8 @@ public class UsbMFiTransport implements MFiTransport {
                 if (timeout <= 0) {
                     timeout = USB_TIMEOUT;
                 }
-                FLog.d(TAG, "sync wait");
                 synchronized (mLockObj) {
-                    FLog.d(TAG, "sync in");
                     do {
-                        FLog.d(TAG, "");
                         ByteBuffer receiveBuffer = ByteBuffer.allocate(MAX_PACKET_LENGTH);
                         receiveBuffer.clear();
                         for (int n = 0; n < MAX_PACKET_LENGTH; n++) {
@@ -147,35 +144,30 @@ public class UsbMFiTransport implements MFiTransport {
                         try {
                             FLog.d(TAG, "sendCommand " + firstCommand.getClass().getSimpleName());
                             FLog.d(TAG, "requestWait(" + timeout + ")");
-                            while (true) {
-                                FLog.d(TAG, "");
+                            do {
                                 if (isRequested == false) {
-                                    FLog.d(TAG, "");
                                     queueRequest(mReceiveRequest, receiveBuffer);
                                     isRequested = true;
                                 }
                                 if ((request = requestWait(timeout)) == mReceiveRequest) {
-                                    FLog.d(TAG, "");
                                     break;
                                 }
                                 if (request == null) {
-                                    FLog.d(TAG, "");
                                     break;
                                 }
                                 try {
-                                    FLog.d(TAG, "");
                                     Thread.sleep(SLEEP_INTERVAL);
                                 } catch (InterruptedException e) {
                                     FLog.d(TAG, "InterruptedException:" + e.getMessage());
                                 }
-                            }
+                            } while (!mLoopBreak);
+
                         } catch (TimeoutException ex) {
                             FLog.d(TAG, "TimeoutException");
                             mReceiveRequest.cancel();
                             return new IncredistResult(IncredistResult.STATUS_TIMEOUT);
                         }
                         if (request == mReceiveRequest) {
-                            FLog.d(TAG, "");
                             receiveBuffer.flip();
                             int length = receiveBuffer.remaining();
                             if (length == 0) {
@@ -195,7 +187,7 @@ public class UsbMFiTransport implements MFiTransport {
                         } else {
                             FLog.d(TAG, String.format(Locale.US, "unknown request endpoint:%d", request.getEndpoint().getEndpointNumber()));
                         }
-                    } while (response.isEmpty() || response.needMoreData());
+                    } while ((response.isEmpty() || response.needMoreData() ) && !mLoopBreak );
                 } //synchronized
                 if (response.isValid()) {
                     FLog.d(TAG, "recv valid packet: " + LogUtil.hexString(response.getData()));
@@ -206,7 +198,6 @@ public class UsbMFiTransport implements MFiTransport {
                         continueReceive = true;
                     } else {
                         try {
-                            FLog.d(TAG, "");
                             Thread.sleep(firstCommand.getGuardWait());
                         } catch (InterruptedException ex) {
                             // ignore.
@@ -215,17 +206,13 @@ public class UsbMFiTransport implements MFiTransport {
                         FLog.d(TAG, String.format(Locale.JAPANESE, "sendCommand result:%d wait:%d real:%d %s", result.status, firstCommand.getResponseTimeout(), real, command.getClass().getSimpleName()));
                         command = null;
                         if (result.status == IncredistResult.STATUS_SUCCESS) {
-                            FLog.d(TAG, "");
                             response.clear();
                         }
-                        FLog.d(TAG, "");
                         return result;
                     }
                 }
-                FLog.d(TAG, "");
-            } while (continueReceive);
+            } while (continueReceive && !mLoopBreak );
         }
-        FLog.d(TAG, "");
         return new IncredistResult(IncredistResult.STATUS_FAILURE);
     }
 
@@ -250,7 +237,6 @@ public class UsbMFiTransport implements MFiTransport {
         FLog.d(TAG,"");
         UsbDeviceConnection connection = mConnection;
         if (connection == null) {
-            FLog.d(TAG,"");
             return null;
         }
         // ANDROID_GMO-595　Long.MAX_VALUEが指定された場合はタイムアウト無しとする
@@ -259,17 +245,13 @@ public class UsbMFiTransport implements MFiTransport {
             mFuture = mExecutor.submit(() -> connection.requestWait());
             try {
                 if (timeout == Long.MAX_VALUE) {
-                    FLog.d(TAG,"");
                     return mFuture.get();
                 } else {
-                    FLog.d(TAG,"");
                     return mFuture.get(timeout, TimeUnit.MILLISECONDS);
                 }
             } catch (InterruptedException | ExecutionException e) {
-                FLog.d(TAG,"");
                 return null;
             } catch (CancellationException c) {
-                FLog.d(TAG, "Futrue get Canceled");
                 return null;
             }
         } else {
@@ -285,7 +267,6 @@ public class UsbMFiTransport implements MFiTransport {
         FLog.d(TAG, String.format(Locale.US, "sendRequests commandList.length:%d", commandList.length));
         //ANDROID_TFPS-1127 クラッシュ抑止
         if( mIsReleasing ) {
-            FLog.d(TAG,"");
             return false ;
         }
         for (MFiCommand command : commandList) {
@@ -309,19 +290,15 @@ public class UsbMFiTransport implements MFiTransport {
                 boolean isRequested = false ;
                 UsbRequest request = null;
                 try {
-                    while (true) {
-                        FLog.d(TAG,"");
+                    do {
                         if (isRequested == false) {
-                            FLog.d(TAG, "");
                             queueRequest(mSendRequest, sendBuffer);
                             isRequested = true;
                         }
                         if ((request = requestWait(USB_TIMEOUT)) == mSendRequest) {
-                            FLog.d(TAG, "");
                             break;
                         }
                         if (request == null) {
-                            FLog.d(TAG,"");
                             return false;
                         }
                         try {
@@ -330,7 +307,7 @@ public class UsbMFiTransport implements MFiTransport {
                         } catch (InterruptedException e) {
                             FLog.d(TAG, "InterruptedException:" + e.getMessage());
                         }
-                    }
+                    } while (mLoopBreak);
                 } catch (TimeoutException ex) {
                     FLog.d(TAG, "TimeoutException");
                     mSendRequest.cancel();
@@ -346,23 +323,20 @@ public class UsbMFiTransport implements MFiTransport {
     //TODO キャンセル処理未実装(電子マネーアプリでは必要ないはず)
     @Override
     public IncredistResult cancel() {
-        return null;
+        return new IncredistResult(IncredistResult.STATUS_CANCELED);
     }
 
     @Override
     public void release() {
         FLog.d(TAG,"");
+        mLoopBreak = true ;
         mIsReleasing = true;
         if (mFuture != null) {
-            FLog.d(TAG,"");
             mFuture.cancel(true);
         }
-        FLog.d(TAG, "sync wait");
         synchronized (mLockObj) {
-            FLog.d(TAG, "sync in");
             UsbDeviceConnection connection = mConnection;
             if (connection != null) {
-                FLog.d(TAG,"");
                 UsbInterface usbInterface = mUsbInterface;
                 if (usbInterface != null) {
                     connection.releaseInterface(usbInterface);
@@ -370,12 +344,10 @@ public class UsbMFiTransport implements MFiTransport {
                 connection.close();
             
             }
-            FLog.d(TAG,"");
             mFuture = null;
             mConnection = null;
             mUsbInterface = null;
         } //synchronized
-        FLog.d(TAG,"");
     }
 
     @Override
