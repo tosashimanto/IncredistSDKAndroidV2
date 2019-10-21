@@ -531,11 +531,11 @@ public class IncredistController {
         mProtoController.release();
         mConnection = null;
 
-        //ANDROID_TFPS-1196
-        mCommandHandlerThread.quit();
-        mCallbackHandlerThread.quit();
-        mCancelHandlerThread.quit();
-        mStopHandlerThread.quit();
+        //ANDROID_TFPS-1196 ANDROID_TFPS-1214
+        mCommandHandlerThread.quitSafely();
+        mCallbackHandlerThread.quitSafely();
+        mCancelHandlerThread.quitSafely();
+        mStopHandlerThread.quitSafely();
         return true;
     }
 }
