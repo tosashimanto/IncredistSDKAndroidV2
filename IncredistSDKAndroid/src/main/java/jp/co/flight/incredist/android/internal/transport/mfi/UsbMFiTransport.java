@@ -333,6 +333,7 @@ public class UsbMFiTransport implements MFiTransport {
         mIsReleasing = true;
         if (mFuture != null) {
             mFuture.cancel(true);
+            mFuture = null;
         }
         synchronized (mLockObj) {
             UsbDeviceConnection connection = mConnection;
@@ -344,7 +345,6 @@ public class UsbMFiTransport implements MFiTransport {
                 connection.close();
             
             }
-            mFuture = null;
             mConnection = null;
             mUsbInterface = null;
         } //synchronized
