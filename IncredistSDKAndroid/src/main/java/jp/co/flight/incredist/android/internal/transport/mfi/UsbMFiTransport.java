@@ -219,7 +219,7 @@ public class UsbMFiTransport implements MFiTransport {
     private void queueRequest(UsbRequest request, ByteBuffer buffer) {
         //ANDROID_TFPS-1127 クラッシュ抑止
         FLog.d(TAG, "");
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
             FLog.d(TAG, String.format(Locale.US, "queue endpoint:%d with length", request.getEndpoint().getEndpointNumber()));
             if (!request.queue(buffer, MAX_PACKET_LENGTH)) {
                 FLog.d(TAG, "queue failed");
@@ -240,7 +240,7 @@ public class UsbMFiTransport implements MFiTransport {
             return null;
         }
         // ANDROID_GMO-595　Long.MAX_VALUEが指定された場合はタイムアウト無しとする
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
             //ANDROID_TFPS-1127 クラッシュ抑止
             mFuture = mExecutor.submit(() -> connection.requestWait());
             try {
