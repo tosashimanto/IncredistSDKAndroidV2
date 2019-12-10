@@ -62,4 +62,10 @@ public class MFiSetRealTimeCommand extends MFiCommand {
 
         return new IncredistResult(IncredistResult.STATUS_INVALID_RESPONSE);
     }
+
+    @Override
+    public long getResponseTimeout() {
+        return 5000; // SUPPRESS CHECKSTYLE MagicNumber
+    }
+
 }
