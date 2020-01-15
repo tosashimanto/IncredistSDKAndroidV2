@@ -13,6 +13,7 @@ import java.util.EnumSet;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.IncredistController;
+import jp.co.flight.incredist.android.internal.controller.result.BarcodeResult;
 import jp.co.flight.incredist.android.internal.controller.result.BlinkResult;
 import jp.co.flight.incredist.android.internal.controller.result.BootloaderVersionResult;
 import jp.co.flight.incredist.android.internal.controller.result.CardStatusResult;
@@ -24,6 +25,7 @@ import jp.co.flight.incredist.android.internal.controller.result.IncredistResult
 import jp.co.flight.incredist.android.internal.controller.result.MagCardResult;
 import jp.co.flight.incredist.android.internal.util.FLog;
 import jp.co.flight.incredist.android.internal.util.LogUtil;
+import jp.co.flight.incredist.android.model.Barcode;
 import jp.co.flight.incredist.android.model.PinEntryResult;
 import jp.co.flight.incredist.android.internal.controller.result.RtcResult;
 import jp.co.flight.incredist.android.model.BootloaderVersion;
@@ -438,6 +440,29 @@ public class Incredist {
                 if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof MagCardResult) {
                     if (success != null) {
                         success.onSuccess(((MagCardResult) result).toMagCard());
+                    }
+                } else {
+                    if (failure != null) {
+                        failure.onFailure(result.status);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * バーコード読み取り
+     *
+     * @param timeout タイムアウト時間(msec)
+     * @param success 成功時処理
+     * @param failure 失敗時処理
+     */
+    public void scanBarcode(long timeout, @Nullable OnSuccessFunction<Barcode> success, @Nullable OnFailureFunction failure) {
+        if (mController != null) {
+            mController.scanBarcode(timeout, result -> {
+                if (result.status == IncredistResult.STATUS_SUCCESS && result instanceof BarcodeResult) {
+                    if (success != null) {
+                        success.onSuccess(((BarcodeResult) result).toBarcode());
                     }
                 } else {
                     if (failure != null) {

@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Locale;
@@ -75,6 +76,20 @@ public class BleMFiTransport implements MFiTransport {
     @Override
     public boolean isBusy() {
         return false;
+    }
+
+    /**
+     * 複数コマンドを送信し、複数レスポンスを受信して返却します.
+     *
+     * @param commandList 送信コマンド
+     * @return レスポンスの MFiパケット
+     */
+    @WorkerThread
+    @Override
+    public ArrayList<IncredistResult> sendCommands(MFiCommand... commandList) {
+        // ANDROID_GMO-726でUSB側に追加
+        // Ble側は何もしない
+        return new ArrayList<IncredistResult>();
     }
 
     /**
@@ -326,7 +341,7 @@ public class BleMFiTransport implements MFiTransport {
                 ErrorLatch notifyLatch = new ErrorLatch();
                 notifyLatch.mErrorCode = IncredistResult.STATUS_SUCCESS;
 
-                connection.setNotifyFunction((notify)->{
+                connection.setNotifyFunction((notify) -> {
 
                     // onCharactaristicChangedが発生した時の処理
                     // BLE notify 受信時処理 : mResponse に append する
@@ -421,10 +436,10 @@ public class BleMFiTransport implements MFiTransport {
 
     /**
      * 受信待ち処理をキャンセル
-     *
+     * <p>
      * キャンセルできるかどうかは MFiCommand によって異なる
      * キャンセルできないコマンドの場合は STATUS_NOT_CANCELLABLE を返す
-     *
+     * <p>
      * キャンセルできるコマンドであっても、送信 / 受信待ち処理には、
      * - 送信前
      * - 送信中
@@ -434,13 +449,13 @@ public class BleMFiTransport implements MFiTransport {
      * の状態がある。送信前の場合は mCancelling != null をチェックし、
      * 受信待ちの場合は mResponse の notify を受け取ってそれぞれ countdown するので
      * キャンセル成功する。
-     *
+     * <p>
      * 送信中の場合はコマンド途中で停止させることはせずに送信完了まで一旦待つ
-     *
+     * <p>
      * 受信中(すでにMFiパケットの一部を受け取っている)場合には
      * フラグを立てて、MFiパケットの残りを受信した際にキャンセル済みの
      * コマンドについてはコールバックを呼び出さない。
-     *
+     * <p>
      * このメソッドは sendCommand とは別のスレッドで実行する必要がある
      *
      * @return キャンセル成功した場合は STATUS_SUCCESS, 失敗した場合はエラー結果を含む IncredistResult オブジェクト
