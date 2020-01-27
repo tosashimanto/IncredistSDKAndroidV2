@@ -10,7 +10,6 @@ import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.List;
 
-import jp.co.flight.incredist.android.Incredist;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
 import jp.co.flight.incredist.android.internal.exception.ParameterException;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiBootloaderVersionCommand;
@@ -299,7 +298,7 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
     }
 
     @Override
-    public void scanBarcode(long timeout, IncredistController.Callback callback){
+    public void scanBarcode(long timeout, IncredistController.Callback callback) {
         postMFiCommand(new MFiScanBarcodeCommand(timeout), callback);
     }
 
@@ -524,7 +523,9 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
             IncredistController controller = mController;
             if (controller != null) {
                 controller.postCallback(() -> {
-                    callback.onResult(new IncredistResult(IncredistResult.STATUS_SUCCESS));
+                    if (callback != null) {
+                        callback.onResult(new IncredistResult(IncredistResult.STATUS_SUCCESS));
+                    }
                 });
             }
         }
