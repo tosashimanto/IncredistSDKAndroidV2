@@ -438,7 +438,7 @@ public class UsbMFiTransport implements MFiTransport {
                     } catch (InterruptedException e) {
                         FLog.d(TAG, "InterruptedException:" + e.getMessage());
                     }
-                } while (mLoopBreak);
+                } while (!mLoopBreak);
             } catch (TimeoutException ex) {
                 FLog.d(TAG, "sendRequest - TimeoutException");
                 FLog.d(TAG, "command:" + command.toString());
