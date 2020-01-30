@@ -207,7 +207,8 @@ public class UsbMFiTransport implements MFiTransport {
                             FLog.d(TAG, String.format(Locale.US, "sendCommand received length:%d data: %s", length, LogUtil.hexString(buf, 0, length)));
                             response.appendData(buf, 0, length);
                         } else if (request == null) {
-                            if (mFuture.isCancelled()) {
+                            if (mCancelling != null) {
+                                // キャンセルされていた場合, STATUS_CANCELEDを返す
                                 resultList.add(new IncredistResult(IncredistResult.STATUS_CANCELED));
                                 return resultList;
                             }
@@ -332,7 +333,8 @@ public class UsbMFiTransport implements MFiTransport {
                                 FLog.d(TAG, String.format(Locale.US, "sendCommand received length:%d data: %s", length, LogUtil.hexString(buf, 0, length)));
                                 response.appendData(buf, 0, length);
                             } else if (request == null) {
-                                if (mFuture != null && mFuture.isCancelled()) {
+                                if (mCancelling != null) {
+                                    // キャンセルされていた場合, STATUS_CANCELEDを返す
                                     return new IncredistResult(IncredistResult.STATUS_CANCELED);
                                 }
                                 // 受信エラー
@@ -505,13 +507,9 @@ public class UsbMFiTransport implements MFiTransport {
      * - 受信待ち
      * - 受信中
      * - 受信完了後
-     * の状態がある。送信前の場合は mCancelling != null をチェックし、
-     * 受信待ちの場合は mFuture の notify を受け取ってそれぞれ countdown するので
-     * キャンセル成功する。
-     * 送信中の場合はコマンド途中で停止させることはせずに送信完了まで一旦待つ
-     * 受信中(すでにMFiパケットの一部を受け取っている)場合には
-     * フラグを立てて、MFiパケットの残りを受信した際にキャンセル済みの
-     * コマンドについてはコールバックを呼び出さない。
+     * の状態がある。
+     * 送信前、受信待ちの場合は mCancelling != null をチェックする
+     * 送信中、受信中の場合はそれぞれのRequestをcancelする
      * このメソッドは sendCommand とは別のスレッドで実行する必要がある
      *
      * @return キャンセル成功した場合は STATUS_SUCCESS, 失敗した場合はエラー結果を含む IncredistResult オブジェクト
@@ -525,19 +523,20 @@ public class UsbMFiTransport implements MFiTransport {
         if (mIsReleasing) {
             return new IncredistResult(IncredistResult.STATUS_RELEASED);
         }
-        synchronized (mFuture) {
-            if (mCommand == null || !mCommand.cancelable()) {
-                FLog.d(TAG, "Not cancel");
-                return new IncredistResult(IncredistResult.STATUS_NOT_CANCELLABLE);
-            }
-            mCancelling = new CountDownLatch(1);
-            mSendRequest.cancel();
-            mReceiveRequest.cancel();
+        if (mCommand == null || !mCommand.cancelable()) {
+            FLog.d(TAG, "Not cancel");
+            return new IncredistResult(IncredistResult.STATUS_NOT_CANCELLABLE);
+        }
+        mCancelling = new CountDownLatch(1);
+        // requestWaitはP以前の場合はmFutureを使用しているが
+        // Q以降は使用しない作りになっているので合わせる
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
             if (mFuture != null) {
                 mFuture.cancel(true);
-                mFuture.notifyAll();
             }
         }
+        mSendRequest.cancel();
+        mReceiveRequest.cancel();
         try {
             boolean res = mCancelling.await(CANCEL_TIMEOUT, TimeUnit.MILLISECONDS);
             if (res) {
