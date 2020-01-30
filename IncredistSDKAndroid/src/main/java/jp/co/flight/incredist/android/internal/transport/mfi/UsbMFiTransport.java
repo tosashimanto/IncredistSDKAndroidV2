@@ -141,9 +141,9 @@ public class UsbMFiTransport implements MFiTransport {
                 return resultList;
             }
 
-            mCommand = iterator.next();
             // データ送信
             synchronized (mLockObj) {
+                mCommand = iterator.next();
                 if (sendRequest(mCommand)) {
                     // データ受信
                     FLog.d(TAG, String.format("sendCommand recv packet(s) for %s", firstCommand.getClass().getSimpleName()));
@@ -223,6 +223,7 @@ public class UsbMFiTransport implements MFiTransport {
                     resultList.add(new IncredistResult(IncredistResult.STATUS_SEND_TIMEOUT));
                     continue;
                 }
+                resultList.add(firstCommand.parseMFiResponse(response.copyInstance()));
 
                 if (iterator.hasNext()) {
                     response.clear();
@@ -290,7 +291,7 @@ public class UsbMFiTransport implements MFiTransport {
                                 FLog.d(TAG, "sendCommand " + firstCommand.getClass().getSimpleName());
                                 FLog.d(TAG, "requestWait(" + timeout + ")");
                                 do {
-                                    if (mCommand != null && mCommand.cancelable() && !response.hasData() && mCancelling != null) {
+                                    if (!response.hasData() && mCancelling != null) {
                                         mCommand = null;
                                         mCancelling.countDown();
                                         return new IncredistResult(IncredistResult.STATUS_CANCELED);
