@@ -557,11 +557,11 @@ public class UsbMFiTransport implements MFiTransport {
         FLog.d(TAG, "");
         mLoopBreak = true;
         mIsReleasing = true;
+        if (mFuture != null) {
+            mFuture.cancel(true);
+            mFuture = null;
+        }
         synchronized (mLockObj) {
-            if (mFuture != null) {
-                mFuture.cancel(true);
-                mFuture = null;
-            }
             UsbDeviceConnection connection = mConnection;
             if (connection != null) {
                 UsbInterface usbInterface = mUsbInterface;
