@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,6 +36,7 @@ public class UsbMFiTransport implements MFiTransport {
     private static final String TAG = "UsbMFiTransport";
     private static final int MAX_PACKET_LENGTH = 64;
     private static final long USB_TIMEOUT = 5000;
+    private static final long CANCEL_TIMEOUT = 5000;
     private static final long SLEEP_INTERVAL = 100;
 
     private final ExecutorService mExecutor;
@@ -55,6 +57,15 @@ public class UsbMFiTransport implements MFiTransport {
     // ANDROID_TFPS-1196
     private boolean mLoopBreak = false;
     private static final Object mLockObj = new Object();
+
+    /**
+     * 送信中のコマンド
+     */
+    private MFiCommand mCommand = null;
+    /**
+     * キャンセルフラグ
+     */
+    private CountDownLatch mCancelling = null;
 
     /**
      * コンストラクタ.
@@ -120,10 +131,20 @@ public class UsbMFiTransport implements MFiTransport {
         MFiResponse response = new MFiResponse();
 
         while (iterator.hasNext() && !mLoopBreak) {
-            MFiCommand command = iterator.next();
+            if (mIsReleasing) {
+                resultList.add(new IncredistResult(IncredistResult.STATUS_RELEASED));
+                return resultList;
+            }
+            if (mCancelling != null) {
+                mCancelling.countDown();
+                resultList.add(new IncredistResult(IncredistResult.STATUS_CANCELED));
+                return resultList;
+            }
+
             // データ送信
             synchronized (mLockObj) {
-                if (sendRequest(command)) {
+                mCommand = iterator.next();
+                if (sendRequest(mCommand)) {
                     // データ受信
                     FLog.d(TAG, String.format("sendCommand recv packet(s) for %s", firstCommand.getClass().getSimpleName()));
                     long timeout = firstCommand.getResponseTimeout();
@@ -142,6 +163,12 @@ public class UsbMFiTransport implements MFiTransport {
                             FLog.d(TAG, "sendCommand " + firstCommand.getClass().getSimpleName());
                             FLog.d(TAG, "requestWait(" + timeout + ")");
                             do {
+                                if (mCommand != null && mCommand.cancelable() && !response.hasData() && mCancelling != null) {
+                                    mCommand = null;
+                                    mCancelling.countDown();
+                                    resultList.add(new IncredistResult(IncredistResult.STATUS_CANCELED));
+                                    return resultList;
+                                }
                                 if (!isRequested) {
                                     queueRequest(mReceiveRequest, receiveBuffer);
                                     isRequested = true;
@@ -180,6 +207,11 @@ public class UsbMFiTransport implements MFiTransport {
                             FLog.d(TAG, String.format(Locale.US, "sendCommand received length:%d data: %s", length, LogUtil.hexString(buf, 0, length)));
                             response.appendData(buf, 0, length);
                         } else if (request == null) {
+                            if (mCancelling != null) {
+                                // キャンセルされていた場合, STATUS_CANCELEDを返す
+                                resultList.add(new IncredistResult(IncredistResult.STATUS_CANCELED));
+                                return resultList;
+                            }
                             // 受信エラー
                             FLog.d(TAG, "Error requestWait returns null");
                             break;
@@ -193,6 +225,7 @@ public class UsbMFiTransport implements MFiTransport {
                     continue;
                 }
                 resultList.add(firstCommand.parseMFiResponse(response.copyInstance()));
+
                 if (iterator.hasNext()) {
                     response.clear();
                 }
@@ -215,8 +248,12 @@ public class UsbMFiTransport implements MFiTransport {
                 return new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND);
             }
             MFiCommand firstCommand = commandList[0];
-            MFiCommand command = firstCommand;
+            mCommand = firstCommand;
             long startTime = System.currentTimeMillis();
+            if (mCancelling != null) {
+                mCancelling.countDown();
+                return new IncredistResult(IncredistResult.STATUS_CANCELED);
+            }
             FLog.d(TAG, String.format("sendCommand %s", firstCommand.getClass().getSimpleName()));
             if (!sendRequests(commandList)) {
                 return new IncredistResult(IncredistResult.STATUS_SEND_TIMEOUT);
@@ -228,7 +265,7 @@ public class UsbMFiTransport implements MFiTransport {
                 } catch (InterruptedException ex) {
                     // ignore.
                 }
-                command = null;
+                mCommand = null;
                 FLog.d(TAG, String.format("sendCommand has no response %s", firstCommand.getClass().getSimpleName()));
                 return firstCommand.parseResponse(new MFiNoResponse());
             } else {
@@ -255,6 +292,11 @@ public class UsbMFiTransport implements MFiTransport {
                                 FLog.d(TAG, "sendCommand " + firstCommand.getClass().getSimpleName());
                                 FLog.d(TAG, "requestWait(" + timeout + ")");
                                 do {
+                                    if (!response.hasData() && mCancelling != null) {
+                                        mCommand = null;
+                                        mCancelling.countDown();
+                                        return new IncredistResult(IncredistResult.STATUS_CANCELED);
+                                    }
                                     if (!isRequested) {
                                         queueRequest(mReceiveRequest, receiveBuffer);
                                         isRequested = true;
@@ -291,6 +333,10 @@ public class UsbMFiTransport implements MFiTransport {
                                 FLog.d(TAG, String.format(Locale.US, "sendCommand received length:%d data: %s", length, LogUtil.hexString(buf, 0, length)));
                                 response.appendData(buf, 0, length);
                             } else if (request == null) {
+                                if (mCancelling != null) {
+                                    // キャンセルされていた場合, STATUS_CANCELEDを返す
+                                    return new IncredistResult(IncredistResult.STATUS_CANCELED);
+                                }
                                 // 受信エラー
                                 FLog.d(TAG, "Error requestWait returns null");
                                 break;
@@ -313,8 +359,8 @@ public class UsbMFiTransport implements MFiTransport {
                                 // ignore.
                             }
                             long real = System.currentTimeMillis() - startTime;
-                            FLog.d(TAG, String.format(Locale.JAPANESE, "sendCommand result:%d wait:%d real:%d %s", result.status, firstCommand.getResponseTimeout(), real, command.getClass().getSimpleName()));
-                            command = null;
+                            FLog.d(TAG, String.format(Locale.JAPANESE, "sendCommand result:%d wait:%d real:%d %s", result.status, firstCommand.getResponseTimeout(), real, mCommand.getClass().getSimpleName()));
+                            mCommand = null;
                             if (result.status == IncredistResult.STATUS_SUCCESS) {
                                 response.clear();
                             }
@@ -451,10 +497,59 @@ public class UsbMFiTransport implements MFiTransport {
         return true;
     }
 
+    /**
+     * 受信待ち処理をキャンセル
+     * キャンセルできるかどうかは MFiCommand によって異なる
+     * キャンセルできないコマンドの場合は STATUS_NOT_CANCELLABLE を返す
+     * キャンセルできるコマンドであっても、送信 / 受信待ち処理には、
+     * - 送信前
+     * - 送信中
+     * - 受信待ち
+     * - 受信中
+     * - 受信完了後
+     * の状態がある。
+     * 送信前、受信待ちの場合は mCancelling != null をチェックする
+     * 送信中、受信中の場合はそれぞれのRequestをcancelする
+     * このメソッドは sendCommand とは別のスレッドで実行する必要がある
+     *
+     * @return キャンセル成功した場合は STATUS_SUCCESS, 失敗した場合はエラー結果を含む IncredistResult オブジェクト
+     * 既にReleaseされていたら STATUS_RELEASED
+     */
     //TODO キャンセル処理未実装(電子マネーアプリでは必要ないはず)
     @Override
+    @WorkerThread
     public IncredistResult cancel() {
-        return new IncredistResult(IncredistResult.STATUS_CANCELED);
+        FLog.d(TAG, "UsbMFiTransport - cancel");
+        if (mIsReleasing) {
+            return new IncredistResult(IncredistResult.STATUS_RELEASED);
+        }
+        if (mCommand == null || !mCommand.cancelable()) {
+            FLog.d(TAG, "Not cancel");
+            return new IncredistResult(IncredistResult.STATUS_NOT_CANCELLABLE);
+        }
+        mCancelling = new CountDownLatch(1);
+        // requestWaitはP以前の場合はmFutureを使用しているが
+        // Q以降は使用しない作りになっているので合わせる
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            if (mFuture != null) {
+                mFuture.cancel(true);
+            }
+        }
+        mSendRequest.cancel();
+        mReceiveRequest.cancel();
+        try {
+            boolean res = mCancelling.await(CANCEL_TIMEOUT, TimeUnit.MILLISECONDS);
+            if (res) {
+                FLog.d(TAG, "cancel - success");
+                return new IncredistResult(IncredistResult.STATUS_SUCCESS);
+            }
+        } catch (InterruptedException e) {
+            // ignore
+        } finally {
+            mCancelling = null;
+        }
+        FLog.d(TAG, "cancel - failed");
+        return new IncredistResult(IncredistResult.STATUS_CANCEL_FAILED);
     }
 
     @Override
@@ -462,11 +557,11 @@ public class UsbMFiTransport implements MFiTransport {
         FLog.d(TAG, "");
         mLoopBreak = true;
         mIsReleasing = true;
-        if (mFuture != null) {
-            mFuture.cancel(true);
-            mFuture = null;
-        }
         synchronized (mLockObj) {
+            if (mFuture != null) {
+                mFuture.cancel(true);
+                mFuture = null;
+            }
             UsbDeviceConnection connection = mConnection;
             if (connection != null) {
                 UsbInterface usbInterface = mUsbInterface;
@@ -476,6 +571,7 @@ public class UsbMFiTransport implements MFiTransport {
                 connection.close();
 
             }
+            mCommand = null;
             mConnection = null;
             mUsbInterface = null;
         } //synchronized
