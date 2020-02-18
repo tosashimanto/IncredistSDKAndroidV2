@@ -69,8 +69,10 @@ public class UsbMFiTransport implements MFiTransport {
 
     /**
      * 受信中フラグ (ANDROID_GMO-712 and ANDROID_GMO-771)
+     * 受信前にフラグをリセット(false)
+     * 受信後にSTATUS_CONTINUE_MULTIPLE_RESPONSEだった場合、フラグをセット(true)
      */
-    private boolean mIsReceiving = false;
+    private boolean mContinueReceive = false;
 
     /**
      * コンストラクタ.
@@ -278,7 +280,7 @@ public class UsbMFiTransport implements MFiTransport {
                 return firstCommand.parseResponse(new MFiNoResponse());
             } else {
                 FLog.d(TAG, String.format("sendCommand recv packet(s) for %s", firstCommand.getClass().getSimpleName()));
-                mIsReceiving = false;
+                mContinueReceive = false;
                 do {
                     MFiResponse response = new MFiResponse();
                     response.clear();
@@ -302,7 +304,7 @@ public class UsbMFiTransport implements MFiTransport {
                                 do {
                                     // ANDROID_GMO-712 and ANDROID_GMO-771
                                     // 　受信中にキャンセルすると701（STATUS_INVALID_RESPONSE）が発生するので受信中はキャンセルしない
-                                    if (!response.hasData() && mCancelling != null && !mIsReceiving) {
+                                    if (!response.hasData() && mCancelling != null && !mContinueReceive) {
                                         mCommand = null;
                                         return new IncredistResult(IncredistResult.STATUS_CANCELED);
                                     }
@@ -358,9 +360,9 @@ public class UsbMFiTransport implements MFiTransport {
                         FLog.d(TAG, "recv valid packet: " + LogUtil.hexString(response.getData()));
                         IncredistResult result = firstCommand.parseResponse(response.copyInstance());
                         if (result.status == IncredistResult.STATUS_CONTINUE_MULTIPLE_RESPONSE) {
+                            mContinueReceive = true;
                             // 継続するパケットがある場合はパケット情報をクリアして次のデータを待つ
                             response.clear();
-                            mIsReceiving = true;
                         } else {
                             try {
                                 Thread.sleep(firstCommand.getGuardWait());
@@ -382,7 +384,7 @@ public class UsbMFiTransport implements MFiTransport {
                             return result;
                         }
                     }
-                } while (mIsReceiving && !mLoopBreak);
+                } while (mContinueReceive && !mLoopBreak);
             }
         }
         return new IncredistResult(IncredistResult.STATUS_FAILURE);
@@ -549,8 +551,9 @@ public class UsbMFiTransport implements MFiTransport {
         }
         mCancelling = new CountDownLatch(1);
         // ANDROID_GMO-712 and ANDROID_GMO-771
-        // 　受信中にキャンセルすると701（STATUS_INVALID_RESPONSE）が発生するので受信中はキャンセルしない
-        if (!mIsReceiving) {
+        //  受信中にキャンセルすると701（STATUS_INVALID_RESPONSE）が発生するので
+        //  受信完了してキャンセル処理を行うためmFuture.cancelを呼ばない
+        if (!mContinueReceive) {
             FLog.d(TAG, "cancel - request clear");
             // requestWaitはP以前の場合はmFutureを使用しているが
             // Q以降は使用しない作りになっているので合わせる
