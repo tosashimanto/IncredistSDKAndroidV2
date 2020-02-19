@@ -376,6 +376,7 @@ public class UsbMFiTransport implements MFiTransport {
                             // 　受信中にキャンセルすると701（STATUS_INVALID_RESPONSE）が発生するので,
                             //   受信完了後にキャンセルされたかチェックする
                             if (mCancelling != null) {
+                                mContinueReceive = false;
                                 return new IncredistResult(IncredistResult.STATUS_CANCELED);
                             }
                             if (result.status == IncredistResult.STATUS_SUCCESS) {
