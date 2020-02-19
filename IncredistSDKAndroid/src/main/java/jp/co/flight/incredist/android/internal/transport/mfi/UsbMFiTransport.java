@@ -68,6 +68,13 @@ public class UsbMFiTransport implements MFiTransport {
     private CountDownLatch mCancelling = null;
 
     /**
+     * 受信中フラグ (ANDROID_GMO-712 and ANDROID_GMO-771)
+     * 受信前にフラグをリセット(false)
+     * 受信後にSTATUS_CONTINUE_MULTIPLE_RESPONSEだった場合、フラグをセット(true)
+     */
+    private boolean mContinueReceive = false;
+
+    /**
      * コンストラクタ.
      *
      * @param connection   UsbDeviceConnection オブジェクト
@@ -136,7 +143,7 @@ public class UsbMFiTransport implements MFiTransport {
                 return resultList;
             }
             if (mCancelling != null) {
-                mCancelling.countDown();
+                FLog.d(TAG, "送信前キャンセル");
                 resultList.add(new IncredistResult(IncredistResult.STATUS_CANCELED));
                 return resultList;
             }
@@ -163,9 +170,9 @@ public class UsbMFiTransport implements MFiTransport {
                             FLog.d(TAG, "sendCommand " + firstCommand.getClass().getSimpleName());
                             FLog.d(TAG, "requestWait(" + timeout + ")");
                             do {
-                                if (mCommand != null && mCommand.cancelable() && !response.hasData() && mCancelling != null) {
+                                if (!response.hasData() && mCancelling != null) {
+                                    FLog.d(TAG, "送信後キャンセル");
                                     mCommand = null;
-                                    mCancelling.countDown();
                                     resultList.add(new IncredistResult(IncredistResult.STATUS_CANCELED));
                                     return resultList;
                                 }
@@ -224,6 +231,10 @@ public class UsbMFiTransport implements MFiTransport {
                     resultList.add(new IncredistResult(IncredistResult.STATUS_SEND_TIMEOUT));
                     continue;
                 }
+                if (mCancelling != null) {
+                    resultList.add(new IncredistResult(IncredistResult.STATUS_CANCELED));
+                    return resultList;
+                }
                 resultList.add(firstCommand.parseMFiResponse(response.copyInstance()));
 
                 if (iterator.hasNext()) {
@@ -251,7 +262,6 @@ public class UsbMFiTransport implements MFiTransport {
             mCommand = firstCommand;
             long startTime = System.currentTimeMillis();
             if (mCancelling != null) {
-                mCancelling.countDown();
                 return new IncredistResult(IncredistResult.STATUS_CANCELED);
             }
             FLog.d(TAG, String.format("sendCommand %s", firstCommand.getClass().getSimpleName()));
@@ -270,7 +280,7 @@ public class UsbMFiTransport implements MFiTransport {
                 return firstCommand.parseResponse(new MFiNoResponse());
             } else {
                 FLog.d(TAG, String.format("sendCommand recv packet(s) for %s", firstCommand.getClass().getSimpleName()));
-                boolean continueReceive = false;
+                mContinueReceive = false;
                 do {
                     MFiResponse response = new MFiResponse();
                     response.clear();
@@ -292,9 +302,10 @@ public class UsbMFiTransport implements MFiTransport {
                                 FLog.d(TAG, "sendCommand " + firstCommand.getClass().getSimpleName());
                                 FLog.d(TAG, "requestWait(" + timeout + ")");
                                 do {
-                                    if (!response.hasData() && mCancelling != null) {
+                                    // ANDROID_GMO-712 and ANDROID_GMO-771
+                                    // 　受信中にキャンセルすると701（STATUS_INVALID_RESPONSE）が発生するので受信中はキャンセルしない
+                                    if (!response.hasData() && mCancelling != null && !mContinueReceive) {
                                         mCommand = null;
-                                        mCancelling.countDown();
                                         return new IncredistResult(IncredistResult.STATUS_CANCELED);
                                     }
                                     if (!isRequested) {
@@ -349,9 +360,9 @@ public class UsbMFiTransport implements MFiTransport {
                         FLog.d(TAG, "recv valid packet: " + LogUtil.hexString(response.getData()));
                         IncredistResult result = firstCommand.parseResponse(response.copyInstance());
                         if (result.status == IncredistResult.STATUS_CONTINUE_MULTIPLE_RESPONSE) {
+                            mContinueReceive = true;
                             // 継続するパケットがある場合はパケット情報をクリアして次のデータを待つ
                             response.clear();
-                            continueReceive = true;
                         } else {
                             try {
                                 Thread.sleep(firstCommand.getGuardWait());
@@ -361,13 +372,20 @@ public class UsbMFiTransport implements MFiTransport {
                             long real = System.currentTimeMillis() - startTime;
                             FLog.d(TAG, String.format(Locale.JAPANESE, "sendCommand result:%d wait:%d real:%d %s", result.status, firstCommand.getResponseTimeout(), real, mCommand.getClass().getSimpleName()));
                             mCommand = null;
+                            // ANDROID_GMO-712 and ANDROID_GMO-771
+                            // 　受信中にキャンセルすると701（STATUS_INVALID_RESPONSE）が発生するので,
+                            //   受信完了後にキャンセルされたかチェックする
+                            if (mCancelling != null) {
+                                mContinueReceive = false;
+                                return new IncredistResult(IncredistResult.STATUS_CANCELED);
+                            }
                             if (result.status == IncredistResult.STATUS_SUCCESS) {
                                 response.clear();
                             }
                             return result;
                         }
                     }
-                } while (continueReceive && !mLoopBreak);
+                } while (mContinueReceive && !mLoopBreak);
             }
         }
         return new IncredistResult(IncredistResult.STATUS_FAILURE);
@@ -509,7 +527,12 @@ public class UsbMFiTransport implements MFiTransport {
      * - 受信完了後
      * の状態がある。
      * 送信前、受信待ちの場合は mCancelling != null をチェックする
-     * 送信中、受信中の場合はそれぞれのRequestをcancelする
+     * <p>
+     * 送信中の場合はコマンド途中で停止させることはせずに送信完了まで一旦待つ
+     * <p>
+     * 受信中(すでにMFiパケットの一部を受け取っている)場合には
+     * フラグを立てて、MFiパケットの残りを受信する。
+     * <p>
      * このメソッドは sendCommand とは別のスレッドで実行する必要がある
      *
      * @return キャンセル成功した場合は STATUS_SUCCESS, 失敗した場合はエラー結果を含む IncredistResult オブジェクト
@@ -528,28 +551,25 @@ public class UsbMFiTransport implements MFiTransport {
             return new IncredistResult(IncredistResult.STATUS_NOT_CANCELLABLE);
         }
         mCancelling = new CountDownLatch(1);
-        // requestWaitはP以前の場合はmFutureを使用しているが
-        // Q以降は使用しない作りになっているので合わせる
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-            if (mFuture != null) {
-                mFuture.cancel(true);
+        // ANDROID_GMO-712 and ANDROID_GMO-771
+        //  受信中にキャンセルすると701（STATUS_INVALID_RESPONSE）が発生するので
+        //  受信完了してキャンセル処理を行うためmFuture.cancelを呼ばない
+        if (!mContinueReceive) {
+            FLog.d(TAG, "cancel - request clear");
+            // requestWaitはP以前の場合はmFutureを使用しているが
+            // Q以降は使用しない作りになっているので合わせる
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+                if (mFuture != null) {
+                    FLog.d(TAG, "mFuture cancel");
+                    mFuture.cancel(true);
+                }
             }
         }
-        mSendRequest.cancel();
-        mReceiveRequest.cancel();
-        try {
-            boolean res = mCancelling.await(CANCEL_TIMEOUT, TimeUnit.MILLISECONDS);
-            if (res) {
-                FLog.d(TAG, "cancel - success");
-                return new IncredistResult(IncredistResult.STATUS_SUCCESS);
-            }
-        } catch (InterruptedException e) {
-            // ignore
-        } finally {
+        synchronized (mLockObj) {
+            FLog.d(TAG, "UsbMFiTransport - cancel - completed");
             mCancelling = null;
+            return new IncredistResult(IncredistResult.STATUS_SUCCESS);
         }
-        FLog.d(TAG, "cancel - failed");
-        return new IncredistResult(IncredistResult.STATUS_CANCEL_FAILED);
     }
 
     @Override
@@ -557,11 +577,11 @@ public class UsbMFiTransport implements MFiTransport {
         FLog.d(TAG, "");
         mLoopBreak = true;
         mIsReleasing = true;
+        if (mFuture != null) {
+            mFuture.cancel(true);
+            mFuture = null;
+        }
         synchronized (mLockObj) {
-            if (mFuture != null) {
-                mFuture.cancel(true);
-                mFuture = null;
-            }
             UsbDeviceConnection connection = mConnection;
             if (connection != null) {
                 UsbInterface usbInterface = mUsbInterface;
