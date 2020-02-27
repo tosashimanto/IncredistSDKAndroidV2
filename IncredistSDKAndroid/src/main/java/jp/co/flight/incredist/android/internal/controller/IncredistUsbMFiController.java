@@ -507,11 +507,13 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
 
     /**
      * 切断処理
+     * ANDROID_TFPS-1367：ごく稀（1/30）にdisconnectが2回呼ばれるかもしれないので
+     * クラッシュ抑止のため切断処理自体synchronized化する
      *
      * @param callback 　コールバック
      */
     @Override
-    public void disconnect(IncredistController.Callback callback) {
+    public synchronized void disconnect(IncredistController.Callback callback) {
         UsbDeviceConnection connection = mConnection;
         UsbInterface usbInterface = mUsbInterface;
         if (connection != null) {
@@ -536,9 +538,11 @@ public class IncredistUsbMFiController implements IncredistProtocolController {
 
     /**
      * オブジェクトを解放します
+     * ANDROID_TFPS-1367：ごく稀(1/30)にreleaseが2回呼ばれることがあるようだ
+     * クラッシュ抑止のため解放処理自体synchronized化する
      */
     @Override
-    public void release() {
+    public synchronized void release() {
         if (mMFiTransport != null) {
             //ANDROID_TFPS-1127 クラッシュ抑止
             mMFiTransport.cancel();
