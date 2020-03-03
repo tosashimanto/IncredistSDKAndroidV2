@@ -421,17 +421,17 @@ public class IncredistBleMFiController implements IncredistProtocolController {
                     postMFiCommand(command, (incredistResult) -> {
                         synchronized (resultList) {
                             resultList.add(incredistResult);
-                            if (resultList.size() > 0 && resultList.get(resultList.size() - 1).status != IncredistResult.STATUS_SUCCESS) {
+                            if (incredistResult.status != IncredistResult.STATUS_SUCCESS) {
                                 if (controller2 != null) {
                                     controller2.postCallback(() -> {
-                                        callback.onResult(resultList.get(resultList.size() - 1));
+                                        callback.onResult(incredistResult);
                                     });
                                 }
                                 return;
                             } else {
                                 if (commandList.size() == resultList.size()) {
                                     controller2.postCallback(() -> {
-                                        callback.onResult(resultList.get(resultList.size() - 1));
+                                        callback.onResult(incredistResult);
                                     });
                                 }
                             }
