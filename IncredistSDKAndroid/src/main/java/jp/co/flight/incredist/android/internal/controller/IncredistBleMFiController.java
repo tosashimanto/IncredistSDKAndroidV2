@@ -40,6 +40,7 @@ import jp.co.flight.incredist.android.internal.transport.mfi.MFiSetRealTimeComma
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiStopCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTfpmxDisplayMessageCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
+import jp.co.flight.incredist.android.internal.util.FLog;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.EmvSetupDataType;
 import jp.co.flight.incredist.android.model.EmvTagType;
@@ -52,6 +53,7 @@ import jp.co.flight.incredist.android.model.PinEntry;
  * BLE - MFi版 Incredist 用 Controller.
  */
 public class IncredistBleMFiController implements IncredistProtocolController {
+    private static final String TAG = "IncredistBleMFiController";
 
     @Nullable
     private IncredistController mController;
@@ -442,6 +444,7 @@ public class IncredistBleMFiController implements IncredistProtocolController {
                         notify.await(5000, TimeUnit.MILLISECONDS);
                     } catch (InterruptedException e) {
                         // ignore
+                        FLog.d(TAG, "emvKernelSetup timeout");
                     }
                 }
             }, callback);
