@@ -3,9 +3,12 @@ package jp.co.flight.incredist.android.internal.controller;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import jp.co.flight.android.bluetooth.le.BluetoothGattConnection;
 import jp.co.flight.incredist.android.internal.controller.result.IncredistResult;
@@ -37,6 +40,7 @@ import jp.co.flight.incredist.android.internal.transport.mfi.MFiSetRealTimeComma
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiStopCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTfpmxDisplayMessageCommand;
 import jp.co.flight.incredist.android.internal.transport.mfi.MFiTransport;
+import jp.co.flight.incredist.android.internal.util.FLog;
 import jp.co.flight.incredist.android.model.CreditCardType;
 import jp.co.flight.incredist.android.model.EmvSetupDataType;
 import jp.co.flight.incredist.android.model.EmvTagType;
@@ -49,6 +53,7 @@ import jp.co.flight.incredist.android.model.PinEntry;
  * BLE - MFi版 Incredist 用 Controller.
  */
 public class IncredistBleMFiController implements IncredistProtocolController {
+    private static final String TAG = "IncredistBleMFiController";
 
     @Nullable
     private IncredistController mController;
@@ -399,7 +404,51 @@ public class IncredistBleMFiController implements IncredistProtocolController {
      */
     @Override
     public void emvKernelSetup(EmvSetupDataType type, byte[] setupData, IncredistController.Callback callback) {
-        postMFiCommandList(MFiEmvKernelSetupCommand.createCommandList(type, setupData), callback);
+        // EMV kernel setupは複数コマンドを送信して、複数レスポンスを受ける特殊コマンド
+        IncredistController controller = mController;
+        if (controller != null) {
+            controller.postCommand(() -> {
+                List<MFiEmvKernelSetupCommand> commandList = MFiEmvKernelSetupCommand.createCommandList(type, setupData);
+                ArrayList<IncredistResult> resultList = new ArrayList<>();
+                IncredistController controller2 = mController;
+                if (commandList.size() == 0) {
+                    controller2.postCallback(() -> {
+                        callback.onResult(new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND));
+                    });
+                    return;
+                }
+                // １コマンド毎に送信する
+                for (MFiEmvKernelSetupCommand command : commandList) {
+                    CountDownLatch notify = new CountDownLatch(1);
+                    postMFiCommand(command, (incredistResult) -> {
+                        synchronized (resultList) {
+                            resultList.add(incredistResult);
+                            if (incredistResult.status != IncredistResult.STATUS_SUCCESS) {
+                                if (controller2 != null) {
+                                    controller2.postCallback(() -> {
+                                        callback.onResult(incredistResult);
+                                    });
+                                }
+                                return;
+                            } else {
+                                if (commandList.size() == resultList.size()) {
+                                    controller2.postCallback(() -> {
+                                        callback.onResult(incredistResult);
+                                    });
+                                }
+                            }
+                        }
+                        notify.countDown();
+                    });
+                    try {
+                        notify.await(5000, TimeUnit.MILLISECONDS);
+                    } catch (InterruptedException e) {
+                        // ignore
+                        FLog.d(TAG, "emvKernelSetup timeout");
+                    }
+                }
+            }, callback);
+        }
     }
 
     /**
@@ -422,6 +471,7 @@ public class IncredistBleMFiController implements IncredistProtocolController {
      */
     @Override
     public void emvSendArc(byte[] arcData, IncredistController.Callback callback) {
+        // 複数コマンドを送信するがレスポンスは１つの特殊コマンド
         postMFiCommandList(MFiEmvSendArcCommand.createCommandList(arcData), callback);
     }
 
