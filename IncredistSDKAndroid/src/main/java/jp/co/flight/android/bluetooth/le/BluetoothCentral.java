@@ -316,8 +316,11 @@ public class BluetoothCentral {
         if (context != null) {
             BluetoothDevice device = mAdapter.getRemoteDevice(peripheral.getDeviceAddress());
             if (device != null) {
-                BluetoothGatt gatt = device.connectGatt(context, false, null);
+                // ANDROID_SDK_DEV-51 callbackがnullだと落ちるので、空実装のcallbackをセット
+                BluetoothGatt gatt = device.connectGatt(context, false, new BluetoothGattCallback() {
+                });
                 gatt.disconnect();
+                FLog.d(TAG, "gatt.disconnect() called.");
             }
         }
     }
