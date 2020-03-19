@@ -320,6 +320,7 @@ public class BluetoothCentral {
                 BluetoothGatt gatt = device.connectGatt(context, false, new BluetoothGattCallback() {
                 });
                 gatt.disconnect();
+                FLog.d(TAG, "gatt.disconnect() called.");
             }
         }
     }

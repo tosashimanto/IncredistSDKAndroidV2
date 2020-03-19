@@ -251,7 +251,9 @@ public class BluetoothGattConnection {
      * @param listener   接続状態リスナ
      */
     BluetoothGattConnection(@NonNull BluetoothCentral central, @NonNull BluetoothPeripheral peripheral, @Nullable ConnectionListener listener) {
-        if (central.getConnectionState(peripheral) == BluetoothGatt.STATE_CONNECTED) {
+        int connectionState = central.getConnectionState(peripheral);
+        FLog.d(TAG, String.format(Locale.JAPANESE, "connectionState: %d", connectionState));
+        if (connectionState == BluetoothGatt.STATE_CONNECTED) {
             // すでに接続中の場合
             if (mGatt != null) {
                 disconnect();
