@@ -260,8 +260,10 @@ public class BluetoothGattConnection {
             // 接続できなくなる問題が発生する
             CountDownLatch latch = new CountDownLatch(1);
             central.disconnectGatt(peripheral, (result) -> {
+                FLog.d(TAG, String.format(Locale.JAPANESE, "success resultCode=%d", result));
                 latch.countDown();
             }, ((resultCode, result) -> {
+                FLog.d(TAG, String.format(Locale.JAPANESE, "failure resultCode=%d", resultCode));
                 latch.countDown();
             }));
 
