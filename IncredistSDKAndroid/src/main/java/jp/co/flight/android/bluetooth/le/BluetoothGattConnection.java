@@ -255,11 +255,6 @@ public class BluetoothGattConnection {
         int connectionState = central.getConnectionState(peripheral);
         FLog.d(TAG, String.format(Locale.JAPANESE, "connectionState: %d", connectionState));
         if (connectionState == BluetoothGatt.STATE_CONNECTED) {
-            // すでに接続中の場合
-            if (mGatt != null) {
-                disconnect();
-            }
-
             // ANDROID_SDK_DEV-52 接続中の場合は一旦切断、BluetoothGatt#close()を行う
             // 特にcloseを実行せずに再接続を繰り返すとbt_stack (gatt_api.cc)がエラーを吐き
             // 接続できなくなる問題が発生する
