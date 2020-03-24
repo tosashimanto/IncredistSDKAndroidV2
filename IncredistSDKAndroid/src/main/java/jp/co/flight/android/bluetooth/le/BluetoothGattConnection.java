@@ -31,6 +31,9 @@ public class BluetoothGattConnection {
     private static final int DEFAULT_MTU_LENGTH = 20;
     private static final int REQUEST_MTU_LENGTH = 256;
 
+    // ANDROID_SDK_DEV-52
+    private static final int WAIT_FOR_DISCONNECT_BEFORE_RECONNECT = 2000;
+
     @NonNull
     private final HandlerThread mHandlerThread;
 
@@ -254,11 +257,23 @@ public class BluetoothGattConnection {
         int connectionState = central.getConnectionState(peripheral);
         FLog.d(TAG, String.format(Locale.JAPANESE, "connectionState: %d", connectionState));
         if (connectionState == BluetoothGatt.STATE_CONNECTED) {
-            // すでに接続中の場合
-            if (mGatt != null) {
-                disconnect();
+            // ANDROID_SDK_DEV-52 接続中の場合は一旦切断、BluetoothGatt#close()を行う
+            // 特にcloseを実行せずに再接続を繰り返すとbt_stack (gatt_api.cc)がエラーを吐き
+            // 接続できなくなる問題が発生する
+            CountDownLatch latch = new CountDownLatch(1);
+            central.disconnectGatt(peripheral, (result) -> {
+                FLog.d(TAG, String.format(Locale.JAPANESE, "success resultCode=%d", result));
+                latch.countDown();
+            }, ((resultCode, result) -> {
+                FLog.d(TAG, String.format(Locale.JAPANESE, "failure resultCode=%d", resultCode));
+                latch.countDown();
+            }));
+
+            try {
+                latch.await(WAIT_FOR_DISCONNECT_BEFORE_RECONNECT, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                FLog.d(TAG, "disconnect for reconnect timeout");
             }
-            central.disconnectGatt(peripheral);
         }
 
         FLog.d(TAG, String.format("before connectGatt mGatt has %x", System.identityHashCode(mGatt)));
