@@ -31,6 +31,9 @@ public class BluetoothGattConnection {
     private static final int DEFAULT_MTU_LENGTH = 20;
     private static final int REQUEST_MTU_LENGTH = 256;
 
+    // ANDROID_SDK_DEV-52
+    private static final int WAIT_FOR_DISCONNECT_BEFORE_RECONNECT = 2000;
+
     @NonNull
     private final HandlerThread mHandlerThread;
 
@@ -250,7 +253,6 @@ public class BluetoothGattConnection {
      * @param peripheral 接続先ペリフェラル
      * @param listener   接続状態リスナ
      */
-    @SuppressWarnings("checkstyle:MagicNumber")
     BluetoothGattConnection(@NonNull BluetoothCentral central, @NonNull BluetoothPeripheral peripheral, @Nullable ConnectionListener listener) {
         int connectionState = central.getConnectionState(peripheral);
         FLog.d(TAG, String.format(Locale.JAPANESE, "connectionState: %d", connectionState));
@@ -268,8 +270,7 @@ public class BluetoothGattConnection {
             }));
 
             try {
-                //noinspection CheckStyle
-                latch.await(2000, TimeUnit.MILLISECONDS);
+                latch.await(WAIT_FOR_DISCONNECT_BEFORE_RECONNECT, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 FLog.d(TAG, "disconnect for reconnect timeout");
             }
