@@ -306,9 +306,13 @@ public class BluetoothCentral {
      * 接続中だった場合に強制切断します
      *
      * @param peripheral 切断するペリフェラル
+     * @param success    切断実行時又は切断済み時
+     * @param failure    切断実行できなかった場合(デバイスが見つからない等）
      */
-    void disconnectGatt(@NonNull BluetoothPeripheral peripheral) {
+    void disconnectGatt(@NonNull BluetoothPeripheral peripheral, @NonNull OnSuccessFunction<Integer> success, @NonNull OnFailureFunction<Void> failure) {
+        FLog.d(TAG, "disconnectGatt() called");
         if (!isBluetoothEnabled()) {
+            failure.onFailure(-1, null);
             return;
         }
 
@@ -316,13 +320,26 @@ public class BluetoothCentral {
         if (context != null) {
             BluetoothDevice device = mAdapter.getRemoteDevice(peripheral.getDeviceAddress());
             if (device != null) {
-                // ANDROID_SDK_DEV-51 callbackがnullだと落ちるので、空実装のcallbackをセット
-                BluetoothGatt gatt = device.connectGatt(context, false, new BluetoothGattCallback() {
+                // ANDROID_SDK_DEV-52
+                device.connectGatt(context, false, new BluetoothGattCallback() {
+                    @Override
+                    public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+                        FLog.d(TAG, String.format(Locale.JAPANESE, "status=%d newState=%d", status, newState));
+                        // 接続中ならdisconnectを実行する
+                        if (newState == BluetoothGatt.STATE_CONNECTED) {
+                            gatt.disconnect();
+                            FLog.d(TAG, "gatt.disconnect() called.");
+                        }
+                        // 切断後はclose()を必ず呼ぶ必要がある
+                        gatt.close();
+
+                        success.onSuccess(newState);
+                    }
                 });
-                gatt.disconnect();
-                FLog.d(TAG, "gatt.disconnect() called.");
+                return;
             }
         }
+        failure.onFailure(-1, null);
     }
 
     /**

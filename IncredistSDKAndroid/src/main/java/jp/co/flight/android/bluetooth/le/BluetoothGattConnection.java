@@ -250,6 +250,7 @@ public class BluetoothGattConnection {
      * @param peripheral 接続先ペリフェラル
      * @param listener   接続状態リスナ
      */
+    @SuppressWarnings("checkstyle:MagicNumber")
     BluetoothGattConnection(@NonNull BluetoothCentral central, @NonNull BluetoothPeripheral peripheral, @Nullable ConnectionListener listener) {
         int connectionState = central.getConnectionState(peripheral);
         FLog.d(TAG, String.format(Locale.JAPANESE, "connectionState: %d", connectionState));
@@ -258,7 +259,23 @@ public class BluetoothGattConnection {
             if (mGatt != null) {
                 disconnect();
             }
-            central.disconnectGatt(peripheral);
+
+            // ANDROID_SDK_DEV-52 接続中の場合は一旦切断、BluetoothGatt#close()を行う
+            // 特にcloseを実行せずに再接続を繰り返すとbt_stack (gatt_api.cc)がエラーを吐き
+            // 接続できなくなる問題が発生する
+            CountDownLatch latch = new CountDownLatch(1);
+            central.disconnectGatt(peripheral, (result) -> {
+                latch.countDown();
+            }, ((resultCode, result) -> {
+                latch.countDown();
+            }));
+
+            try {
+                //noinspection CheckStyle
+                latch.await(2000, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                FLog.d(TAG, "disconnect for reconnect timeout");
+            }
         }
 
         FLog.d(TAG, String.format("before connectGatt mGatt has %x", System.identityHashCode(mGatt)));
