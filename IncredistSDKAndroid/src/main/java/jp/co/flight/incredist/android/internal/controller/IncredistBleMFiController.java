@@ -596,6 +596,13 @@ public class IncredistBleMFiController implements IncredistProtocolController {
         mMFiTransport = null;
 
         // ANDROID_SDK_DEV-53
-        mMultiCommandHandlerThread.quitSafely();
+        if (mMultiCommandHandlerThread != null) {
+            mMultiCommandHandlerThread.quitSafely();
+            mMultiCommandHandlerThread = null;
+        }
+
+        if (mMultiCommandHandler != null) {
+            mMultiCommandHandler = null;
+        }
     }
 }
