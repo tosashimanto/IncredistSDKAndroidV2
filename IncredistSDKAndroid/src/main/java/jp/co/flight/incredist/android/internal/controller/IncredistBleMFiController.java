@@ -1,5 +1,7 @@
 package jp.co.flight.incredist.android.internal.controller;
 
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -49,6 +51,8 @@ import jp.co.flight.incredist.android.model.EncryptionMode;
 import jp.co.flight.incredist.android.model.LedColor;
 import jp.co.flight.incredist.android.model.PinEntry;
 
+import static jp.co.flight.incredist.android.model.StatusCode.STATUS_FAILED_EXECUTION;
+
 /**
  * BLE - MFi版 Incredist 用 Controller.
  */
@@ -63,6 +67,13 @@ public class IncredistBleMFiController implements IncredistProtocolController {
     @Nullable
     private MFiTransport mMFiTransport;
 
+    // ANDROID_SDK_DEV-53 emvKernelSetupで複数のコマンド送信用に例外的に導入したので
+    // 同じ用途以外で流用しないようにしてください
+    // 通常はIncredistControllerで用途別のHandlerThreadを作成しているので、
+    // 基本的に新たにHandlerThreadを作る必要はありません
+    private HandlerThread mMultiCommandHandlerThread;
+    private Handler mMultiCommandHandler;
+    
     /**
      * コンストラクタ
      *
@@ -74,6 +85,30 @@ public class IncredistBleMFiController implements IncredistProtocolController {
         mConnection = connection;
         mMFiTransport = new BleMFiTransport(connection);
         MFiCommand.setPacketLength(connection.getMtu() - 3);
+
+        // ANDROID_SDK_DEV-53
+        createThreads(mController.getDeviceName());
+    }
+
+    // ANDROID_SDK_DEV-53
+    // emvKernelSetupで複数のpostCommand()を実行するための専用HandlerThreadを作成する
+    private void createThreads(String deviceName) {
+        CountDownLatch latch = new CountDownLatch(1);
+        mMultiCommandHandlerThread = new HandlerThread(String.format("%s:%s:multi_command", TAG, deviceName)) {
+            @Override
+            protected void onLooperPrepared() {
+                super.onLooperPrepared();
+                mMultiCommandHandler = new Handler(this.getLooper());
+                latch.countDown();
+            }
+        };
+        mMultiCommandHandlerThread.start();
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            // ignore.
+        }
     }
 
     /**
@@ -405,14 +440,16 @@ public class IncredistBleMFiController implements IncredistProtocolController {
     @Override
     public void emvKernelSetup(EmvSetupDataType type, byte[] setupData, IncredistController.Callback callback) {
         // EMV kernel setupは複数コマンドを送信して、複数レスポンスを受ける特殊コマンド
-        IncredistController controller = mController;
-        if (controller != null) {
-            controller.postCommand(() -> {
+
+        // ANDROID_SDK_DEV-53
+        Handler handler = mMultiCommandHandler;
+        if (handler != null) {
+            boolean success = handler.post(() -> {
                 List<MFiEmvKernelSetupCommand> commandList = MFiEmvKernelSetupCommand.createCommandList(type, setupData);
                 ArrayList<IncredistResult> resultList = new ArrayList<>();
-                IncredistController controller2 = mController;
+                IncredistController controller = mController;
                 if (commandList.size() == 0) {
-                    controller2.postCallback(() -> {
+                    controller.postCallback(() -> {
                         callback.onResult(new IncredistResult(IncredistResult.STATUS_INVALID_COMMAND));
                     });
                     return;
@@ -424,15 +461,15 @@ public class IncredistBleMFiController implements IncredistProtocolController {
                         synchronized (resultList) {
                             resultList.add(incredistResult);
                             if (incredistResult.status != IncredistResult.STATUS_SUCCESS) {
-                                if (controller2 != null) {
-                                    controller2.postCallback(() -> {
+                                if (controller != null) {
+                                    controller.postCallback(() -> {
                                         callback.onResult(incredistResult);
                                     });
                                 }
                                 return;
                             } else {
                                 if (commandList.size() == resultList.size()) {
-                                    controller2.postCallback(() -> {
+                                    controller.postCallback(() -> {
                                         callback.onResult(incredistResult);
                                     });
                                 }
@@ -447,7 +484,12 @@ public class IncredistBleMFiController implements IncredistProtocolController {
                         FLog.d(TAG, "emvKernelSetup timeout");
                     }
                 }
-            }, callback);
+            });
+            if (!success) {
+                if (callback != null) {
+                    callback.onResult(new IncredistResult(STATUS_FAILED_EXECUTION));
+                }
+            }
         }
     }
 
@@ -552,6 +594,15 @@ public class IncredistBleMFiController implements IncredistProtocolController {
         }
         mController = null;
         mMFiTransport = null;
-    }
 
+        // ANDROID_SDK_DEV-53
+        if (mMultiCommandHandlerThread != null) {
+            mMultiCommandHandlerThread.quitSafely();
+            mMultiCommandHandlerThread = null;
+        }
+
+        if (mMultiCommandHandler != null) {
+            mMultiCommandHandler = null;
+        }
+    }
 }
