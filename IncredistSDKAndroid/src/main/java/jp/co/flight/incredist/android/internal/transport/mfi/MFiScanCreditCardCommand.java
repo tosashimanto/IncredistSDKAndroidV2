@@ -153,6 +153,10 @@ public class MFiScanCreditCardCommand extends MFiCommand {
      * @return 解析結果の IncredistResult オブジェクト
      */
     private IncredistResult parse1stEmvResponse(byte[] data) {
+        //ANDROID_GMO-839
+        if (data.length < 6) {
+            return null;
+        }
         // CHECKSTYLE:OFF MagicNumber
         int countPackets = data[1] & 0xff;
         int index = data[2] & 0xff;
