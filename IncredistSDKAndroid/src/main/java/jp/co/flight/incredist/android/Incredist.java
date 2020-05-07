@@ -101,11 +101,11 @@ public class Incredist {
             // コマンド実行中の場合があるので cancel を呼び出し、実行結果は無視して、続けて切断を行います
             mController.cancel(resultIgnore -> {
                 //  ANDROID_SDK_DEV-54 同時にreleaseされる可能性がある為、コールバック内で都度同期化しています
-                synchronized (Incredist.this) {
+                synchronized (this) {
                     if (mController != null) {
                         mController.disconnect(result -> {
                             if (result.status == IncredistResult.STATUS_SUCCESS) {
-                                synchronized (Incredist.this) {
+                                synchronized (this) {
                                     if (mController != null) {
                                         mController.postCallback(() -> {
                                             notifyDisconnect();
