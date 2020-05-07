@@ -94,19 +94,28 @@ public class Incredist {
     /**
      * Incredistとの接続を切断します.
      */
-    public void disconnect() {
-        FLog.d(TAG,"");
+    public synchronized void disconnect() {
+        FLog.d(TAG, "");
+
         if (mController != null) {
             // コマンド実行中の場合があるので cancel を呼び出し、実行結果は無視して、続けて切断を行います
             mController.cancel(resultIgnore -> {
-
-                mController.disconnect(result -> {
-                    if (result.status == IncredistResult.STATUS_SUCCESS) {
-                        mController.postCallback(() -> {
-                            notifyDisconnect();
+                //  ANDROID_SDK_DEV-54 同時にreleaseされる可能性がある為、コールバック内で都度同期化しています
+                synchronized (this) {
+                    if (mController != null) {
+                        mController.disconnect(result -> {
+                            if (result.status == IncredistResult.STATUS_SUCCESS) {
+                                synchronized (this) {
+                                    if (mController != null) {
+                                        mController.postCallback(() -> {
+                                            notifyDisconnect();
+                                        });
+                                    }
+                                }
+                            }
                         });
                     }
-                });
+                }
             });
         }
     }
@@ -903,11 +912,15 @@ public class Incredist {
      * Incredist との接続リソースを解放します
      */
     public void release() {
-        FLog.d(TAG,"");
-        //ANDROID_TFPS-1127 クラッシュ抑止
-        if (mController != null) {
-            mController.release();
-            mController = null;
+        FLog.d(TAG, "");
+
+        // ANDROID_SDK_DEV-54 synchronized化
+        synchronized (this) {
+            //ANDROID_TFPS-1127 クラッシュ抑止
+            if (mController != null) {
+                mController.release();
+                mController = null;
+            }
         }
 
         WeakReference<IncredistManager.IncredistConnectionListener> connectionListenerRef = mConnectionListenerRef;
